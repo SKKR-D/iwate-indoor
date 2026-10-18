@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>個人戦 参加申込｜県インドア大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#0056b3;--green-dark:#003d80;--green-light:#e7f0fb;
+  --gold:#c8a020;--white:#fff;--gray:#f5f5f0;
+  --text:#222;--text-light:#666;--radius:10px;--red:#b33030
+}
+html{font-size:15px}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,var(--green-dark),var(--green));color:var(--white);padding:16px 20px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+.header-inner{max-width:800px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.header .icon{font-size:1.6rem}
+.header h1{font-size:1rem;font-weight:700}
+.header h1 small{display:block;font-size:.7rem;font-weight:500;opacity:.85}
+.header h1 .tour{display:block;font-size:.82rem;font-weight:900;color:#f3d36b}
+.main{max-width:800px;margin:0 auto;padding:20px}
+.card{background:var(--white);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.card h2{font-size:.9rem;font-weight:900;color:var(--green-dark);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--green)}
+.info-table{width:100%;border-collapse:collapse;font-size:.86rem}
+.info-table th{text-align:left;width:7em;color:var(--text-light);font-weight:700;padding:6px 0;vertical-align:top}
+.info-table td{padding:6px 0;font-weight:700}
+.form-row{margin-bottom:12px}
+.form-row label{display:block;font-size:.78rem;font-weight:700;color:var(--text-light);margin-bottom:4px}
+.req{color:var(--red);font-size:.7rem;margin-left:4px}
+input,select{width:100%;padding:10px 12px;border:2px solid #ddd;border-radius:8px;font-size:.9rem;font-family:inherit;outline:none;background:var(--white)}
+input:focus,select:focus{border-color:var(--green)}
+.hint{font-size:.7rem;color:var(--text-light);margin-top:3px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.grid-2{grid-template-columns:1fr}}
+.note-box{background:#fff8e1;border:2px solid var(--gold);border-radius:8px;padding:10px 14px;font-size:.8rem;font-weight:700;color:#7a5d00;margin-bottom:12px;line-height:1.6}
+.banner{border-radius:var(--radius);padding:14px 16px;margin-bottom:16px;font-size:.86rem;font-weight:700;line-height:1.6}
+.banner.ok{background:#d4edda;color:#155724;border:2px solid #9fd3ab}
+.banner.wait{background:#fff3cd;color:#856404;border:2px solid #f0d77b}
+.banner.ng{background:#f8d7da;color:#721c24;border:2px solid #e6a5ab}
+.player{border:1.5px solid #e0e0e0;border-radius:8px;padding:10px 12px;margin-bottom:8px}
+.player.vacant{background:#f0f0f0}
+.player.vacant .p-fields{opacity:.4;pointer-events:none}
+.p-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.p-num{font-size:.9rem;font-weight:900;color:var(--green-dark)}
+.vacancy{display:inline-flex;align-items:center;gap:5px;font-size:.78rem;font-weight:700;color:var(--red);cursor:pointer;background:#fff5f5;padding:3px 10px;border-radius:20px;border:1.5px solid #e0b0b0}
+.vacancy input{width:auto;accent-color:var(--red)}
+.p-fields{display:grid;grid-template-columns:1fr 110px;gap:8px}
+.p-fields .manual{grid-column:1/-1;display:none;grid-template-columns:1fr 110px;gap:8px}
+.off-roster{grid-column:1/-1;font-size:.72rem;color:var(--red);font-weight:700;display:none}
+.fee-box{background:var(--green-light);border-radius:var(--radius);padding:16px;text-align:center}
+.fee-box .amount{font-size:1.6rem;font-weight:900;color:var(--green-dark)}
+.fee-box .detail{font-size:.78rem;color:var(--text-light);margin-top:4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 24px;border-radius:var(--radius);font-size:.95rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;text-decoration:none}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-green{background:var(--green);color:var(--white)}
+.btn-out{background:var(--white);color:var(--green-dark);border:2px solid var(--green)}
+.btn-block{width:100%}
+.status-msg{margin-top:14px;padding:14px;border-radius:var(--radius);font-size:.86rem;font-weight:700;display:none;line-height:1.7}
+.status-msg.sending{display:block;background:#e8f4fd;color:#0056b3}
+.status-msg.success{display:block;background:#d4edda;color:#155724}
+.status-msg.error{display:block;background:#f8d7da;color:#721c24}
+.nav-btns{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:200;align-items:flex-start;justify-content:center;padding:20px;overflow-y:auto}
+.modal-overlay.show{display:flex}
+.modal-box{background:var(--white);border-radius:var(--radius);padding:22px;max-width:620px;width:100%;margin-top:20px}
+.modal-box h2{font-size:1rem;font-weight:900;color:var(--green-dark);margin-bottom:14px}
+.modal-table{width:100%;border-collapse:collapse;font-size:.82rem;margin-bottom:12px}
+.modal-table th{background:var(--green-light);text-align:left;padding:6px 8px;width:9em;font-weight:700}
+.modal-table td{padding:6px 8px;border-bottom:1px solid #eee}
+.modal-btns{display:flex;gap:10px;margin-top:16px}
+.modal-btns .btn{flex:1;padding:12px}
+.loading{text-align:center;padding:60px 20px;color:var(--text-light)}
+.footer{text-align:center;padding:24px;font-size:.72rem;color:var(--text-light)}
+.locked input,.locked select,.locked label.vacancy{pointer-events:none;background:#f4f4f4}
+.pair{border:1.5px solid #d6e2f0;border-radius:8px;padding:12px;margin-bottom:10px}
+.pair-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.pair-no{font-size:.9rem;font-weight:900;color:var(--green-dark)}
+.joint{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.7rem;font-weight:700;background:#e7f0fb;color:var(--green)}
+.pair-players{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px}
+.pp{background:#f7f9fc;border-radius:6px;padding:8px 10px;font-size:.86rem}
+.pp .ab{font-size:.7rem;color:var(--text-light);font-weight:700}
+.pp .nm{font-weight:900}
+.pp .tm{font-size:.74rem;color:var(--text-light)}
+.same{display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:var(--green-dark);margin-bottom:6px;cursor:pointer}
+.same input{width:auto}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <span class="icon">🎾</span>
+    <h1><small>岩手県中学生ソフトテニス連盟</small><span class="tour" id="hdTour">県インドア大会</span><span id="hdDiv">個人戦</span> 参加申込</h1>
+  </div>
+</header>
+
+<main class="main">
+  <div id="loadingView" class="loading">読み込み中...</div>
+  <div id="errorView" class="banner ng" style="display:none"></div>
+
+  <form id="entryForm" onsubmit="return false;" style="display:none">
+    <div id="banner" class="banner"></div>
+
+    <div class="card">
+      <h2>大会・チーム</h2>
+      <table class="info-table">
+        <tr><th>区分</th><td id="infoDiv"></td></tr>
+        <tr><th>期日・会場</th><td id="infoDate"></td></tr>
+        <tr><th>申込チーム</th><td id="infoTeam"></td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>出場ペアと監督（ベンチ入り指導者）</h2>
+      <div class="note-box">・出場ペアは強化スタッフの選考に基づき連盟で登録済みです。内容に誤りがある場合は連盟へご連絡ください。<br>・ペアごとに監督（ベンチ入り指導者）を入力してください。<br>・他チームの選手と組む合同ペアは、このチームの申込・参加料に含まれています。</div>
+      <div id="pairArea"></div>
+    </div>
+
+    <div class="card">
+      <h2>申込責任者</h2>
+      <div class="grid-2">
+        <div class="form-row">
+          <label>氏名<span class="req">※必須</span></label>
+          <input type="text" id="applicantName" required>
+        </div>
+        <div class="form-row">
+          <label>役職<span class="req">※必須</span></label>
+          <select id="applicantTitle" required></select>
+        </div>
+        <div class="form-row">
+          <label>携帯番号<span class="req">※必須</span></label>
+          <input type="tel" id="applicantPhone" required pattern="^0[0-9]{9,10}$" placeholder="09012345678">
+          <div class="hint">ハイフンなし半角数字（大会当日に連絡がつく番号）</div>
+        </div>
+        <div class="form-row">
+          <label>メールアドレス<span class="req">※必須</span></label>
+          <input type="email" id="applicantEmail" required placeholder="example@mail.com">
+          <div class="hint">申込内容の控えと当日の受付票をこのアドレスに送ります</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>参加料</h2>
+      <div class="fee-box">
+        <div class="amount" id="feeDisplay">---</div>
+        <div class="detail" id="feeDetail"></div>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-green btn-block" id="submitBtn" onclick="showConfirm()">入力内容を確認する</button>
+    <div class="status-msg" id="statusMsg"></div>
+  </form>
+</main>
+
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <h2>📋 入力内容の確認</h2>
+    <div id="confirmContent"></div>
+    <div class="modal-btns">
+      <button class="btn btn-out" onclick="closeConfirm()">修正する</button>
+      <button class="btn btn-green" onclick="doSubmit()">この内容で申し込む</button>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">&copy; 岩手県中学生ソフトテニス連盟</footer>
+
+<script>
+/* ★ GASをデプロイしたらURLを貼り付ける */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
+
+var COACH_TITLES = ['教職員', '部活動指導員', '外部コーチ', '校外コーチ', 'クラブ指導者'];
+var token = new URLSearchParams(location.search).get('t') || '';
+var E = null;
+
+function esc(s) {
+  if (s === undefined || s === null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function showError(msg) {
+  document.getElementById('loadingView').style.display = 'none';
+  var ev = document.getElementById('errorView');
+  ev.style.display = 'block';
+  ev.textContent = msg;
+}
+
+function titleOptions() {
+  var html = '<option value="">選択してください</option>';
+  var i;
+  for (i = 0; i < COACH_TITLES.length; i++) html += '<option>' + COACH_TITLES[i] + '</option>';
+  return html;
+}
+
+/* ========== ペア表示 ========== */
+function buildPairs() {
+  var html = '';
+  var i, p;
+  for (i = 0; i < E.pairs.length; i++) {
+    p = E.pairs[i];
+    html += '<div class="pair">';
+    html += '<div class="pair-head"><span class="pair-no">ペア' + (i + 1) + '</span>' + (p.joint ? '<span class="joint">合同ペア</span>' : '') + '</div>';
+    html += '<div class="pair-players">';
+    html += '<div class="pp"><div class="ab">選手A</div><div class="nm">' + esc(p.aName) + '</div><div class="tm">' + esc(p.aTeam) + '　' + esc(p.aGrade) + '</div></div>';
+    html += '<div class="pp"><div class="ab">選手B</div><div class="nm">' + esc(p.bName) + '</div><div class="tm">' + esc(p.bTeam) + '　' + esc(p.bGrade) + '</div></div>';
+    html += '</div>';
+    if (i > 0) html += '<label class="same"><input type="checkbox" id="same_' + i + '" onchange="onSame(' + i + ')">ペア1と同じ監督</label>';
+    html += '<div class="grid-2">';
+    html += '<div class="form-row"><label>監督 氏名<span class="req">※必須</span></label><input type="text" id="cname_' + i + '" required></div>';
+    html += '<div class="form-row"><label>監督 役職<span class="req">※必須</span></label><select id="ctitle_' + i + '" required>' + titleOptions() + '</select></div>';
+    html += '</div></div>';
+  }
+  document.getElementById('pairArea').innerHTML = html || '<div class="banner ng">出場ペアが登録されていません。連盟へお問い合わせください。</div>';
+}
+
+function onSame(i) {
+  var on = document.getElementById('same_' + i).checked;
+  var n = document.getElementById('cname_' + i);
+  var t = document.getElementById('ctitle_' + i);
+  if (on) {
+    n.value = document.getElementById('cname_0').value;
+    t.value = document.getElementById('ctitle_0').value;
+  }
+  n.readOnly = on;
+  t.disabled = on;
+}
+
+function syncSame() {
+  var i;
+  for (i = 1; i < E.pairs.length; i++) {
+    if (document.getElementById('same_' + i).checked) onSame(i);
+  }
+}
+
+/* ========== 確認・送信 ========== */
+function validate() {
+  syncSame();
+  var form = document.getElementById('entryForm');
+  if (!form.checkValidity()) { form.reportValidity(); return null; }
+  if (E.pairs.length === 0) { alert('出場ペアが登録されていません。'); return null; }
+  var coaches = {};
+  var i, n, t;
+  for (i = 0; i < E.pairs.length; i++) {
+    n = document.getElementById('cname_' + i).value.trim();
+    t = document.getElementById('ctitle_' + i).value;
+    if (!n || !t) { alert('ペア' + (i + 1) + 'の監督を入力してください。'); return null; }
+    coaches[E.pairs[i].pairId] = { name: n, title: t };
+  }
+  return {
+    pairCoaches: coaches,
+    applicantName: document.getElementById('applicantName').value.trim(),
+    applicantTitle: document.getElementById('applicantTitle').value,
+    applicantPhone: document.getElementById('applicantPhone').value.trim(),
+    applicantEmail: document.getElementById('applicantEmail').value.trim()
+  };
+}
+
+function showConfirm() {
+  var d = validate();
+  if (!d) return;
+  var html = '<table class="modal-table">';
+  html += '<tr><th>区分</th><td>' + esc(E.division.name) + '</td></tr>';
+  html += '<tr><th>申込チーム</th><td>' + esc(E.teamName) + '</td></tr>';
+  html += '</table><table class="modal-table">';
+  var i, p, c;
+  for (i = 0; i < E.pairs.length; i++) {
+    p = E.pairs[i];
+    c = d.pairCoaches[p.pairId];
+    html += '<tr><th>ペア' + (i + 1) + '</th><td>' + esc(p.label) + '<br><span style="font-size:.75rem;color:#666">監督：' + esc(c.name) + '（' + esc(c.title) + '）</span></td></tr>';
+  }
+  html += '</table><table class="modal-table">';
+  html += '<tr><th>申込責任者</th><td>' + esc(d.applicantName) + '（' + esc(d.applicantTitle) + '）</td></tr>';
+  html += '<tr><th>携帯番号</th><td>' + esc(d.applicantPhone) + '</td></tr>';
+  html += '<tr><th>メール</th><td>' + esc(d.applicantEmail) + '</td></tr>';
+  html += '<tr><th>参加料</th><td>' + E.fee.toLocaleString() + '円（当日現金）</td></tr>';
+  html += '</table>';
+  document.getElementById('confirmContent').innerHTML = html;
+  document.getElementById('confirmModal').classList.add('show');
+}
+
+function closeConfirm() { document.getElementById('confirmModal').classList.remove('show'); }
+
+function doSubmit() {
+  var d = validate();
+  if (!d) return;
+  closeConfirm();
+  var btn = document.getElementById('submitBtn');
+  var msg = document.getElementById('statusMsg');
+  btn.disabled = true;
+  msg.className = 'status-msg sending';
+  msg.textContent = '送信中...しばらくお待ちください';
+  fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'submitEntry', t: token, data: d }) })
+    .then(function (res) { return res.text(); })
+    .then(function (text) {
+      var data;
+      try { data = JSON.parse(text); } catch (e) { throw new Error('サーバーの応答を読み取れません: ' + text.substring(0, 100)); }
+      if (data.status !== 'ok') throw new Error(data.message || 'エラーが発生しました');
+      msg.className = 'status-msg success';
+      var html = (data.isNew ? '申込を受け付けました。' : '申込内容を修正しました。') + '<br>';
+      html += data.mailError ? '<span style="color:#b33030">控えのメール送信に失敗しました（' + esc(data.mailError) + '）。申込は完了しています。</span>' : '申込内容の控えと受付票のリンクを ' + esc(d.applicantEmail) + ' に送信しました。';
+      html += '<div class="nav-btns"><a class="btn btn-green" href="ticket.html?t=' + encodeURIComponent(token) + '">当日受付票を見る</a><button type="button" class="btn btn-out" onclick="location.reload()">申込内容を確認する</button></div>';
+      msg.innerHTML = html;
+      btn.style.display = 'none';
+    })
+    .catch(function (err) {
+      msg.className = 'status-msg error';
+      msg.textContent = '送信に失敗しました：' + err.message;
+      btn.disabled = false;
+    });
+}
+
+/* ========== 初期化 ========== */
+function init() {
+  if (!token) { showError('申込リンクが正しくありません。メールに記載されたリンクから開いてください。'); return; }
+  if (GAS_URL.indexOf('http') !== 0) { showError('システム設定が未完了です（GAS_URL未設定）。連盟にお問い合わせください。'); return; }
+  fetch(GAS_URL + '?action=getEntry&t=' + encodeURIComponent(token))
+    .then(function (res) { return res.text(); })
+    .then(function (text) {
+      var data;
+      try { data = JSON.parse(text); } catch (e) { throw new Error('サーバーの応答を読み取れません: ' + text.substring(0, 100)); }
+      if (data.status !== 'ok') { showError(data.message); return; }
+      if (data.division.type !== 'indiv') { location.replace('entry-team.html?t=' + encodeURIComponent(token)); return; }
+      E = data;
+      render();
+    })
+    .catch(function (err) { showError('読み込みに失敗しました：' + err.message); });
+}
+
+function render() {
+  document.getElementById('loadingView').style.display = 'none';
+  document.getElementById('entryForm').style.display = 'block';
+  document.getElementById('hdTour').textContent = E.tournament;
+  document.getElementById('hdDiv').textContent = E.division.name;
+  document.title = E.division.name + ' 参加申込｜' + E.tournament;
+  document.getElementById('infoDiv').textContent = E.division.name;
+  document.getElementById('infoDate').textContent = E.date + '　' + E.venue;
+  document.getElementById('infoTeam').textContent = E.teamName;
+  document.getElementById('feeDisplay').textContent = E.fee.toLocaleString() + '円';
+  document.getElementById('feeDetail').textContent = E.pairs.length + 'ペア × ' + E.feePerPair.toLocaleString() + '円　大会当日の受付で現金にて納入してください（領収書をお渡しします）';
+  document.getElementById('applicantTitle').innerHTML = titleOptions();
+  buildPairs();
+
+  var i, p;
+  for (i = 0; i < E.pairs.length; i++) {
+    p = E.pairs[i];
+    if (p.coachName) document.getElementById('cname_' + i).value = p.coachName;
+    if (p.coachTitle) document.getElementById('ctitle_' + i).value = p.coachTitle;
+  }
+  if (E.saved) {
+    document.getElementById('applicantName').value = E.saved.applicantName || '';
+    document.getElementById('applicantTitle').value = E.saved.applicantTitle || '';
+    document.getElementById('applicantPhone').value = E.saved.applicantPhone || '';
+    document.getElementById('applicantEmail').value = E.saved.applicantEmail || '';
+  }
+
+  var banner = document.getElementById('banner');
+  var pd = E.period;
+  if (pd.state === 'before') {
+    banner.className = 'banner wait';
+    banner.innerHTML = '申込受付は <strong>' + esc(pd.start) + '</strong> からです。期間中にこのページを開き直してください（締切 ' + esc(pd.end) + '）。';
+    lockForm('受付開始前です');
+  } else if (pd.state === 'after') {
+    banner.className = 'banner ng';
+    banner.innerHTML = '申込期間は終了しました（締切 ' + esc(pd.end) + '）。' + (E.saved ? '下記の内容で受け付けています。変更は連盟へご連絡ください。' : '');
+    lockForm('申込期間外です');
+  } else if (E.saved) {
+    banner.className = 'banner ok';
+    banner.innerHTML = '✅ 申込済みです（最終更新 ' + esc(E.saved.updatedAt) + '）。<br>締切（' + esc(pd.end) + '）までは、内容を修正して再送信できます。<div class="nav-btns"><a class="btn btn-green" href="ticket.html?t=' + encodeURIComponent(token) + '">当日受付票を見る</a></div>';
+    document.getElementById('submitBtn').textContent = '修正内容を確認する';
+  } else {
+    banner.className = 'banner wait';
+    banner.innerHTML = 'まだ申込は完了していません。必要事項を入力して送信してください（締切 ' + esc(pd.end) + '）。';
+  }
+  if (E.pairs.length === 0) lockForm('出場ペアが未登録です');
+}
+
+function lockForm(label) {
+  document.getElementById('entryForm').className = 'locked';
+  var btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.textContent = label;
+}
+
+init();
+</script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>当日受付票｜県インドア大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--main:#1a4a2e;--white:#fff;--gray:#f5f5f0;--text:#222;--text-light:#666;--radius:12px;--red:#b33030}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--text);min-height:100vh;padding:20px}
+.ticket{max-width:420px;margin:0 auto;background:var(--white);border-radius:var(--radius);box-shadow:0 2px 12px rgba(0,0,0,.1);overflow:hidden}
+.t-head{background:var(--main);color:var(--white);padding:16px 18px}
+.t-head small{display:block;font-size:.7rem;opacity:.85}
+.t-head h1{font-size:.95rem;font-weight:900;line-height:1.4}
+.t-div{display:inline-block;margin-top:8px;background:#f3d36b;color:#3a2e00;font-weight:900;font-size:.85rem;padding:3px 12px;border-radius:14px}
+.t-body{padding:20px 18px;text-align:center}
+.team{font-size:1.35rem;font-weight:900;margin-bottom:4px}
+.meta{font-size:.82rem;color:var(--text-light);margin-bottom:16px;line-height:1.6}
+#qr{display:inline-block;padding:12px;background:#fff;border:2px dashed #ccc;border-radius:10px}
+#qr img,#qr canvas{display:block}
+.code{font-family:monospace;font-size:.85rem;letter-spacing:.1em;color:var(--text-light);margin-top:8px}
+.fee{margin-top:16px;background:#fff8e1;border:2px solid #c8a020;border-radius:10px;padding:12px;font-weight:700}
+.fee .amount{font-size:1.5rem;font-weight:900;color:#7a5d00}
+.fee .note{font-size:.75rem;color:#7a5d00;margin-top:2px}
+.done{margin-top:14px;background:#d4edda;color:#155724;border-radius:10px;padding:10px;font-weight:900}
+.howto{font-size:.78rem;color:var(--text-light);text-align:left;line-height:1.7;margin-top:16px;border-top:1px solid #eee;padding-top:12px}
+.err{max-width:420px;margin:40px auto;background:#f8d7da;color:#721c24;border-radius:var(--radius);padding:18px;font-weight:700;line-height:1.6}
+.loading{text-align:center;padding:60px;color:var(--text-light)}
+.print{display:block;margin:16px auto 0;max-width:420px;width:100%;padding:12px;border-radius:10px;border:2px solid var(--main);background:#fff;color:var(--main);font-weight:700;font-family:inherit;font-size:.9rem;cursor:pointer}
+@media print{body{background:#fff;padding:0}.print{display:none}.ticket{box-shadow:none;border:1px solid #ccc}}
+</style>
+</head>
+<body>
+<div id="view" class="loading">読み込み中...</div>
+<button class="print" id="printBtn" style="display:none" onclick="window.print()">🖨 印刷する</button>
+
+<script>
+/* ★ GASをデプロイしたらURLを貼り付ける */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
+
+var token = new URLSearchParams(location.search).get('t') || '';
+
+function esc(s) {
+  if (s === undefined || s === null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function fail(msg) {
+  var v = document.getElementById('view');
+  v.className = 'err';
+  v.textContent = msg;
+}
+
+function render(d) {
+  var v = document.getElementById('view');
+  v.className = 'ticket';
+  var html = '<div class="t-head"><small>当日受付票</small><h1>' + esc(d.tournament) + '</h1><span class="t-div">' + esc(d.division) + '</span></div>';
+  html += '<div class="t-body">';
+  html += '<div class="team">' + esc(d.teamName) + '</div>';
+  html += '<div class="meta">' + esc(d.date) + '<br>' + esc(d.venue) + (d.pairCount ? '<br>出場 ' + d.pairCount + 'ペア' : '') + '</div>';
+  html += '<div id="qr"></div>';
+  html += '<div class="code">' + esc(d.receptionCode) + '</div>';
+  if (d.reception) {
+    html += '<div class="done">✅ 受付済み（' + esc(d.reception) + '）</div>';
+  } else {
+    html += '<div class="fee"><div>参加料</div><div class="amount">' + Number(d.fee || 0).toLocaleString() + '円</div><div class="note">受付で現金にてお支払いください</div></div>';
+  }
+  html += '<div class="howto">・当日の受付で、この画面（または印刷した紙）を提示してください。<br>・参加料と引き換えに二次元コードを読み取り、受付完了となります。<br>・領収書は受付完了後、申込責任者のメールに送ります。</div>';
+  html += '</div>';
+  v.innerHTML = html;
+  /* 受付用QRの中身：大会識別子＋受付コード */
+  if (typeof QRCode === 'function') {
+    new QRCode(document.getElementById('qr'), { text: 'IWIN:' + d.receptionCode, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
+  } else {
+    document.getElementById('qr').innerHTML = '<div style="padding:20px;font-size:.8rem;color:#b33030;font-weight:700">二次元コードを表示できませんでした。<br>ページを再読み込みするか、<br>受付で下の受付コードを伝えてください。</div>';
+  }
+  document.getElementById('printBtn').style.display = 'block';
+  document.title = d.division + ' 受付票（' + d.teamName + '）';
+}
+
+(function () {
+  if (!token) { fail('リンクが正しくありません。申込完了メールのリンクから開いてください。'); return; }
+  if (GAS_URL.indexOf('http') !== 0) { fail('システム設定が未完了です（GAS_URL未設定）。'); return; }
+  fetch(GAS_URL + '?action=getTicket&t=' + encodeURIComponent(token))
+    .then(function (res) { return res.text(); })
+    .then(function (text) {
+      var d;
+      try { d = JSON.parse(text); } catch (e) { throw new Error('サーバーの応答を読み取れません: ' + text.substring(0, 100)); }
+      if (d.status !== 'ok') { fail(d.message); return; }
+      render(d);
+    })
+    .catch(function (err) { fail('読み込みに失敗しました：' + err.message); });
+})();
+</script>
+</body>
+</html>
