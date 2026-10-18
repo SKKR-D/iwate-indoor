@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>県インドア大会 参加申込｜岩手県中学生ソフトテニス連盟</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--main:#1a4a2e;--main-mid:#2d6a45;--main-light:#e8f1eb;--gold:#c8a020;--white:#fff;--gray:#f5f5f0;--text:#222;--text-light:#666;--radius:10px;--red:#b33030}
+html{font-size:15px}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,#123522,var(--main));color:var(--white);padding:22px 20px}
+.header-inner{max-width:760px;margin:0 auto}
+.header small{font-size:.72rem;opacity:.85}
+.header h1{font-size:1.15rem;font-weight:900;line-height:1.5;margin-top:2px}
+.header .sub{font-size:.75rem;opacity:.85;margin-top:4px;line-height:1.6}
+.main{max-width:760px;margin:0 auto;padding:20px}
+.card{background:var(--white);border-radius:var(--radius);padding:20px;margin-bottom:16px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.card h2{font-size:.92rem;font-weight:900;color:var(--main);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--main)}
+.sched{width:100%;border-collapse:collapse;font-size:.84rem}
+.sched th,.sched td{padding:8px;border-bottom:1px solid #eee;text-align:left}
+.sched th{background:var(--main-light);font-weight:700;white-space:nowrap}
+.lead{font-size:.84rem;line-height:1.8}
+.lead strong{color:var(--main)}
+.steps{counter-reset:s;list-style:none;font-size:.84rem;line-height:1.7}
+.steps li{position:relative;padding-left:34px;margin-bottom:10px}
+.steps li::before{counter-increment:s;content:counter(s);position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:var(--main);color:#fff;font-weight:900;font-size:.8rem;display:flex;align-items:center;justify-content:center}
+select{width:100%;padding:11px 12px;border:2px solid #ddd;border-radius:8px;font-size:.92rem;font-family:inherit;margin:8px 0 12px;background:#fff}
+select:focus{border-color:var(--main);outline:none}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:13px 22px;border-radius:var(--radius);font-size:.92rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;text-decoration:none}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-main{background:var(--main);color:#fff;width:100%}
+.btn-out{background:#fff;color:var(--main);border:2px solid var(--main)}
+.msg{margin-top:12px;padding:12px 14px;border-radius:var(--radius);font-size:.84rem;font-weight:700;line-height:1.7;display:none}
+.msg.ok{display:block;background:#d4edda;color:#155724}
+.msg.ng{display:block;background:#f8d7da;color:#721c24}
+.note{font-size:.75rem;color:var(--text-light);line-height:1.7;margin-top:8px}
+.footer{text-align:center;padding:24px;font-size:.72rem;color:var(--text-light);line-height:1.7}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <small>岩手県中学生ソフトテニス連盟</small>
+    <h1 id="tourName">第40回岩手県中学校インドアソフトテニス大会</h1>
+    <div class="sub">兼 第38回都道府県対抗全日本中学生ソフトテニス大会岩手県代表選手二次選考会<br>兼 第35回東北中学校ソフトテニスインドア大会予選会</div>
+  </div>
+</header>
+
+<main class="main">
+  <div class="card">
+    <h2>大会概要</h2>
+    <table class="sched">
+      <tr><th>個人戦</th><td>令和8年11月28日（土）　男女各16ペア</td></tr>
+      <tr><th>団体戦</th><td>令和8年11月29日（日）　男女各16チーム</td></tr>
+      <tr><th>会場</th><td>男子：雫石町営体育館　／　女子：紫波町総合体育館</td></tr>
+      <tr><th>申込期間</th><td>令和8年11月11日（水）9:00 〜 11月19日（木）17:00</td></tr>
+      <tr><th>参加料</th><td>個人戦 1ペア3,000円　団体戦 1チーム10,000円（当日受付で現金）</td></tr>
+    </table>
+    <div style="margin-top:12px"><a class="btn btn-out" href="youkou.pdf" target="_blank">📄 大会要項（PDF）</a></div>
+  </div>
+
+  <div class="card">
+    <h2>参加申込の方法</h2>
+    <p class="lead">本大会は<strong>強化スタッフが選考したチーム・ペアのみ</strong>出場できます。出場チームには、団体登録システムに登録された<strong>代表者メールアドレス</strong>へ、チーム専用の申込リンクをお送りしています。</p>
+    <ol class="steps" style="margin-top:12px">
+      <li>連盟から届いたメールの申込リンクを開く</li>
+      <li>監督（ベンチ入り指導者）・選手・申込責任者を入力して送信する</li>
+      <li>申込責任者のメールに届く「当日受付票」を、大会当日の受付で提示する</li>
+    </ol>
+  </div>
+
+  <div class="card">
+    <h2>申込リンクが見当たらない場合</h2>
+    <p class="lead">チームを選んで送信すると、そのチームの代表者メールアドレスに申込リンクを再送します。</p>
+    <select id="teamSel"><option value="">読み込み中...</option></select>
+    <button class="btn btn-main" id="resendBtn" onclick="resend()" disabled>代表者メールに申込リンクを再送する</button>
+    <div class="msg" id="msg"></div>
+    <p class="note">・再送先は団体登録システムに登録された代表者メールアドレスのみです。<br>・同じチームの再送は5分に1回までです。<br>・代表者メールが変わった場合や届かない場合は、下記の問合せ先へご連絡ください。</p>
+  </div>
+</main>
+
+<footer class="footer">
+  問合せ先：岩手県中学生ソフトテニス連盟　競技委員長　坂倉　大<br>
+  携帯 090-7072-2035（18〜20時）<br>
+  &copy; 岩手県中学生ソフトテニス連盟
+</footer>
+
+<script>
+/* ★ GASをデプロイしたらURLを貼り付ける */
+var GAS_URL = 'PASTE_GAS_URL_HERE';
+
+function esc(s) {
+  if (s === undefined || s === null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function showMsg(text, ok) {
+  var m = document.getElementById('msg');
+  m.className = 'msg ' + (ok ? 'ok' : 'ng');
+  m.textContent = text;
+}
+
+function loadTeams() {
+  var sel = document.getElementById('teamSel');
+  if (GAS_URL.indexOf('http') !== 0) { sel.innerHTML = '<option value="">準備中です</option>'; return; }
+  fetch(GAS_URL + '?action=portalTeams')
+    .then(function (res) { return res.text(); })
+    .then(function (text) {
+      var d;
+      try { d = JSON.parse(text); } catch (e) { throw new Error('サーバーの応答を読み取れません'); }
+      if (d.status !== 'ok') throw new Error(d.message);
+      var html = '<option value="">チームを選択してください</option>';
+      var lastDistrict = null;
+      var i, t;
+      for (i = 0; i < d.teams.length; i++) {
+        t = d.teams[i];
+        if (t.district !== lastDistrict) {
+          if (lastDistrict !== null) html += '</optgroup>';
+          html += '<optgroup label="' + esc(t.district || '地区未設定') + '">';
+          lastDistrict = t.district;
+        }
+        html += '<option value="' + esc(t.name) + '">' + esc(t.name) + '</option>';
+      }
+      if (lastDistrict !== null) html += '</optgroup>';
+      sel.innerHTML = html;
+      document.getElementById('resendBtn').disabled = false;
+      if (d.tournament) document.getElementById('tourName').textContent = d.tournament;
+    })
+    .catch(function (err) {
+      sel.innerHTML = '<option value="">読み込みに失敗しました</option>';
+      showMsg('チーム一覧の読み込みに失敗しました：' + err.message, false);
+    });
+}
+
+function resend() {
+  var name = document.getElementById('teamSel').value;
+  if (!name) { showMsg('チームを選択してください。', false); return; }
+  if (!confirm('「' + name + '」の代表者メールに申込リンクを再送します。よろしいですか？')) return;
+  var btn = document.getElementById('resendBtn');
+  btn.disabled = true;
+  fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'requestResend', teamName: name }) })
+    .then(function (res) { return res.text(); })
+    .then(function (text) {
+      var d;
+      try { d = JSON.parse(text); } catch (e) { throw new Error('サーバーの応答を読み取れません'); }
+      if (d.status !== 'ok') throw new Error(d.message);
+      showMsg(d.message, true);
+      btn.disabled = false;
+    })
+    .catch(function (err) {
+      showMsg('送信に失敗しました：' + err.message, false);
+      btn.disabled = false;
+    });
+}
+
+loadTeams();
+</script>
+</body>
+</html>
