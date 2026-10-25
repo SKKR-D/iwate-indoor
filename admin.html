@@ -150,6 +150,11 @@ tr.locked td{background:#f4f4f4;color:#777}
         <button class="btn btn-out" onclick="sendReminders(true)">⏰ 未申込のチームに督促メール</button>
         <button class="btn btn-out" onclick="sendReminders(false)">⏰ チェックしたチームに督促</button>
       </div>
+      <div class="row">
+        <button class="btn btn-main" id="receiptBatchBtn" onclick="receiptBatch()">🧾 領収書PDFを事前作成（申込済み全件）</button>
+        <a class="btn btn-out" href="reception.html" target="_blank">📱 当日受付サイトを開く</a>
+        <span class="muted" id="receiptInfo"></span>
+      </div>
       <div class="muted" style="margin:-4px 0 12px">メールはすべて代表者メール宛てです。同じチームの複数区分は1通にまとめます。督促メールは未申込の区分だけが対象です。「未開封」は申込リンクがまだ一度も開かれていないチームです（管理者がリンクを開いて試した場合も「開封」になります）。</div>
       <div class="row">
         <select id="statusDiv" onchange="renderStatus()"></select>
@@ -158,6 +163,8 @@ tr.locked td{background:#f4f4f4;color:#777}
           <option value="未申込">未申込のみ</option>
           <option value="申込済">申込済のみ</option>
           <option value="unopened">未開封のみ</option>
+          <option value="unreceived">未受付のみ（申込済）</option>
+          <option value="received">受付済のみ</option>
           <option value="flag">要確認のみ</option>
         </select>
       </div>
@@ -170,7 +177,7 @@ tr.locked td{background:#f4f4f4;color:#777}
     <!-- ===== 申込一覧・PDF ===== -->
     <section class="panel" id="panel-list">
       <h2>申込一覧・PDF</h2>
-      <div class="lead">区分ごとの申込内容の一覧です。「一覧PDF」は区分ごとにA4横1枚で作成します（未申込のチーム・ペアも「未申込」として載ります）。各チームの申込書PDFは表の右端から取得できます。</div>
+      <div class="lead">「領収書（印刷用）」は当日の紙の領収書用です（A5横で1チーム1ページ。A4用紙に「2ページ/枚」で印刷すると1枚に2チーム分）。区分ごとの申込内容の一覧です。「一覧PDF」は区分ごとにA4横1枚で作成します（未申込のチーム・ペアも「未申込」として載ります）。各チームの申込書PDFは表の右端から取得できます。</div>
       <div class="pdf-bar" id="listPdfBar"></div>
       <div class="row">
         <div class="seg" id="listSeg"></div>
@@ -392,14 +399,19 @@ function renderStatus() {
     list = entriesOf(code);
     done = 0; feeTotal = 0;
     var unopened = 0;
+    var received = 0;
     for (j = 0; j < list.length; j++) {
       if (list[j].state === '申込済') { done++; feeTotal += parseInt(list[j].fee, 10) || 0; }
       if (list[j].linkSentAt && !list[j].firstAccessAt) unopened++;
+      if (list[j].reception === '受付済') received++;
     }
     var unit = D.divisions[code].type === 'team' ? 'チーム' : 'チーム（' + pairsOf(code).length + 'ペア）';
-    sumHtml += '<div class="sum"><div class="lbl">' + esc(divName(code)) + '</div><div class="num">' + done + ' / ' + list.length + '</div><div class="sub">申込済 / 出場' + unit + '</div><div class="sub">参加料 ' + feeTotal.toLocaleString() + '円</div>' + (unopened ? '<div class="sub" style="color:#b33030;font-weight:700">未開封 ' + unopened + '</div>' : '') + '</div>';
+    sumHtml += '<div class="sum"><div class="lbl">' + esc(divName(code)) + '</div><div class="num">' + done + ' / ' + list.length + '</div><div class="sub">申込済 / 出場' + unit + '</div><div class="sub">参加料 ' + feeTotal.toLocaleString() + '円</div>' + (unopened ? '<div class="sub" style="color:#b33030;font-weight:700">未開封 ' + unopened + '</div>' : '') + (received ? '<div class="sub" style="font-weight:700">当日受付 ' + received + ' / ' + done + '</div>' : '') + '</div>';
   }
   document.getElementById('statusSummary').innerHTML = sumHtml;
+  var applied = 0, ready = 0, k2;
+  for (k2 = 0; k2 < D.entries.length; k2++) if (D.entries[k2].state === '申込済') { applied++; if (D.entries[k2].receiptReady) ready++; }
+  document.getElementById('receiptInfo').textContent = '領収書PDF：作成済 ' + ready + ' / 申込済 ' + applied + '（申込締切後、大会前日までに作成しておくと受付が速くなります）';
 
   var divSel = document.getElementById('statusDiv');
   if (!divSel.options.length) {
@@ -421,6 +433,8 @@ function renderStatus() {
     if (fState === 'flag' && !e.flag) continue;
     if (fState === 'unopened' && (e.firstAccessAt || e.state === '申込済')) continue;
     if ((fState === '未申込' || fState === '申込済') && e.state !== fState) continue;
+    if (fState === 'unreceived' && (e.state !== '申込済' || e.reception === '受付済')) continue;
+    if (fState === 'received' && e.reception !== '受付済') continue;
     content = '';
     if (e.state === '申込済') {
       content = '<div class="detail">' + esc(e.applicantName) + '　' + esc(e.applicantPhone) + '<br>';
@@ -432,14 +446,17 @@ function renderStatus() {
         content += e.pairCount + 'ペア';
       }
       content += '<br><span class="muted">' + esc(e.updatedAt || e.appliedAt) + '</span></div>';
-      content += '<button class="btn btn-out btn-sm" style="margin-top:4px" onclick="adminPdf(\'' + esc(e.entryId) + '\', this)">📄 申込書PDF</button>';
+      content += '<button class="btn btn-out btn-sm" style="margin-top:4px" onclick="adminPdf(\'' + esc(e.entryId) + '\', this)">📄 申込書PDF</button> ';
+      content += '<button class="btn btn-out btn-sm" style="margin-top:4px" onclick="receiptPdf(\'' + esc(e.entryId) + '\', this)">🧾 領収書' + (e.receiptNo ? ' ' + esc(e.receiptNo) : '') + '</button>';
+      if (e.reception === '受付済') content += ' <button class="btn btn-out btn-sm" style="margin-top:4px" onclick="resendReceipt(\'' + esc(e.entryId) + '\', this)">✉ 受付メール再送</button>';
       if (e.flag) content += '<div class="flag">⚠ ' + esc(e.flag) + '</div>';
     }
     html += '<tr>';
     html += '<td><input type="checkbox" class="st-check" value="' + esc(e.entryId) + '"></td>';
     html += '<td>' + esc(divName(e.div)) + '</td>';
     html += '<td><strong>' + esc(e.teamName) + '</strong>' + (e.abbr ? '<br><span class="badge b-info">組合せ：' + esc(e.abbr) + '</span>' : '') + '<br><span class="muted">' + esc(e.district) + '</span>' + (e.repEmail ? '' : '<br><span class="flag">代表者メール未登録</span>') + '</td>';
-    html += '<td><span class="badge ' + (e.state === '申込済' ? 'b-ok' : 'b-wait') + '">' + esc(e.state) + '</span></td>';
+    html += '<td><span class="badge ' + (e.state === '申込済' ? 'b-ok' : 'b-wait') + '">' + esc(e.state) + '</span>' +
+      (e.reception === '受付済' ? '<br><span class="badge b-ok" style="margin-top:4px">受付済</span><br><span class="muted">' + esc(String(e.receptionAt).slice(5, 16)) + '<br>' + esc(e.receptionStaff) + '</span>' + (e.receptionMailAt ? '' : '<br><span class="flag">領収書メール未送信</span>') : (e.state === '申込済' ? '<br><span class="badge b-info" style="margin-top:4px">未受付</span>' : '')) + '</td>';
     html += '<td>' + content + '</td>';
     html += '<td><button class="btn btn-out btn-sm" onclick="copyText(\'' + esc(entryLink(e)) + '\')">📋 コピー</button><div class="link-cell">' + esc(entryLink(e)) + '</div></td>';
     var sent = e.linkSentAt ? '<span class="badge b-ok">送信済</span><br><span class="muted">' + esc(e.linkSentAt) + '</span>' : '<span class="badge b-info">未送信</span>';
@@ -509,6 +526,83 @@ function sendReminders(allUnapplied) {
   }).catch(function (err) { toast('送信に失敗しました：' + err.message, true); });
 }
 
+function withBusy(btn, label, promise) {
+  btn.disabled = true;
+  btn.textContent = label;
+  return promise;
+}
+
+function receiptPdf(entryId, btn) {
+  var label = btn.textContent;
+  withBusy(btn, '作成中...', api({ action: 'adminReceiptPdf', entryId: entryId })).then(function (d) {
+    saveBase64(d.base64, d.name);
+    btn.disabled = false;
+    btn.textContent = label;
+    return reload();
+  }).catch(function (err) {
+    btn.disabled = false;
+    btn.textContent = label;
+    toast('領収書の作成に失敗しました：' + err.message, true);
+  });
+}
+
+function receiptPrint(code, btn) {
+  var label = btn.textContent;
+  withBusy(btn, '作成中...（件数が多いと1分ほど）', api({ action: 'adminReceiptPrint', div: code })).then(function (d) {
+    saveBase64(d.base64, d.name);
+    btn.disabled = false;
+    btn.textContent = label;
+    toast(d.count + '件の領収書を作成しました');
+  }).catch(function (err) {
+    btn.disabled = false;
+    btn.textContent = label;
+    toast('領収書の作成に失敗しました：' + err.message, true);
+  });
+}
+
+function receiptBatch() {
+  var btn = document.getElementById('receiptBatchBtn');
+  var label = btn.textContent;
+  var total = 0;
+  function step() {
+    return api({ action: 'adminReceiptBatch' }).then(function (d) {
+      total += d.done;
+      if (d.remaining > 0) {
+        btn.textContent = '作成中...（' + total + '件完了・残り' + d.remaining + '件）';
+        return step();
+      }
+      return total;
+    });
+  }
+  btn.disabled = true;
+  btn.textContent = '作成中...';
+  step().then(function (n) {
+    btn.disabled = false;
+    btn.textContent = label;
+    toast(n > 0 ? '領収書PDFを' + n + '件作成しました' : '作成が必要な領収書はありません（すべて最新）');
+    return reload();
+  }).catch(function (err) {
+    btn.disabled = false;
+    btn.textContent = label;
+    toast('作成に失敗しました：' + err.message, true);
+  });
+}
+
+function resendReceipt(entryId, btn) {
+  if (!confirm('申込責任者に受付完了メール（領収書PDF付き）を再送します。よろしいですか？')) return;
+  var label = btn.textContent;
+  withBusy(btn, '送信中...', api({ action: 'adminResendReceipt', entryId: entryId })).then(function () {
+    toast('受付完了メールを再送しました');
+    btn.disabled = false;
+    btn.textContent = label;
+    return reload();
+  }).catch(function (err) {
+    btn.disabled = false;
+    btn.textContent = label;
+    toast('再送に失敗しました：' + err.message, true);
+  });
+}
+
 function adminPdf(entryId, btn) {
   var label = btn.textContent;
   btn.disabled = true;
@@ -544,13 +638,15 @@ function renderList() {
   var i, code;
   var segHtml = '';
   var barHtml = '';
+  var barHtml2 = '';
   for (i = 0; i < D.divOrder.length; i++) {
     code = D.divOrder[i];
     segHtml += '<button class="' + (code === listDiv ? 'on' : '') + '" onclick="setListDiv(\'' + code + '\')">' + esc(divName(code)) + '</button>';
     barHtml += '<button class="btn btn-main" onclick="listPdf(\'' + code + '\', this)">📄 ' + esc(divName(code)) + ' 一覧PDF</button>';
+    barHtml2 += '<button class="btn btn-out" onclick="receiptPrint(\'' + code + '\', this)">🧾 ' + esc(divName(code)) + ' 領収書（印刷用）</button>';
   }
   document.getElementById('listSeg').innerHTML = segHtml;
-  document.getElementById('listPdfBar').innerHTML = barHtml;
+  document.getElementById('listPdfBar').innerHTML = barHtml + barHtml2;
 
   var div = D.divisions[listDiv];
   var entries = entriesOf(listDiv).sort(function (a, b) { return districtCompare(a.district, b.district) || a.teamName.localeCompare(b.teamName, 'ja'); });
