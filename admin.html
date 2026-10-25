@@ -89,6 +89,25 @@ tr.locked td{background:#f4f4f4;color:#777}
 .loading{text-align:center;padding:30px;color:var(--text-light)}
 .scroll{overflow-x:auto}
 .detail{font-size:.75rem;line-height:1.6}
+.pdf-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-bottom:16px}
+.pdf-bar .btn{width:100%}
+.list-title{font-weight:900;color:var(--main);margin:6px 0 8px}
+.list-table td{font-size:.76rem}
+.list-table td.pl{min-width:72px}
+.list-table .g{display:block;font-size:.68rem;color:var(--text-light)}
+.list-table .vac{color:#aaa}
+.list-table .off{color:var(--red);font-weight:700}
+.list-table tr.unapplied td{background:#fafaf6;color:#999}
+@media print{
+  .header,.tabs,.lead,.pdf-bar,.row,.toast,#panel-status,#panel-team,#panel-indiv,#panel-master{display:none!important}
+  body{background:#fff}
+  .main{padding:0;max-width:none}
+  #panel-list{display:block!important;box-shadow:none;padding:0}
+  #panel-list h2{display:none}
+  .list-table th{background:#1a4a2e!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .list-table .no-print{display:none}
+  @page{size:A4 landscape;margin:10mm}
+}
 </style>
 </head>
 <body>
@@ -113,6 +132,7 @@ tr.locked td{background:#f4f4f4;color:#777}
 <div id="appView" style="display:none">
   <nav class="tabs">
     <button class="tab active" data-tab="status" onclick="showTab('status')">申込状況・リンク</button>
+    <button class="tab" data-tab="list" onclick="showTab('list')">申込一覧・PDF</button>
     <button class="tab" data-tab="team" onclick="showTab('team')">団体戦 出場指定</button>
     <button class="tab" data-tab="indiv" onclick="showTab('indiv')">個人戦 ペア登録</button>
     <button class="tab" data-tab="master" onclick="showTab('master')">加盟チーム名簿</button>
@@ -142,6 +162,19 @@ tr.locked td{background:#f4f4f4;color:#777}
         <thead><tr><th><input type="checkbox" onchange="checkAllStatus(this.checked)"></th><th>区分</th><th>チーム</th><th>状態</th><th>申込内容</th><th>リンク</th><th>送信</th></tr></thead>
         <tbody id="statusBody"></tbody>
       </table></div>
+    </section>
+
+    <!-- ===== 申込一覧・PDF ===== -->
+    <section class="panel" id="panel-list">
+      <h2>申込一覧・PDF</h2>
+      <div class="lead">区分ごとの申込内容の一覧です。「一覧PDF」は区分ごとにA4横1枚で作成します（未申込のチーム・ペアも「未申込」として載ります）。各チームの申込書PDFは表の右端から取得できます。</div>
+      <div class="pdf-bar" id="listPdfBar"></div>
+      <div class="row">
+        <div class="seg" id="listSeg"></div>
+        <button class="btn btn-out btn-sm" onclick="window.print()">🖨 この一覧を印刷</button>
+      </div>
+      <div class="list-title" id="listTitle"></div>
+      <div class="scroll"><table class="list-table" id="listTable"></table></div>
     </section>
 
     <!-- ===== 団体戦 出場指定 ===== -->
@@ -292,6 +325,7 @@ function reload() {
 
 function renderAll() {
   renderStatus();
+  renderList();
   renderTeamPick();
   renderPairs();
   renderMaster();
@@ -390,12 +424,13 @@ function renderStatus() {
         content += e.pairCount + 'ペア';
       }
       content += '<br><span class="muted">' + esc(e.updatedAt || e.appliedAt) + '</span></div>';
+      content += '<button class="btn btn-out btn-sm" style="margin-top:4px" onclick="adminPdf(\'' + esc(e.entryId) + '\', this)">📄 申込書PDF</button>';
       if (e.flag) content += '<div class="flag">⚠ ' + esc(e.flag) + '</div>';
     }
     html += '<tr>';
     html += '<td><input type="checkbox" class="st-check" value="' + esc(e.entryId) + '"></td>';
     html += '<td>' + esc(divName(e.div)) + '</td>';
-    html += '<td><strong>' + esc(e.teamName) + '</strong><br><span class="muted">' + esc(e.district) + '</span>' + (e.repEmail ? '' : '<br><span class="flag">代表者メール未登録</span>') + '</td>';
+    html += '<td><strong>' + esc(e.teamName) + '</strong>' + (e.abbr ? '<br><span class="badge b-info">組合せ：' + esc(e.abbr) + '</span>' : '') + '<br><span class="muted">' + esc(e.district) + '</span>' + (e.repEmail ? '' : '<br><span class="flag">代表者メール未登録</span>') + '</td>';
     html += '<td><span class="badge ' + (e.state === '申込済' ? 'b-ok' : 'b-wait') + '">' + esc(e.state) + '</span></td>';
     html += '<td>' + content + '</td>';
     html += '<td><button class="btn btn-out btn-sm" onclick="copyText(\'' + esc(entryLink(e)) + '\')">📋 コピー</button><div class="link-cell">' + esc(entryLink(e)) + '</div></td>';
@@ -433,6 +468,127 @@ function sendLinks(onlyUnsent) {
     toast('✉ ' + r.sent + '通送信しました' + (r.skipped.length ? '（メール未登録：' + r.skipped.join('、') + '）' : ''), r.skipped.length > 0);
     return reload();
   }).catch(function (err) { toast('送信に失敗しました：' + err.message, true); });
+}
+
+function adminPdf(entryId, btn) {
+  var label = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '作成中...';
+  api({ action: 'adminPdf', entryId: entryId }).then(function (d) {
+    saveBase64(d.base64, d.name);
+    btn.disabled = false;
+    btn.textContent = label;
+  }).catch(function (err) {
+    btn.disabled = false;
+    btn.textContent = label;
+    toast('PDFの作成に失敗しました：' + err.message, true);
+  });
+}
+
+/* ========== 申込一覧・PDF ========== */
+var DISTRICT_ORDER = ['久慈', '二戸', '岩手', '盛岡', '紫波', '花巻', '和賀', '胆江', '一関', '気仙', '遠野', '釜石・大槌', '宮古'];
+function districtCompare(a, b) {
+  var ia = DISTRICT_ORDER.indexOf(a), ib = DISTRICT_ORDER.indexOf(b);
+  if (ia < 0) ia = 99;
+  if (ib < 0) ib = 99;
+  return ia - ib;
+}
+
+var listDiv = 'MT';
+
+function setListDiv(code) {
+  listDiv = code;
+  renderList();
+}
+
+function renderList() {
+  var i, code;
+  var segHtml = '';
+  var barHtml = '';
+  for (i = 0; i < D.divOrder.length; i++) {
+    code = D.divOrder[i];
+    segHtml += '<button class="' + (code === listDiv ? 'on' : '') + '" onclick="setListDiv(\'' + code + '\')">' + esc(divName(code)) + '</button>';
+    barHtml += '<button class="btn btn-main" onclick="listPdf(\'' + code + '\', this)">📄 ' + esc(divName(code)) + ' 一覧PDF</button>';
+  }
+  document.getElementById('listSeg').innerHTML = segHtml;
+  document.getElementById('listPdfBar').innerHTML = barHtml;
+
+  var div = D.divisions[listDiv];
+  var entries = entriesOf(listDiv).sort(function (a, b) { return districtCompare(a.district, b.district) || a.teamName.localeCompare(b.teamName, 'ja'); });
+  var applied = 0;
+  var fee = 0;
+  for (i = 0; i < entries.length; i++) if (entries[i].state === '申込済') { applied++; fee += parseInt(entries[i].fee, 10) || 0; }
+  var title = (D.config['大会名'] || '') + '　' + div.name + '　申込一覧（申込済 ' + applied + ' / 出場 ' + entries.length + ' チーム';
+  var html = '';
+  var e, j, p, k;
+  if (div.type === 'team') {
+    html += '<thead><tr><th>No.</th><th>地区</th><th>チーム名（略称）</th><th>監督</th>';
+    for (k = 1; k <= 8; k++) html += '<th>' + k + '</th>';
+    html += '<th>状態</th><th class="no-print">申込書</th></tr></thead><tbody>';
+    for (i = 0; i < entries.length; i++) {
+      e = entries[i];
+      html += '<tr class="' + (e.state === '申込済' ? '' : 'unapplied') + '"><td>' + (i + 1) + '</td><td>' + esc(e.district) + '</td>';
+      html += '<td><strong>' + esc(e.teamName) + '</strong>' + (e.abbr ? '<span class="g">（' + esc(e.abbr) + '）</span>' : '') + '</td>';
+      html += '<td>' + esc(e.coachName) + (e.coachTitle ? '<span class="g">' + esc(e.coachTitle) + '</span>' : '') + '</td>';
+      for (k = 0; k < 8; k++) {
+        p = e.state === '申込済' ? e.players[k] : null;
+        if (!p) html += '<td class="pl"></td>';
+        else if (p.vacant) html += '<td class="pl vac">欠員</td>';
+        else html += '<td class="pl' + (p.offRoster ? ' off' : '') + '">' + esc(p.name) + (p.offRoster ? '※' : '') + '<span class="g">' + esc(p.grade) + '</span></td>';
+      }
+      html += '<td>' + esc(e.state) + '</td>';
+      html += '<td class="no-print">' + (e.state === '申込済' ? '<button class="btn btn-out btn-sm" onclick="adminPdf(\'' + esc(e.entryId) + '\', this)">📄</button>' : '') + '</td></tr>';
+    }
+  } else {
+    var pairs = pairsOf(listDiv);
+    title += '・' + pairs.length + 'ペア';
+    var byTeam = {};
+    for (i = 0; i < entries.length; i++) byTeam[entries[i].teamName] = entries[i];
+    html += '<thead><tr><th>No.</th><th>選手A</th><th>所属</th><th>選手B</th><th>所属</th><th>監督</th><th>申込チーム（略称）</th><th>状態</th><th class="no-print">申込書</th></tr></thead><tbody>';
+    for (j = 0; j < pairs.length; j++) {
+      p = pairs[j];
+      e = byTeam[p.payer] || {};
+      html += '<tr class="' + (e.state === '申込済' ? '' : 'unapplied') + '"><td>' + (j + 1) + '</td>';
+      html += '<td><strong>' + esc(p.aName) + '</strong><span class="g">' + esc(p.aGrade) + '</span></td><td>' + esc(p.aTeam) + '</td>';
+      html += '<td><strong>' + esc(p.bName) + '</strong><span class="g">' + esc(p.bGrade) + '</span></td><td>' + esc(p.bTeam) + '</td>';
+      html += '<td>' + esc(p.coachName) + (p.coachTitle ? '<span class="g">' + esc(p.coachTitle) + '</span>' : '') + '</td>';
+      html += '<td>' + esc(p.payer) + (e.abbr ? '<span class="g">（' + esc(e.abbr) + '）</span>' : '') + (p.joint ? ' <span class="badge b-joint">合同</span>' : '') + '</td>';
+      html += '<td>' + esc(e.state || '未申込') + '</td>';
+      html += '<td class="no-print">' + (e.state === '申込済' ? '<button class="btn btn-out btn-sm" onclick="adminPdf(\'' + esc(e.entryId) + '\', this)">📄</button>' : '') + '</td></tr>';
+    }
+  }
+  html += '</tbody>';
+  title += '　参加料 ' + fee.toLocaleString() + '円）';
+  document.getElementById('listTitle').textContent = title;
+  document.getElementById('listTable').innerHTML = html;
+}
+
+function listPdf(code, btn) {
+  var label = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '作成中...';
+  api({ action: 'adminListPdf', div: code }).then(function (d) {
+    saveBase64(d.base64, d.name);
+    btn.disabled = false;
+    btn.textContent = label;
+  }).catch(function (err) {
+    btn.disabled = false;
+    btn.textContent = label;
+    toast('一覧PDFの作成に失敗しました：' + err.message, true);
+  });
+}
+
+function saveBase64(b64, name) {
+  var bin = atob(b64);
+  var arr = new Uint8Array(bin.length);
+  var i;
+  for (i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([arr], { type: 'application/pdf' }));
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.parentNode.removeChild(a); }, 1000);
 }
 
 /* ========== 団体戦 出場指定 ========== */

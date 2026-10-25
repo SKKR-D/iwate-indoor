@@ -22,6 +22,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 #qr{display:inline-block;padding:12px;background:#fff;border:2px dashed #ccc;border-radius:10px}
 #qr img,#qr canvas{display:block}
 .code{font-family:monospace;font-size:.85rem;letter-spacing:.1em;color:var(--text-light);margin-top:8px}
+.times{display:flex;justify-content:center;gap:18px;font-size:.85rem;margin:-6px 0 16px;color:var(--text)}
+.times strong{font-size:1rem}
 .fee{margin-top:16px;background:#fff8e1;border:2px solid #c8a020;border-radius:10px;padding:12px;font-weight:700}
 .fee .amount{font-size:1.5rem;font-weight:900;color:#7a5d00}
 .fee .note{font-size:.75rem;color:#7a5d00;margin-top:2px}
@@ -61,6 +63,7 @@ function render(d) {
   html += '<div class="t-body">';
   html += '<div class="team">' + esc(d.teamName) + '</div>';
   html += '<div class="meta">' + esc(d.date) + '<br>' + esc(d.venue) + (d.pairCount ? '<br>出場 ' + d.pairCount + 'ペア' : '') + '</div>';
+  if (d.openTime || d.receptionTime) html += '<div class="times"><span>開場 <strong>' + esc(d.openTime) + '</strong></span><span>受付 <strong>' + esc(d.receptionTime) + '</strong></span></div>';
   html += '<div id="qr"></div>';
   html += '<div class="code">' + esc(d.receptionCode) + '</div>';
   if (d.reception) {

@@ -73,6 +73,7 @@ input:focus,select:focus{border-color:var(--green)}
 .modal-btns{display:flex;gap:10px;margin-top:16px}
 .modal-btns .btn{flex:1;padding:12px}
 .loading{text-align:center;padding:60px 20px;color:var(--text-light)}
+.ro{background:#f7f7f7;color:#333}
 .footer{text-align:center;padding:24px;font-size:.72rem;color:var(--text-light)}
 .locked input,.locked select,.locked label.vacancy{pointer-events:none;background:#f4f4f4}
 </style>
@@ -98,8 +99,18 @@ input:focus,select:focus{border-color:var(--green)}
       <table class="info-table">
         <tr><th>区分</th><td id="infoDiv"></td></tr>
         <tr><th>期日・会場</th><td id="infoDate"></td></tr>
-        <tr><th>チーム名</th><td id="infoTeam"></td></tr>
       </table>
+      <div class="grid-2" style="margin-top:14px">
+        <div class="form-row">
+          <label>チーム名</label>
+          <input type="text" id="infoTeam" readonly class="ro">
+        </div>
+        <div class="form-row">
+          <label>組合せ表記（略称）<span class="req">※必須</span></label>
+          <input type="text" id="teamAbbr" required maxlength="6" placeholder="例：水沢南中">
+          <div class="hint" id="abbrHint">組合せ表・進行表に表示する名前です（6文字以内）</div>
+        </div>
+      </div>
     </div>
 
     <div class="card">
@@ -339,9 +350,13 @@ function validate() {
     count++;
   }
   if (count < MIN_PLAYERS) { alert('選手は最低' + MIN_PLAYERS + '名必要です。'); return null; }
+  var abbrVal = document.getElementById('teamAbbr').value.replace(/[\s　]/g, '');
+  if (!abbrVal) { alert('組合せ表記（略称）を入力してください。'); return null; }
+  if (abbrVal.length > E.abbrMax) { alert('組合せ表記（略称）は' + E.abbrMax + '文字以内で入力してください。'); return null; }
   return {
     coachName: document.getElementById('coachName').value.trim(),
     coachTitle: document.getElementById('coachTitle').value,
+    teamAbbr: document.getElementById('teamAbbr').value.replace(/[\s　]/g, ''),
     applicantName: document.getElementById('applicantName').value.trim(),
     applicantTitle: document.getElementById('applicantTitle').value,
     applicantPhone: document.getElementById('applicantPhone').value.trim(),
@@ -356,6 +371,7 @@ function showConfirm() {
   var html = '<table class="modal-table">';
   html += '<tr><th>区分</th><td>' + esc(E.division.name) + '</td></tr>';
   html += '<tr><th>チーム名</th><td>' + esc(E.teamName) + '</td></tr>';
+  html += '<tr><th>組合せ表記</th><td>' + esc(d.teamAbbr) + '</td></tr>';
   html += '<tr><th>監督</th><td>' + esc(d.coachName) + '（' + esc(d.coachTitle) + '）</td></tr>';
   html += '</table><table class="modal-table">';
   var i, p, count = 0;
@@ -394,8 +410,8 @@ function doSubmit() {
       if (data.status !== 'ok') throw new Error(data.message || 'エラーが発生しました');
       msg.className = 'status-msg success';
       var html = (data.isNew ? '申込を受け付けました。' : '申込内容を修正しました。') + '<br>';
-      html += data.mailError ? '<span style="color:#b33030">控えのメール送信に失敗しました（' + esc(data.mailError) + '）。申込は完了しています。</span>' : '申込内容の控えと受付票のリンクを ' + esc(d.applicantEmail) + ' に送信しました。';
-      html += '<div class="nav-btns"><a class="btn btn-green" href="ticket.html?t=' + encodeURIComponent(token) + '">当日受付票を見る</a><button type="button" class="btn btn-out" onclick="location.reload()">申込内容を確認する</button></div>';
+      html += data.mailError ? '<span style="color:#b33030">控えのメール送信に失敗しました（' + esc(data.mailError) + '）。申込は完了しています。</span>' : '申込内容の控え（申込書PDF付き）と受付票のリンクを ' + esc(d.applicantEmail) + ' に送信しました。';
+      html += '<div class="nav-btns"><a class="btn btn-green" href="ticket.html?t=' + encodeURIComponent(token) + '">当日受付票を見る</a><button type="button" class="btn btn-out" onclick="downloadPdf(this)">📄 申込書PDF</button><button type="button" class="btn btn-out" onclick="location.reload()">申込内容を確認する</button></div>';
       msg.innerHTML = html;
       btn.style.display = 'none';
     })
@@ -404,6 +420,42 @@ function doSubmit() {
       msg.textContent = '送信に失敗しました：' + err.message;
       btn.disabled = false;
     });
+}
+
+/* ========== 申込書PDF ========== */
+function downloadPdf(btn) {
+  var label = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '作成中...';
+  fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'getPdf', t: token }) })
+    .then(function (res) { return res.text(); })
+    .then(function (text) {
+      var d;
+      try { d = JSON.parse(text); } catch (e) { throw new Error('サーバーの応答を読み取れません: ' + text.substring(0, 100)); }
+      if (d.status !== 'ok') throw new Error(d.message || 'エラーが発生しました');
+      saveBase64Pdf(d.base64, d.name);
+      btn.disabled = false;
+      btn.textContent = label;
+    })
+    .catch(function (err) {
+      alert('申込書PDFの作成に失敗しました：' + err.message);
+      btn.disabled = false;
+      btn.textContent = label;
+    });
+}
+
+function saveBase64Pdf(b64, name) {
+  var bin = atob(b64);
+  var arr = new Uint8Array(bin.length);
+  var i;
+  for (i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  var blob = new Blob([arr], { type: 'application/pdf' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.parentNode.removeChild(a); }, 1000);
 }
 
 /* ========== 初期化 ========== */
@@ -431,7 +483,11 @@ function render() {
   document.title = E.division.name + ' 参加申込｜' + E.tournament;
   document.getElementById('infoDiv').textContent = E.division.name;
   document.getElementById('infoDate').textContent = E.date + '　' + E.venue;
-  document.getElementById('infoTeam').textContent = E.teamName;
+  document.getElementById('infoTeam').value = E.teamName;
+  var abbrEl = document.getElementById('teamAbbr');
+  abbrEl.maxLength = E.abbrMax;
+  abbrEl.value = (E.saved && E.saved.abbr) || E.abbr || E.abbrSuggest || '';
+  document.getElementById('abbrHint').textContent = '組合せ表・進行表に表示する名前です（' + E.abbrMax + '文字以内）。例：水沢南中、紫波一中';
   document.getElementById('feeDisplay').textContent = E.fee.toLocaleString() + '円';
   fillTitles('coachTitle');
   fillTitles('applicantTitle');
@@ -459,7 +515,7 @@ function render() {
     lockForm('申込期間外です');
   } else if (E.saved) {
     banner.className = 'banner ok';
-    banner.innerHTML = '✅ 申込済みです（最終更新 ' + esc(E.saved.updatedAt) + '）。<br>締切（' + esc(p.end) + '）までは、内容を修正して再送信できます。<div class="nav-btns"><a class="btn btn-green" href="ticket.html?t=' + encodeURIComponent(token) + '">当日受付票を見る</a></div>';
+    banner.innerHTML = '✅ 申込済みです（最終更新 ' + esc(E.saved.updatedAt) + '）。<br>締切（' + esc(p.end) + '）までは、内容を修正して再送信できます。<div class="nav-btns"><a class="btn btn-green" href="ticket.html?t=' + encodeURIComponent(token) + '">当日受付票を見る</a><button type="button" class="btn btn-out" onclick="downloadPdf(this)">📄 申込書PDF</button></div>';
     document.getElementById('submitBtn').textContent = '修正内容を確認する';
   } else {
     banner.className = 'banner wait';
