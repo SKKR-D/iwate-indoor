@@ -63,7 +63,7 @@ select:focus{border-color:var(--main);outline:none}
 
   <div class="card">
     <h2>参加申込の方法</h2>
-    <p class="lead">本大会は<strong>強化スタッフが選考したチーム・ペアのみ</strong>出場できます。出場チームには、団体登録システムに登録された<strong>代表者メールアドレス</strong>へ、チーム専用の申込リンクをお送りしています。</p>
+    <p class="lead">本大会は<strong>強化スタッフが選考したチーム・ペアのみ</strong>出場できます。出場チームには、団体登録システムに登録された<strong>代表者メールアドレス</strong>へ、チーム専用の申込リンクをお送りします。</p>
     <ol class="steps" style="margin-top:12px">
       <li>連盟から届いたメールの申込リンクを開く</li>
       <li>監督（ベンチ入り指導者）・選手・申込責任者を入力して送信する</li>
@@ -72,12 +72,9 @@ select:focus{border-color:var(--main);outline:none}
   </div>
 
   <div class="card">
-    <h2>申込リンクが見当たらない場合</h2>
-    <p class="lead">チームを選んで送信すると、そのチームの代表者メールアドレスに申込リンクを再送します。</p>
-    <select id="teamSel"><option value="">読み込み中...</option></select>
-    <button class="btn btn-main" id="resendBtn" onclick="resend()" disabled>代表者メールに申込リンクを再送する</button>
-    <div class="msg" id="msg"></div>
-    <p class="note">・再送先は団体登録システムに登録された代表者メールアドレスのみです。<br>・同じチームの再送は5分に1回までです。<br>・代表者メールが変わった場合や届かない場合は、下記の問合せ先へご連絡ください。</p>
+    <h2>申込リンクが届いていない場合</h2>
+    <p class="lead">申込リンクは、<strong>申込開始（11月11日）まで</strong>に出場チームの代表者メールアドレスへお送りします。届いていない場合や、代表者メールアドレスが変わった場合は、下記の問合せ先へご連絡ください。連盟から改めてお送りします。</p>
+    <p class="note">・迷惑メールフォルダに入っていないかもご確認ください。<br>・申込リンクはチーム専用です。他チームへの転送はご遠慮ください。</p>
   </div>
 </main>
 
@@ -87,75 +84,5 @@ select:focus{border-color:var(--main);outline:none}
   &copy; 岩手県中学生ソフトテニス連盟
 </footer>
 
-<script>
-/* ★ GASをデプロイしたらURLを貼り付ける */
-var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
-
-function esc(s) {
-  if (s === undefined || s === null) return '';
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-}
-
-function showMsg(text, ok) {
-  var m = document.getElementById('msg');
-  m.className = 'msg ' + (ok ? 'ok' : 'ng');
-  m.textContent = text;
-}
-
-function loadTeams() {
-  var sel = document.getElementById('teamSel');
-  if (GAS_URL.indexOf('http') !== 0) { sel.innerHTML = '<option value="">準備中です</option>'; return; }
-  fetch(GAS_URL + '?action=portalTeams')
-    .then(function (res) { return res.text(); })
-    .then(function (text) {
-      var d;
-      try { d = JSON.parse(text); } catch (e) { throw new Error('サーバーの応答を読み取れません'); }
-      if (d.status !== 'ok') throw new Error(d.message);
-      var html = '<option value="">チームを選択してください</option>';
-      var lastDistrict = null;
-      var i, t;
-      for (i = 0; i < d.teams.length; i++) {
-        t = d.teams[i];
-        if (t.district !== lastDistrict) {
-          if (lastDistrict !== null) html += '</optgroup>';
-          html += '<optgroup label="' + esc(t.district || '地区未設定') + '">';
-          lastDistrict = t.district;
-        }
-        html += '<option value="' + esc(t.name) + '">' + esc(t.name) + '</option>';
-      }
-      if (lastDistrict !== null) html += '</optgroup>';
-      sel.innerHTML = html;
-      document.getElementById('resendBtn').disabled = false;
-      if (d.tournament) document.getElementById('tourName').textContent = d.tournament;
-    })
-    .catch(function (err) {
-      sel.innerHTML = '<option value="">読み込みに失敗しました</option>';
-      showMsg('チーム一覧の読み込みに失敗しました：' + err.message, false);
-    });
-}
-
-function resend() {
-  var name = document.getElementById('teamSel').value;
-  if (!name) { showMsg('チームを選択してください。', false); return; }
-  if (!confirm('「' + name + '」の代表者メールに申込リンクを再送します。よろしいですか？')) return;
-  var btn = document.getElementById('resendBtn');
-  btn.disabled = true;
-  fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'requestResend', teamName: name }) })
-    .then(function (res) { return res.text(); })
-    .then(function (text) {
-      var d;
-      try { d = JSON.parse(text); } catch (e) { throw new Error('サーバーの応答を読み取れません'); }
-      if (d.status !== 'ok') throw new Error(d.message);
-      showMsg(d.message, true);
-      btn.disabled = false;
-    })
-    .catch(function (err) {
-      showMsg('送信に失敗しました：' + err.message, false);
-      btn.disabled = false;
-    });
-}
-
-loadTeams();
-</script>
 </body>
 </html>
