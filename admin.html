@@ -89,6 +89,15 @@ tr.locked td{background:#f4f4f4;color:#777}
 .loading{text-align:center;padding:30px;color:var(--text-light)}
 .scroll{overflow-x:auto}
 .detail{font-size:.75rem;line-height:1.6}
+.chg-box{border:2px solid var(--main);border-radius:var(--radius);padding:14px;margin-bottom:16px;background:#f7faf8}
+.chg-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:12px}
+.chg-slot{border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff;cursor:pointer;font-size:.82rem}
+.chg-slot.on{border-color:var(--main);box-shadow:0 0 0 2px var(--main) inset}
+.chg-slot .no{font-weight:900;color:var(--main);font-size:.75rem}
+.chg-slot .nm{font-weight:700}
+.chg-slot .was{font-size:.68rem;color:var(--red)}
+.chg-fields{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chg-fields select,.chg-fields input{min-width:160px}
 .pdf-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-bottom:16px}
 .pdf-bar .btn{width:100%}
 .list-title{font-weight:900;color:var(--main);margin:6px 0 8px}
@@ -133,6 +142,7 @@ tr.locked td{background:#f4f4f4;color:#777}
   <nav class="tabs">
     <button class="tab active" data-tab="status" onclick="showTab('status')">申込状況・リンク</button>
     <button class="tab" data-tab="list" onclick="showTab('list')">申込一覧・PDF</button>
+    <button class="tab" data-tab="change" onclick="showTab('change')">選手変更</button>
     <button class="tab" data-tab="team" onclick="showTab('team')">団体戦 出場指定</button>
     <button class="tab" data-tab="indiv" onclick="showTab('indiv')">個人戦 ペア登録</button>
     <button class="tab" data-tab="master" onclick="showTab('master')">加盟チーム名簿</button>
@@ -185,6 +195,22 @@ tr.locked td{background:#f4f4f4;color:#777}
       </div>
       <div class="list-title" id="listTitle"></div>
       <div class="scroll"><table class="list-table" id="listTable"></table></div>
+    </section>
+
+    <!-- ===== 選手変更 ===== -->
+    <section class="panel" id="panel-change">
+      <h2>選手変更（本部入力）</h2>
+      <div class="lead">選手変更届（紙）を受け取ったら、ここで差し替えます（要項11(3)：個人戦は1ペア1名のみ、団体戦はやむを得ない場合）。変更は申込一覧・PDF・今後のオーダー画面やスコアシートに反映されます。当日の欠員は団体戦の「欠員にする」で入力します（6名未満のチームは3ペア目が不戦敗）。</div>
+      <div class="row">
+        <div class="seg" id="chgSeg"></div>
+        <select id="chgTarget" onchange="renderChangeForm()" style="min-width:260px"></select>
+      </div>
+      <div id="chgForm"></div>
+      <h3>変更履歴</h3>
+      <div class="scroll"><table>
+        <thead><tr><th>日時</th><th>区分</th><th>チーム</th><th>対象</th><th>変更前</th><th>変更後</th><th>理由</th></tr></thead>
+        <tbody id="chgLog"></tbody>
+      </table></div>
     </section>
 
     <!-- ===== 団体戦 出場指定 ===== -->
@@ -336,6 +362,7 @@ function reload() {
 function renderAll() {
   renderStatus();
   renderList();
+  renderChange();
   renderTeamPick();
   renderPairs();
   renderMaster();
@@ -669,7 +696,7 @@ function renderList() {
         p = e.state === '申込済' ? e.players[k] : null;
         if (!p) html += '<td class="pl"></td>';
         else if (p.vacant) html += '<td class="pl vac">欠員</td>';
-        else html += '<td class="pl' + (p.offRoster ? ' off' : '') + '">' + esc(p.name) + (p.offRoster ? '※' : '') + '<span class="g">' + esc(p.grade) + '</span></td>';
+        else html += '<td class="pl' + (p.offRoster ? ' off' : '') + '">' + esc(p.name) + (p.offRoster ? '※' : '') + '<span class="g">' + esc(p.grade) + (p.changedFrom ? '　変更' : '') + '</span></td>';
       }
       html += '<td>' + esc(e.state) + '</td>';
       html += '<td class="no-print">' + (e.state === '申込済' ? '<button class="btn btn-out btn-sm" onclick="adminPdf(\'' + esc(e.entryId) + '\', this)">📄</button>' : '') + '</td></tr>';
@@ -724,6 +751,167 @@ function saveBase64(b64, name) {
   document.body.appendChild(a);
   a.click();
   setTimeout(function () { URL.revokeObjectURL(a.href); a.parentNode.removeChild(a); }, 1000);
+}
+
+/* ========== 選手変更 ========== */
+var chgDiv = 'MT';
+var chgSlot = '';
+
+function setChgDiv(code) {
+  chgDiv = code;
+  chgSlot = '';
+  renderChange();
+}
+
+function renderChange() {
+  var i, code, html = '';
+  for (i = 0; i < D.divOrder.length; i++) {
+    code = D.divOrder[i];
+    html += '<button class="' + (code === chgDiv ? 'on' : '') + '" onclick="setChgDiv(\'' + code + '\')">' + esc(divName(code)) + '</button>';
+  }
+  document.getElementById('chgSeg').innerHTML = html;
+  var sel = document.getElementById('chgTarget');
+  var keep = sel.value;
+  var opts = '<option value="">' + (D.divisions[chgDiv].type === 'team' ? 'チームを選択' : 'ペアを選択') + '</option>';
+  if (D.divisions[chgDiv].type === 'team') {
+    var es = entriesOf(chgDiv).filter(function (e) { return e.state === '申込済'; })
+      .sort(function (a, b) { return districtCompare(a.district, b.district) || a.teamName.localeCompare(b.teamName, 'ja'); });
+    for (i = 0; i < es.length; i++) opts += '<option value="' + esc(es[i].entryId) + '">' + esc(es[i].district + '｜' + es[i].teamName) + '</option>';
+  } else {
+    var ps = pairsOf(chgDiv);
+    for (i = 0; i < ps.length; i++) opts += '<option value="' + esc(ps[i].pairId) + '">' + esc((i + 1) + '｜' + ps[i].label) + (ps[i].change ? '（変更済）' : '') + '</option>';
+  }
+  sel.innerHTML = opts;
+  sel.value = keep;
+  if (sel.value !== keep) sel.value = '';
+  renderChangeForm();
+  var log = '';
+  for (i = 0; i < D.changes.length; i++) {
+    var c = D.changes[i];
+    log += '<tr><td style="white-space:nowrap">' + esc(String(c.at).slice(5, 16)) + '</td><td>' + esc(c.div) + '</td><td>' + esc(c.team) + '</td><td>' + esc(c.target) + '</td><td>' + esc(c.from) + '</td><td>' + esc(c.to) + (c.offRoster ? ' <span class="flag">名簿外</span>' : '') + '</td><td>' + esc(c.reason) + '</td></tr>';
+  }
+  document.getElementById('chgLog').innerHTML = log || '<tr><td colspan="7" class="loading">選手変更はまだありません</td></tr>';
+}
+
+function rosterOptions(teamName, exclude) {
+  var team = findTeam(teamName);
+  var gender = D.divisions[chgDiv].gender;
+  var html = '<option value="">交代する選手を選択</option>';
+  var i, p;
+  if (team) {
+    for (i = 0; i < team.players.length; i++) {
+      p = team.players[i];
+      if (p.gender && p.gender !== gender) continue;
+      var used = exclude.indexOf(p.name.replace(/[\s　]/g, '')) >= 0;
+      html += '<option value="' + esc(p.name) + '" data-grade="' + esc(p.grade) + '"' + (used ? ' disabled' : '') + '>' + esc(p.name) + '（' + esc(p.grade) + '）' + (used ? '　出場中' : '') + '</option>';
+    }
+  }
+  html += '<option value="__manual">（名簿にない選手を手入力・要確認）</option>';
+  return html;
+}
+
+function renderChangeForm() {
+  var id = document.getElementById('chgTarget').value;
+  var box = document.getElementById('chgForm');
+  if (!id) { box.innerHTML = ''; return; }
+  var html = '<div class="chg-box">';
+  var i, ex = [];
+  if (D.divisions[chgDiv].type === 'team') {
+    var e = null;
+    for (i = 0; i < D.entries.length; i++) if (D.entries[i].entryId === id) e = D.entries[i];
+    if (!e) { box.innerHTML = ''; return; }
+    var count = 0;
+    html += '<div class="muted" style="margin-bottom:8px">変更する番号を選んでください。</div><div class="chg-slots">';
+    for (i = 0; i < 8; i++) {
+      var p = e.players[i] || { vacant: true };
+      if (!p.vacant) { count++; ex.push(String(p.name).replace(/[\s　]/g, '')); }
+      html += '<div class="chg-slot' + (String(i + 1) === chgSlot ? ' on' : '') + '" onclick="pickSlot(\'' + (i + 1) + '\')"><div class="no">No.' + (i + 1) + '</div><div class="nm">' + (p.vacant ? '<span style="color:#aaa">欠員</span>' : esc(p.name) + '（' + esc(p.grade) + '）' + (p.offRoster ? '<span class="flag">※</span>' : '')) + '</div>' + (p.changedFrom ? '<div class="was">変更前：' + esc(p.changedFrom) + '</div>' : '') + '</div>';
+    }
+    html += '</div><div class="muted" style="margin-bottom:8px">現在 ' + count + '名' + (count < 6 ? '（6名未満のため3ペア目は不戦敗）' : '') + '</div>';
+    if (chgSlot) {
+      html += '<div class="chg-fields"><strong>No.' + chgSlot + ' を</strong>';
+      html += '<select id="chgName" onchange="onChgName()">' + rosterOptions(e.teamName, ex) + '</select>';
+      html += '<input type="text" id="chgManual" placeholder="氏名" style="display:none">';
+      html += '<select id="chgGrade"><option value="">学年</option><option>1年</option><option>2年</option><option>3年</option></select>';
+      html += '<input type="text" id="chgReason" placeholder="理由（例：けが）">';
+      html += '<button class="btn btn-main" onclick="doTeamChange(\'' + esc(e.entryId) + '\', false)">この選手に変更</button>';
+      html += '<button class="btn btn-red" onclick="doTeamChange(\'' + esc(e.entryId) + '\', true)">欠員にする</button></div>';
+    }
+  } else {
+    var pr = null;
+    for (i = 0; i < D.pairs.length; i++) if (D.pairs[i].pairId === id) pr = D.pairs[i];
+    if (!pr) { box.innerHTML = ''; return; }
+    for (i = 0; i < D.pairs.length; i++) {
+      if (D.pairs[i].div !== chgDiv) continue;
+      ex.push(String(D.pairs[i].aName).replace(/[\s　]/g, ''));
+      ex.push(String(D.pairs[i].bName).replace(/[\s　]/g, ''));
+    }
+    var locked = pr.change ? pr.change.side : '';
+    html += '<div class="muted" style="margin-bottom:8px">交代する選手（A・B）を選んでください。交代は抜ける選手と同じチームの選手から選びます（1ペア1名まで）。</div><div class="chg-slots">';
+    var sides = ['A', 'B'];
+    for (i = 0; i < 2; i++) {
+      var sd = sides[i];
+      var nm = sd === 'A' ? pr.aName : pr.bName, gr = sd === 'A' ? pr.aGrade : pr.bGrade, tm = sd === 'A' ? pr.aTeam : pr.bTeam;
+      var dis = locked && locked !== sd;
+      html += '<div class="chg-slot' + (chgSlot === sd ? ' on' : '') + '" style="' + (dis ? 'opacity:.45;cursor:not-allowed' : '') + '" onclick="' + (dis ? '' : 'pickSlot(\'' + sd + '\')') + '"><div class="no">選手' + sd + '</div><div class="nm">' + esc(nm) + '（' + esc(gr) + '）</div><div class="muted">' + esc(tm) + '</div>' + (locked === sd ? '<div class="was">変更前：' + esc(pr.change.from) + '</div>' : '') + (dis ? '<div class="was">変更不可（1名のみ）</div>' : '') + '</div>';
+    }
+    html += '</div>';
+    if (chgSlot === 'A' || chgSlot === 'B') {
+      var team = chgSlot === 'A' ? pr.aTeam : pr.bTeam;
+      html += '<div class="chg-fields"><strong>選手' + chgSlot + '（' + esc(team) + '）を</strong>';
+      html += '<select id="chgName" onchange="onChgName()">' + rosterOptions(team, ex) + '</select>';
+      html += '<input type="text" id="chgManual" placeholder="氏名" style="display:none">';
+      html += '<select id="chgGrade"><option value="">学年</option><option>1年</option><option>2年</option><option>3年</option></select>';
+      html += '<input type="text" id="chgReason" placeholder="理由（例：体調不良）">';
+      html += '<button class="btn btn-main" onclick="doPairChange(\'' + esc(pr.pairId) + '\')">この選手に変更</button></div>';
+    }
+  }
+  html += '</div>';
+  box.innerHTML = html;
+}
+
+function pickSlot(v) {
+  chgSlot = v;
+  renderChangeForm();
+}
+
+function onChgName() {
+  var sel = document.getElementById('chgName');
+  var manual = sel.value === '__manual';
+  document.getElementById('chgManual').style.display = manual ? 'inline-block' : 'none';
+  var opt = sel.options[sel.selectedIndex];
+  document.getElementById('chgGrade').value = (!manual && opt) ? (opt.getAttribute('data-grade') || '') : '';
+}
+
+function chgValues() {
+  var sel = document.getElementById('chgName').value;
+  return {
+    name: sel === '__manual' ? document.getElementById('chgManual').value.trim() : sel,
+    grade: document.getElementById('chgGrade').value,
+    reason: document.getElementById('chgReason').value.trim()
+  };
+}
+
+function doTeamChange(entryId, vacant) {
+  var v = vacant ? { reason: document.getElementById('chgReason').value.trim() } : chgValues();
+  if (!vacant && (!v.name || !v.grade)) { toast('交代する選手と学年を選んでください', true); return; }
+  if (!confirm('No.' + chgSlot + ' を' + (vacant ? '欠員に' : '「' + v.name + '」に') + '変更します。よろしいですか？')) return;
+  api({ action: 'adminChangeTeamPlayer', entryId: entryId, slot: chgSlot, mode: vacant ? 'vacant' : 'replace', name: v.name, grade: v.grade, reason: v.reason }).then(function (r) {
+    toast('変更しました（現在' + r.count + '名）' + (r.count < 6 ? '：3ペア目は不戦敗になります' : ''), r.count < 4);
+    chgSlot = '';
+    return reload();
+  }).catch(function (err) { toast('変更できません：' + err.message, true); });
+}
+
+function doPairChange(pairId) {
+  var v = chgValues();
+  if (!v.name || !v.grade) { toast('交代する選手と学年を選んでください', true); return; }
+  if (!confirm('選手' + chgSlot + ' を「' + v.name + '」に変更します。\n（個人戦の選手変更は1ペア1名のみ）\nよろしいですか？')) return;
+  api({ action: 'adminChangePairPlayer', pairId: pairId, side: chgSlot, name: v.name, grade: v.grade, reason: v.reason }).then(function () {
+    toast('変更しました');
+    chgSlot = '';
+    return reload();
+  }).catch(function (err) { toast('変更できません：' + err.message, true); });
 }
 
 /* ========== 団体戦 出場指定 ========== */
