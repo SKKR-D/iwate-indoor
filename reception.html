@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="robots" content="noindex">
+<title>当日受付｜県インドア大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --main:#1a4a2e;--main-light:#e8f1eb;--gold:#c8a020;--red:#b33030;--white:#fff;--gray:#f5f5f0;
+  --text:#222;--text-light:#666;--radius:12px;--ok:#155724;--ok-bg:#d4edda
+}
+html{font-size:16px}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--text);min-height:100vh;-webkit-tap-highlight-color:transparent}
+.header{background:linear-gradient(135deg,#123522,var(--main));color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.header-inner{max-width:720px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.header h1{font-size:1rem;font-weight:900}
+.header h1 small{display:block;font-size:.68rem;font-weight:500;opacity:.85}
+.hbtn{background:rgba(255,255,255,.16);color:#fff;border:none;padding:8px 12px;border-radius:8px;font-size:.78rem;font-family:inherit;cursor:pointer}
+.main{max-width:720px;margin:0 auto;padding:14px}
+.card{background:#fff;border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.card h2{font-size:.9rem;font-weight:900;color:var(--main);margin-bottom:10px}
+input,select{width:100%;padding:12px;border:2px solid #ddd;border-radius:10px;font-size:1rem;font-family:inherit;outline:none;background:#fff}
+input:focus{border-color:var(--main)}
+label{display:block;font-size:.8rem;font-weight:700;color:var(--text-light);margin:10px 0 4px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:14px;border-radius:var(--radius);font-size:1rem;font-weight:900;border:none;cursor:pointer;font-family:inherit}
+.btn:disabled{opacity:.5}
+.btn-main{background:var(--main);color:#fff}
+.btn-out{background:#fff;color:var(--main);border:2px solid var(--main)}
+.btn-pay{background:#c8a020;color:#2b2300;font-size:1.15rem;padding:18px}
+.btn-red{background:#fff;color:var(--red);border:2px solid var(--red)}
+.err{color:var(--red);font-size:.85rem;font-weight:700;margin-top:10px;white-space:pre-wrap}
+.divs{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.divs button{padding:12px 6px;border-radius:10px;border:2px solid var(--main);background:#fff;color:var(--main);font-family:inherit;font-weight:900;font-size:.92rem;cursor:pointer}
+.divs button.on{background:var(--main);color:#fff}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.stat{background:var(--main-light);border-radius:10px;padding:10px;text-align:center}
+.stat .n{font-size:1.4rem;font-weight:900;color:var(--main)}
+.stat .l{font-size:.7rem;color:var(--text-light)}
+#reader{width:100%;border-radius:10px;overflow:hidden;background:#111;min-height:0}
+#reader video{border-radius:10px}
+.scan-hint{font-size:.8rem;color:var(--text-light);margin-top:8px;text-align:center}
+.search{margin-bottom:10px}
+.item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 10px;border-bottom:1px solid #eee;cursor:pointer}
+.item:active{background:#f3f7f4}
+.item .nm{font-weight:900;font-size:.95rem}
+.item .mt{font-size:.72rem;color:var(--text-light)}
+.badge{display:inline-block;padding:4px 10px;border-radius:14px;font-size:.75rem;font-weight:900;white-space:nowrap}
+.b-ok{background:var(--ok-bg);color:var(--ok)}
+.b-wait{background:#fff3cd;color:#856404}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;padding:14px;overflow-y:auto}
+.overlay.show{display:block}
+.sheet{max-width:560px;margin:10px auto;background:#fff;border-radius:16px;overflow:hidden}
+.sheet-head{background:var(--main);color:#fff;padding:12px 16px}
+.sheet-head .dv{display:inline-block;background:#f3d36b;color:#3a2e00;font-weight:900;font-size:.8rem;padding:3px 10px;border-radius:12px}
+.sheet-head .tm{font-size:1.5rem;font-weight:900;margin-top:6px;line-height:1.3}
+.sheet-head .ab{font-size:.8rem;opacity:.85}
+.sheet-body{padding:16px}
+.amount{text-align:center;background:#fff8e1;border:3px solid var(--gold);border-radius:14px;padding:12px;margin-bottom:12px}
+.amount .l{font-size:.85rem;font-weight:700;color:#7a5d00}
+.amount .v{font-size:2.6rem;font-weight:900;color:#3a2e00;line-height:1.2}
+.members{font-size:.8rem;color:var(--text-light);line-height:1.7;margin-bottom:12px;max-height:140px;overflow-y:auto}
+.alert{border-radius:10px;padding:12px;font-weight:900;font-size:.9rem;margin-bottom:12px;line-height:1.5}
+.alert.warn{background:#fff3cd;color:#7a5d00;border:2px solid #f0d77b}
+.alert.ng{background:#f8d7da;color:#721c24;border:2px solid #e6a5ab}
+.alert.ok{background:var(--ok-bg);color:var(--ok);border:2px solid #9fd3ab;font-size:1.05rem;text-align:center}
+.stack{display:grid;gap:10px}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 18px;border-radius:10px;font-size:.88rem;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none;max-width:92vw;text-align:center}
+.toast.show{opacity:1}
+.toast.error{background:var(--red)}
+.loading{text-align:center;padding:20px;color:var(--text-light);font-size:.85rem}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <h1><small id="hdTour">県インドア大会</small>当日受付</h1>
+    <div style="display:flex;gap:6px">
+      <button class="hbtn" id="refreshBtn" onclick="loadList()" style="display:none">↻</button>
+      <button class="hbtn" id="logoutBtn" onclick="logout()" style="display:none">ログアウト</button>
+    </div>
+  </div>
+</header>
+
+<main class="main">
+  <!-- ログイン -->
+  <div class="card" id="loginView">
+    <h2>受付係ログイン</h2>
+    <label>受付パスワード</label>
+    <input type="password" id="pwInput" autocomplete="current-password">
+    <label>担当者名（記録用）</label>
+    <input type="text" id="staffInput" placeholder="例：受付A、坂倉">
+    <div style="margin-top:14px"><button class="btn btn-main" onclick="login()">ログイン</button></div>
+    <div class="err" id="loginErr"></div>
+  </div>
+
+  <div id="appView" style="display:none">
+    <div class="card">
+      <h2>受付する区分</h2>
+      <div class="divs" id="divBtns"></div>
+      <div class="stats">
+        <div class="stat"><div class="n" id="stCount">-</div><div class="l">受付済 / 申込済</div></div>
+        <div class="stat"><div class="n" id="stCash">-</div><div class="l">受領額 / 予定額</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>二次元コードを読み取る</h2>
+      <div id="reader"></div>
+      <div style="margin-top:10px"><button class="btn btn-main" id="scanBtn" onclick="toggleScan()">📷 読み取りを開始</button></div>
+      <div class="scan-hint" id="scanHint">受付票の二次元コードをカメラに向けてください。</div>
+    </div>
+
+    <div class="card">
+      <h2>チーム名で探す（受付票がない場合）</h2>
+      <input type="search" class="search" id="searchInput" placeholder="チーム名・略称・地区" oninput="renderList()">
+      <div id="listArea"><div class="loading">読み込み中...</div></div>
+    </div>
+  </div>
+</main>
+
+<!-- 読み取り結果 -->
+<div class="overlay" id="overlay">
+  <div class="sheet">
+    <div class="sheet-head">
+      <span class="dv" id="rDiv"></span>
+      <div class="tm" id="rTeam"></div>
+      <div class="ab" id="rSub"></div>
+    </div>
+    <div class="sheet-body" id="rBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ★ GASのウェブアプリURL */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
+
+var QR_LIBS = [
+  'https://cdn.jsdelivr.net/npm/html5-qrcode@2.3.8/html5-qrcode.min.js',
+  'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js'
+];
+
+var pw = '';
+var staff = '';
+var INFO = null;
+var curDiv = '';
+var LIST = [];
+var current = null;
+var scanner = null;
+var scanning = false;
+var busy = false;
+
+/* ========== 共通 ========== */
+function store(key, val) {
+  try {
+    if (val === undefined) return localStorage.getItem(key) || '';
+    if (val === null) localStorage.removeItem(key); else localStorage.setItem(key, val);
+  } catch (e) { return ''; }
+  return '';
+}
+
+function esc(s) {
+  if (s === undefined || s === null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function toast(msg, isErr) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' error' : '');
+  setTimeout(function () { t.className = 'toast'; }, isErr ? 5000 : 2500);
+}
+
+function api(body) {
+  body.pw = pw;
+  return fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) })
+    .then(function (res) { return res.text(); })
+    .then(function (text) {
+      var d;
+      try { d = JSON.parse(text); } catch (e) { throw new Error('サーバーの応答を読み取れません: ' + text.substring(0, 100)); }
+      if (d.status !== 'ok') { var err = new Error(d.message || 'エラー'); err.code = d.code; err.data = d; throw err; }
+      return d;
+    });
+}
+
+function yen(n) { return Number(n || 0).toLocaleString() + '円'; }
+
+/* ========== ログイン ========== */
+function login() {
+  pw = document.getElementById('pwInput').value;
+  staff = document.getElementById('staffInput').value.trim();
+  document.getElementById('loginErr').textContent = '';
+  if (!staff) { document.getElementById('loginErr').textContent = '担当者名を入力してください。'; return; }
+  api({ action: 'recLogin' }).then(function (d) {
+    INFO = d;
+    store('recPw', pw);
+    store('recStaff', staff);
+    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('appView').style.display = 'block';
+    document.getElementById('logoutBtn').style.display = 'inline-block';
+    document.getElementById('refreshBtn').style.display = 'inline-block';
+    document.getElementById('hdTour').textContent = d.tournament + '　担当：' + staff;
+    curDiv = store('recDiv') || d.divOrder[0];
+    renderDivs();
+    loadList();
+  }).catch(function (err) {
+    document.getElementById('loginErr').textContent = err.message;
+  });
+}
+
+function logout() {
+  store('recPw', null);
+  stopScan();
+  location.reload();
+}
+
+/* ========== 区分 ========== */
+function renderDivs() {
+  var html = '';
+  var i, c;
+  for (i = 0; i < INFO.divOrder.length; i++) {
+    c = INFO.divOrder[i];
+    html += '<button class="' + (c === curDiv ? 'on' : '') + '" onclick="setDiv(\'' + c + '\')">' + esc(INFO.divisions[c].name) + '</button>';
+  }
+  document.getElementById('divBtns').innerHTML = html;
+}
+
+function setDiv(c) {
+  curDiv = c;
+  store('recDiv', c);
+  renderDivs();
+  loadList();
+}
+
+/* ========== 一覧・集計 ========== */
+function loadList() {
+  return api({ action: 'recList', div: curDiv }).then(function (d) {
+    LIST = d.entries;
+    renderList();
+  }).catch(function (err) {
+    document.getElementById('listArea').innerHTML = '<div class="err">読み込みに失敗しました：' + esc(err.message) + '</div>';
+  });
+}
+
+function renderList() {
+  var q = document.getElementById('searchInput').value.replace(/\s/g, '');
+  var done = 0;
+  var cash = 0;
+  var total = 0;
+  var html = '';
+  var i, e;
+  for (i = 0; i < LIST.length; i++) {
+    e = LIST[i];
+    total += e.fee;
+    if (e.reception === '受付済') { done++; cash += e.fee; }
+  }
+  document.getElementById('stCount').textContent = done + ' / ' + LIST.length;
+  document.getElementById('stCash').textContent = (cash / 1000) + ' / ' + (total / 1000) + '千円';
+  for (i = 0; i < LIST.length; i++) {
+    e = LIST[i];
+    if (q && (e.teamName + e.abbr + e.district).indexOf(q) < 0) continue;
+    html += '<div class="item" onclick="openByCode(\'' + esc(e.code) + '\')">';
+    html += '<div><div class="nm">' + esc(e.teamName) + '</div><div class="mt">' + esc(e.district) + (e.abbr ? '　' + esc(e.abbr) : '') + '　' + yen(e.fee) + (e.pairCount ? '（' + e.pairCount + 'ペア）' : '') + '</div></div>';
+    html += e.reception === '受付済' ? '<span class="badge b-ok">受付済 ' + esc(String(e.receptionAt).slice(11, 16)) + '</span>' : '<span class="badge b-wait">未受付</span>';
+    html += '</div>';
+  }
+  document.getElementById('listArea').innerHTML = html || '<div class="loading">' + (LIST.length ? '該当するチームがありません' : 'この区分の申込はありません') + '</div>';
+}
+
+/* ========== 読み取り ========== */
+function loadQrLib(i, done) {
+  if (typeof Html5Qrcode === 'function') { done(); return; }
+  if (i >= QR_LIBS.length) { done(new Error('読み取り用のプログラムを読み込めませんでした。通信状態を確認するか、チーム名で探してください。')); return; }
+  var s = document.createElement('script');
+  s.src = QR_LIBS[i];
+  s.onload = function () { done(); };
+  s.onerror = function () { loadQrLib(i + 1, done); };
+  document.head.appendChild(s);
+}
+
+function toggleScan() {
+  if (scanning) { stopScan(); return; }
+  var btn = document.getElementById('scanBtn');
+  btn.disabled = true;
+  btn.textContent = '準備中...';
+  loadQrLib(0, function (err) {
+    if (err) { btn.disabled = false; btn.textContent = '📷 読み取りを開始'; toast(err.message, true); return; }
+    scanner = scanner || new Html5Qrcode('reader');
+    scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: { width: 230, height: 230 } }, onDecoded, function () {})
+      .then(function () {
+        scanning = true;
+        btn.disabled = false;
+        btn.textContent = '⏹ 読み取りを停止';
+        document.getElementById('scanHint').textContent = '読み取り中…受付票の二次元コードを枠に合わせてください。';
+      })
+      .catch(function (e) {
+        btn.disabled = false;
+        btn.textContent = '📷 読み取りを開始';
+        toast('カメラを起動できません：' + (e && e.message ? e.message : e) + '\nブラウザのカメラ許可を確認してください。', true);
+      });
+  });
+}
+
+function stopScan() {
+  if (!scanner || !scanning) return;
+  scanner.stop().then(function () {
+    scanning = false;
+    document.getElementById('scanBtn').textContent = '📷 読み取りを開始';
+    document.getElementById('scanHint').textContent = '受付票の二次元コードをカメラに向けてください。';
+  }).catch(function () { scanning = false; });
+}
+
+function pauseScan() {
+  if (scanner && scanning) { try { scanner.pause(true); } catch (e) { /* 一時停止に失敗しても続行 */ } }
+}
+
+function resumeScan() {
+  if (scanner && scanning) { try { scanner.resume(); } catch (e) { /* 再開に失敗しても続行 */ } }
+}
+
+function onDecoded(text) {
+  if (busy) return;
+  if (String(text).indexOf('IWIN:') !== 0) { toast('この大会の受付票ではありません', true); return; }
+  if (navigator.vibrate) { try { navigator.vibrate(80); } catch (e) { /* 振動非対応 */ } }
+  pauseScan();
+  openByCode(text);
+}
+
+/* ========== 結果表示 ========== */
+function openByCode(code) {
+  if (busy) return;
+  busy = true;
+  showSheet(null, '<div class="loading">確認中...</div>');
+  api({ action: 'recLookup', code: code }).then(function (d) {
+    current = d;
+    renderResult();
+  }).catch(function (err) {
+    showSheet(null, '<div class="alert ng">' + esc(err.message) + '</div><button class="btn btn-out" onclick="closeSheet()">閉じる</button>');
+  });
+}
+
+function showSheet(entry, bodyHtml) {
+  document.getElementById('rDiv').textContent = entry ? entry.divName : '受付';
+  document.getElementById('rTeam').textContent = entry ? entry.teamName : '';
+  document.getElementById('rSub').textContent = entry ? (entry.district + (entry.abbr ? '　組合せ：' + entry.abbr : '')) : '';
+  document.getElementById('rBody').innerHTML = bodyHtml;
+  document.getElementById('overlay').className = 'overlay show';
+}
+
+function renderResult() {
+  var d = current;
+  var html = '';
+  if (d.div !== curDiv) {
+    html += '<div class="alert warn">⚠ この受付票は「' + esc(d.divName) + '」です（選択中：' + esc(INFO.divisions[curDiv].name) + '）。区分を確認してください。</div>';
+  }
+  if (d.reception === '受付済') {
+    html += '<div class="alert ng">すでに受付済みです<br>' + esc(d.receptionAt) + '　担当：' + esc(d.staff || '—') + '</div>';
+  }
+  html += '<div class="amount"><div class="l">' + (d.reception === '受付済' ? '受領済みの参加料' : '受け取る参加料（現金）') + '</div><div class="v">' + yen(d.fee) + '</div>' + (d.pairCount ? '<div class="l">' + d.pairCount + 'ペア分</div>' : '') + '</div>';
+  if (d.payers && d.payers.length > 1) html += '<div class="members">領収書の宛名：' + esc(d.payers.join(' 様、')) + ' 様</div>';
+  html += '<div class="members">' + (d.coach ? '監督：' + esc(d.coach) + '<br>' : '') + esc(d.members.join('　')) + '<br>申込責任者：' + esc(d.applicantName) + '　' + esc(d.applicantPhone) + '</div>';
+  html += '<div class="stack">';
+  if (d.reception === '受付済') {
+    html += '<button class="btn btn-main" onclick="closeSheet()">閉じる</button>';
+    html += '<button class="btn btn-red" onclick="cancelReception()">受付を取り消す</button>';
+  } else {
+    html += '<button class="btn btn-pay" id="payBtn" onclick="confirmReception()">💴 現金受領・受付完了</button>';
+    html += '<button class="btn btn-out" onclick="closeSheet()">やめる</button>';
+  }
+  html += '</div>';
+  showSheet(d, html);
+}
+
+function confirmReception() {
+  var btn = document.getElementById('payBtn');
+  btn.disabled = true;
+  btn.textContent = '処理中...';
+  api({ action: 'recConfirm', code: current.code, staff: staff }).then(function (r) {
+    updateLocal(r.entry);
+    var html = '<div class="alert ok">✅ 受付完了<br><span style="font-size:.85rem">' + yen(current.fee) + ' 受領</span></div>';
+    html += r.mailError
+      ? '<div class="alert warn">領収書メールを送れませんでした（' + esc(r.mailError) + '）。受付は完了しています。管理画面から再送できます。</div>'
+      : '<div class="members" style="text-align:center">領収書（PDF）を申込責任者にメールで送りました。</div>';
+    html += '<button class="btn btn-main" onclick="closeSheet()">次の受付へ</button>';
+    showSheet(current, html);
+    if (!r.mailError) setTimeout(function () { if (document.getElementById('overlay').className.indexOf('show') >= 0 && current && current.code === r.entry.code) closeSheet(); }, 3500);
+  }).catch(function (err) {
+    if (err.code === 'already' && err.data && err.data.entry) {
+      updateLocal(err.data.entry);
+      current.reception = '受付済';
+      current.receptionAt = err.data.entry.receptionAt;
+      current.staff = err.data.entry.staff;
+      renderResult();
+      toast('他の端末で受付済みでした', true);
+      return;
+    }
+    btn.disabled = false;
+    btn.textContent = '💴 現金受領・受付完了';
+    toast('受付できませんでした：' + err.message, true);
+  });
+}
+
+function cancelReception() {
+  if (!confirm('「' + current.teamName + '」の受付を取り消します。\n（現金を返す場合や、誤って受付した場合のみ）\nよろしいですか？')) return;
+  api({ action: 'recCancel', code: current.code, staff: staff }).then(function (r) {
+    updateLocal(r.entry);
+    toast('受付を取り消しました');
+    closeSheet();
+  }).catch(function (err) { toast('取り消せませんでした：' + err.message, true); });
+}
+
+function updateLocal(entry) {
+  var i;
+  for (i = 0; i < LIST.length; i++) {
+    if (LIST[i].code === entry.code) LIST[i] = entry;
+  }
+  renderList();
+}
+
+function closeSheet() {
+  document.getElementById('overlay').className = 'overlay';
+  current = null;
+  busy = false;
+  resumeScan();
+  loadList();
+}
+
+/* ========== 初期化 ========== */
+(function () {
+  var savedPw = store('recPw');
+  var savedStaff = store('recStaff');
+  if (savedStaff) document.getElementById('staffInput').value = savedStaff;
+  if (savedPw && savedStaff) {
+    document.getElementById('pwInput').value = savedPw;
+    login();
+  }
+})();
+</script>
+</body>
+</html>
