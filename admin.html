@@ -89,6 +89,17 @@ tr.locked td{background:#f4f4f4;color:#777}
 .loading{text-align:center;padding:30px;color:var(--text-light)}
 .scroll{overflow-x:auto}
 .detail{font-size:.75rem;line-height:1.6}
+.draw-team{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;margin-bottom:12px}
+.draw-match{border:1.5px solid var(--line);border-radius:8px;padding:8px;background:#fff}
+.draw-match .t{font-size:.72rem;font-weight:900;color:var(--main);margin-bottom:4px}
+.draw-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.draw-row .sl{width:34px;font-weight:900;font-size:.8rem;color:var(--text-light);text-align:right}
+.draw-row select{flex:1;padding:6px;font-size:.82rem}
+.draw-row select.dup{border-color:var(--red);background:#fff5f5}
+.draw-blocks{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;margin-bottom:12px}
+.draw-blk{border:2px solid var(--main);border-radius:8px;padding:8px;background:#fff}
+.draw-blk h4{font-size:.85rem;color:var(--main);margin-bottom:6px}
+.ko-note{font-size:.75rem;color:var(--text-light);margin-bottom:12px}
 .chg-box{border:2px solid var(--main);border-radius:var(--radius);padding:14px;margin-bottom:16px;background:#f7faf8}
 .chg-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:12px}
 .chg-slot{border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff;cursor:pointer;font-size:.82rem}
@@ -142,6 +153,7 @@ tr.locked td{background:#f4f4f4;color:#777}
   <nav class="tabs">
     <button class="tab active" data-tab="status" onclick="showTab('status')">申込状況・リンク</button>
     <button class="tab" data-tab="list" onclick="showTab('list')">申込一覧・PDF</button>
+    <button class="tab" data-tab="draw" onclick="showTab('draw')">組合せ・進行表</button>
     <button class="tab" data-tab="change" onclick="showTab('change')">選手変更</button>
     <button class="tab" data-tab="team" onclick="showTab('team')">団体戦 出場指定</button>
     <button class="tab" data-tab="indiv" onclick="showTab('indiv')">個人戦 ペア登録</button>
@@ -195,6 +207,30 @@ tr.locked td{background:#f4f4f4;color:#777}
       </div>
       <div class="list-title" id="listTitle"></div>
       <div class="scroll"><table class="list-table" id="listTable"></table></div>
+    </section>
+
+    <!-- ===== 組合せ・進行表 ===== -->
+    <section class="panel" id="panel-draw">
+      <h2>組合せ・進行表</h2>
+      <div class="lead">枠ごとにチーム（ペア）を選ぶか、Excelの組合せ表を下の欄に貼り付けて「取り込む」を押します。保存後「進行表を作成」で、会場別の進行表（Aコート・Bコート、予定時刻つき）ができます。当日の操作は「本部 進行管理」で行います。</div>
+      <div class="row">
+        <div class="seg" id="drawSeg"></div>
+        <span class="counter" id="drawCounter"></span>
+      </div>
+      <div class="row" id="drawLinks"></div>
+      <div id="drawGrid"></div>
+      <h3>Excelから貼り付け</h3>
+      <div class="muted" style="margin-bottom:6px" id="pasteHint"></div>
+      <textarea id="pasteBox" rows="6" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-family:inherit;font-size:.85rem"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button class="btn btn-out" onclick="importPaste()">取り込む（枠に反映）</button>
+        <span class="muted" id="pasteResult"></span>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn btn-main" onclick="saveDraw(false)">組合せを保存</button>
+        <button class="btn btn-main" onclick="saveDraw(true)">保存して進行表を作成</button>
+        <span class="muted" id="drawStatus"></span>
+      </div>
     </section>
 
     <!-- ===== 選手変更 ===== -->
@@ -369,6 +405,7 @@ function renderAll() {
 }
 
 function showTab(name) {
+  if (name === 'draw' && D) loadDraw();
   var tabs = document.querySelectorAll('.tab');
   var i;
   for (i = 0; i < tabs.length; i++) tabs[i].className = 'tab' + (tabs[i].getAttribute('data-tab') === name ? ' active' : '');
@@ -751,6 +788,190 @@ function saveBase64(b64, name) {
   document.body.appendChild(a);
   a.click();
   setTimeout(function () { URL.revokeObjectURL(a.href); a.parentNode.removeChild(a); }, 1000);
+}
+
+/* ========== 組合せ ========== */
+var drawDiv = 'MT';
+var DRAW = null;
+
+function setDrawDiv(code) {
+  drawDiv = code;
+  document.getElementById('pasteBox').value = '';
+  document.getElementById('pasteResult').textContent = '';
+  loadDraw();
+}
+
+function loadDraw() {
+  var i, code, html = '';
+  for (i = 0; i < D.divOrder.length; i++) {
+    code = D.divOrder[i];
+    html += '<button class="' + (code === drawDiv ? 'on' : '') + '" onclick="setDrawDiv(\'' + code + '\')">' + esc(divName(code)) + '</button>';
+  }
+  document.getElementById('drawSeg').innerHTML = html;
+  var site = String(D.config['サイトURL'] || '');
+  if (site.charAt(site.length - 1) !== '/') site += '/';
+  var pub = site + 'progress.html?div=' + drawDiv;
+  document.getElementById('drawLinks').innerHTML = '<a class="btn btn-out btn-sm" href="control.html?div=' + drawDiv + '" target="_blank">🛠 本部 進行管理を開く</a>' +
+    '<a class="btn btn-out btn-sm" href="progress.html?div=' + drawDiv + '" target="_blank">📺 公開進行表を開く</a>' +
+    '<button class="btn btn-out btn-sm" onclick="copyText(\'' + esc(pub) + '\')">📋 公開URLをコピー</button>';
+  document.getElementById('pasteHint').innerHTML = D.divisions[drawDiv].type === 'team'
+    ? '1行に「枠番号　チーム名（または略称）」。例：<code>1　水沢南中</code>（枠番号がない場合は上から1,2,3…）'
+    : 'ブロック見出し（Aブロック 等）の下に「番号　選手A・選手B　所属」の行。添付いただいた組合せ表の範囲をそのままコピーして貼り付けられます。';
+  document.getElementById('drawGrid').innerHTML = '<div class="loading">読み込み中...</div>';
+  api({ action: 'adminDrawLoad', div: drawDiv }).then(function (d) {
+    DRAW = d;
+    renderDraw();
+  }).catch(function (err) { document.getElementById('drawGrid').innerHTML = '<div class="flag">' + esc(err.message) + '</div>'; });
+}
+
+function drawOptions(slot) {
+  var cur = DRAW.draw[slot] || '';
+  var used = {};
+  var k;
+  for (k in DRAW.draw) if (DRAW.draw.hasOwnProperty(k) && k !== slot && DRAW.draw[k]) used[DRAW.draw[k]] = k;
+  var h = '<option value="">（空き）</option>';
+  var i, c;
+  for (i = 0; i < DRAW.candidates.length; i++) {
+    c = DRAW.candidates[i];
+    h += '<option value="' + esc(c.id) + '"' + (c.id === cur ? ' selected' : '') + (used[c.id] ? ' style="color:#bbb"' : '') + '>' +
+      esc(c.label + '（' + c.sub + '）') + (c.state && c.state !== '申込済' ? '　※' + esc(c.state) : '') + (used[c.id] ? '　→枠' + used[c.id] : '') + '</option>';
+  }
+  return h;
+}
+
+function slotRow(slot, label) {
+  return '<div class="draw-row"><span class="sl">' + esc(label) + '</span><select data-slot="' + esc(slot) + '" onchange="onDrawChange(this)">' + drawOptions(slot) + '</select></div>';
+}
+
+function renderDraw() {
+  var html = '';
+  var i, j;
+  if (D.divisions[drawDiv].type === 'team') {
+    html += '<div class="draw-team">';
+    for (i = 0; i < 8; i++) {
+      html += '<div class="draw-match"><div class="t">1回戦 第' + (i + 1) + '試合（' + (i < 4 ? 'Aコート' : 'Bコート') + '）</div>' + slotRow(String(i * 2 + 1), String(i * 2 + 1)) + slotRow(String(i * 2 + 2), String(i * 2 + 2)) + '</div>';
+    }
+    html += '</div>';
+  } else {
+    var bl = ['A', 'B', 'C', 'D'];
+    html += '<div class="draw-blocks">';
+    for (i = 0; i < 4; i++) {
+      html += '<div class="draw-blk"><h4>' + bl[i] + 'ブロック（' + (i < 2 ? 'Aコート' : 'Bコート') + '）</h4>';
+      for (j = 1; j <= 4; j++) html += slotRow(bl[i] + j, String(j));
+      html += '</div>';
+    }
+    html += '</div><div class="ko-note">決勝トーナメント：A1位-C2位、D2位-B1位、C1位-A2位、B2位-D1位（準決勝は上2試合・下2試合の勝者同士）</div>';
+  }
+  document.getElementById('drawGrid').innerHTML = html;
+  markDup();
+  var filled = 0;
+  var k;
+  for (k in DRAW.draw) if (DRAW.draw.hasOwnProperty(k) && DRAW.draw[k]) filled++;
+  document.getElementById('drawCounter').textContent = '入力 ' + filled + ' / ' + DRAW.slots.length;
+  document.getElementById('drawStatus').textContent = DRAW.matchCount ? '進行表：作成済（' + DRAW.matchCount + '試合' + (DRAW.progressed ? '・進行中' + DRAW.progressed + '試合' : '') + '）' : '進行表：未作成';
+}
+
+function onDrawChange(sel) {
+  DRAW.draw[sel.getAttribute('data-slot')] = sel.value;
+  renderDraw();
+}
+
+function markDup() {
+  var sels = document.querySelectorAll('#drawGrid select');
+  var count = {};
+  var i;
+  for (i = 0; i < sels.length; i++) if (sels[i].value) count[sels[i].value] = (count[sels[i].value] || 0) + 1;
+  for (i = 0; i < sels.length; i++) sels[i].className = sels[i].value && count[sels[i].value] > 1 ? 'dup' : '';
+}
+
+/* ---- 貼り付け取り込み ---- */
+function normText(s) {
+  return String(s || '').replace(/[\s　・･,，、()（）]/g, '').replace(/[①②③④⑤⑥⑦⑧⑨]/g, '')
+    .replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 65248); })
+    .replace(/[Ａ-Ｚ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 65248); });
+}
+
+function matchTeam(text) {
+  var t = normText(text);
+  var best = null, bestLen = 0;
+  var i, c, keys, k, n;
+  for (i = 0; i < DRAW.candidates.length; i++) {
+    c = DRAW.candidates[i];
+    keys = [c.full, c.label, String(c.full).replace(/中学校$/, '中'), String(c.full).replace(/中学校$/, '')];
+    for (k = 0; k < keys.length; k++) {
+      n = normText(keys[k]);
+      if (n && t.indexOf(n) >= 0 && n.length > bestLen) { best = c; bestLen = n.length; }
+    }
+  }
+  return best;
+}
+
+function matchPair(text) {
+  var t = normText(text);
+  var hits = [];
+  var i, c, a, b, sa, sb;
+  for (i = 0; i < DRAW.candidates.length; i++) {
+    c = DRAW.candidates[i];
+    if (!c.names) continue;
+    a = normText(c.names[0]);
+    b = normText(c.names[1]);
+    if (t.indexOf(a) >= 0 && t.indexOf(b) >= 0) return c;
+    sa = normText(String(c.names[0]).split(/[\s　]+/)[0]);
+    sb = normText(String(c.names[1]).split(/[\s　]+/)[0]);
+    if (sa && sb && t.indexOf(sa) >= 0 && t.indexOf(sb) >= 0) hits.push(c);
+  }
+  return hits.length === 1 ? hits[0] : null;
+}
+
+function importPaste() {
+  var lines = document.getElementById('pasteBox').value.split(/\r?\n/);
+  var isTeam = D.divisions[drawDiv].type === 'team';
+  var ok = 0, ng = [];
+  var seq = 0, block = '', posInBlock = 0;
+  var i, line, n, slot, c, mm, bm;
+  for (i = 0; i < lines.length; i++) {
+    line = lines[i];
+    n = normText(line);
+    if (!n) continue;
+    if (isTeam) {
+      mm = String(line).replace(/[０-９]/g, function (x) { return String.fromCharCode(x.charCodeAt(0) - 65248); }).match(/^\s*(\d{1,2})[\s\t.．:：、]/);
+      seq++;
+      slot = mm ? String(parseInt(mm[1], 10)) : String(seq);
+      c = matchTeam(mm ? line.slice(mm[0].length) : line);
+      if (!c) { ng.push(line.trim()); continue; }
+      if (parseInt(slot, 10) < 1 || parseInt(slot, 10) > 16) { ng.push(line.trim() + '（枠番号）'); continue; }
+      DRAW.draw[slot] = c.id;
+      ok++;
+    } else {
+      bm = n.match(/^([ABCD])ブロック/);
+      if (bm) { block = bm[1]; posInBlock = 0; continue; }
+      mm = n.match(/^([ABCD])?([1-4])(?!\d)/);
+      c = matchPair(line);
+      if (!c) { if (/[ぁ-んァ-ヶ一-龠]/.test(line) && !/勝点|得失|順位|予選|決勝|ブロック|個人戦|団体戦/.test(line)) ng.push(line.trim()); continue; }
+      if (mm && mm[1]) block = mm[1];
+      if (!block) { ng.push(line.trim() + '（ブロック不明）'); continue; }
+      posInBlock = mm ? parseInt(mm[2], 10) : posInBlock + 1;
+      DRAW.draw[block + posInBlock] = c.id;
+      ok++;
+    }
+  }
+  renderDraw();
+  document.getElementById('pasteResult').innerHTML = ok + '件を枠に反映しました。' + (ng.length ? '<br><span class="flag">照合できなかった行：' + esc(ng.join(' ／ ')) + '</span>' : '') + '<br>内容を確認して「組合せを保存」を押してください。';
+}
+
+function saveDraw(generate) {
+  var assign = {};
+  var k;
+  for (k in DRAW.draw) if (DRAW.draw.hasOwnProperty(k) && DRAW.draw[k]) assign[k] = DRAW.draw[k];
+  if (generate && DRAW.progressed && !confirm('この区分はすでに試合が進んでいます。進行表を作り直すと、結果がすべて消えます。本当に作り直しますか？')) return;
+  if (generate && DRAW.matchCount && !DRAW.progressed && !confirm('進行表を作り直します（コート・順番の変更は元に戻ります）。よろしいですか？')) return;
+  api({ action: 'adminDrawSave', div: drawDiv, assign: assign }).then(function (r) {
+    if (!generate) { toast('組合せを保存しました（' + r.filled + ' / ' + r.total + '）'); return loadDraw(); }
+    return api({ action: 'adminGenerate', div: drawDiv, force: !!DRAW.progressed }).then(function (g) {
+      toast('進行表を作成しました（' + g.count + '試合）');
+      return loadDraw();
+    });
+  }).catch(function (err) { toast('保存できません：' + err.message, true); });
 }
 
 /* ========== 選手変更 ========== */
