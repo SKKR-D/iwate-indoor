@@ -29,6 +29,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .fee .note{font-size:.75rem;color:#7a5d00;margin-top:2px}
 .done{margin-top:14px;background:#d4edda;color:#155724;border-radius:10px;padding:10px;font-weight:900}
 .howto{font-size:.78rem;color:var(--text-light);text-align:left;line-height:1.7;margin-top:16px;border-top:1px solid #eee;padding-top:12px}
+.portal-btn{display:block;margin-top:14px;padding:16px;border-radius:12px;background:#28a745;color:#fff;font-weight:900;font-size:1.05rem;text-decoration:none}
+.portal-note{margin-top:14px;font-size:.78rem;color:var(--text-light);background:#f3f7f4;border-radius:10px;padding:10px}
 .err{max-width:420px;margin:40px auto;background:#f8d7da;color:#721c24;border-radius:var(--radius);padding:18px;font-weight:700;line-height:1.6}
 .loading{text-align:center;padding:60px;color:var(--text-light)}
 .print{display:block;margin:16px auto 0;max-width:420px;width:100%;padding:12px;border-radius:10px;border:2px solid var(--main);background:#fff;color:var(--main);font-weight:700;font-family:inherit;font-size:.9rem;cursor:pointer}
@@ -70,6 +72,11 @@ function render(d) {
     html += '<div class="done">✅ 受付済み（' + esc(d.reception) + '）</div>';
   } else {
     html += '<div class="fee"><div>参加料</div><div class="amount">' + Number(d.fee || 0).toLocaleString() + '円</div><div class="note">受付で現金にてお支払いください</div></div>';
+  }
+  if (d.type === 'team') {
+    html += d.reception
+      ? '<a class="portal-btn" href="portal.html?t=' + encodeURIComponent(token) + '">📝 オーダー提出（監督用）</a>'
+      : '<div class="portal-note">受付が済むと、ここに「オーダー提出（監督用）」ボタンが表示されます。</div>';
   }
   html += '<div class="howto">・当日の受付で、この画面（または印刷した紙）を提示してください。<br>・参加料と引き換えに二次元コードを読み取り、受付完了となります。<br>・領収書は受付完了後、申込責任者のメールに送ります。</div>';
   html += '</div>';
