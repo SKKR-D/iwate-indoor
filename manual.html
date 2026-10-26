@@ -11,17 +11,20 @@
   --bg:#eef3fa; --surface:#ffffff; --ink:#0e2140; --muted:#4b5f80; --line:#cfdcef;
   --accent:#1b5cc4; --deep:#0a2f6b; --soft:#e2ecfb; --soft2:#f4f8fe; --warn:#b5461d; --warn-soft:#fdf0e9;
   --on-deep:#ffffff; --heading:#0a2f6b;
+  --x-accent:#0b7a70; --x-deep:#07504a; --x-soft:#d9f1ed; --x-bg:#ebf7f5; --x-heading:#07504a;
   --f-head:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
   --f-body:'BIZ UDPGothic','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;
 }
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
   --bg:#0a1424; --surface:#111f37; --ink:#e4edfb; --muted:#9db0cf; --line:#233a5f;
   --accent:#6ea8ff; --deep:#0c2b5c; --soft:#16305a; --soft2:#0f1c33; --warn:#ff9b6e; --warn-soft:#3a2016;
-  --on-deep:#ffffff; --heading:#e4edfb; color-scheme:dark}}
+  --on-deep:#ffffff; --heading:#e4edfb;
+  --x-accent:#4fd1c2; --x-deep:#0a3f3a; --x-soft:#123c38; --x-bg:#0b1d22; --x-heading:#e4edfb; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#0a1424; --surface:#111f37; --ink:#e4edfb; --muted:#9db0cf; --line:#233a5f;
   --accent:#6ea8ff; --deep:#0c2b5c; --soft:#16305a; --soft2:#0f1c33; --warn:#ff9b6e; --warn-soft:#3a2016;
-  --on-deep:#ffffff; --heading:#e4edfb; color-scheme:dark}
+  --on-deep:#ffffff; --heading:#e4edfb;
+  --x-accent:#4fd1c2; --x-deep:#0a3f3a; --x-soft:#123c38; --x-bg:#0b1d22; --x-heading:#e4edfb; color-scheme:dark}
 *,*::before,*::after{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.75}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--deep)}
@@ -106,6 +109,13 @@ ul.check small{color:var(--muted);display:block}
 
 .foot{color:var(--muted);font-size:.82rem;padding-block:26px 40px;text-align:center}
 
+/* 外向け（参加チーム・観客）の章は緑青系 */
+.part.ext{--accent:var(--x-accent);--deep:var(--x-deep);--soft:var(--x-soft);--heading:var(--x-heading);background:var(--x-bg)}
+.nav a.ext{border-color:var(--x-accent);color:var(--x-accent);background:var(--x-bg)}
+.flow td:first-child{white-space:nowrap;font-weight:700}
+.flow td .who{margin:0 2px 0 0}
+.nav .sep{flex:0 0 1px;background:var(--line);margin:4px 2px}
+.who{display:inline-block;font-size:.8rem;font-weight:700;color:var(--accent);border:1.5px solid var(--accent);border-radius:999px;padding:1px 10px;margin-left:4px}
 @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 @media print{
   @page{size:A4 portrait;margin:9mm 10mm}
@@ -119,6 +129,7 @@ ul.check small{color:var(--muted);display:block}
   .part{break-before:page;break-inside:avoid;padding-block:0}
   .part:first-of-type{break-before:auto}
   .part+.part{border-top:none}
+  .part.ext{background:#fff;--deep:#07504a;--accent:#0b7a70;--soft:#d9f1ed;--heading:#07504a}
   .part::before{content:"第40回岩手県中学校インドアソフトテニス大会　当日運営マニュアル（11/28 個人戦・11/29 団体戦）";display:block;background:var(--deep);color:#fff;font-size:7.6pt;padding:4px 8px;border-radius:4px;margin-bottom:8px}
   .ptitle{gap:8px}
   .ptitle h2{font-size:15pt}
@@ -169,8 +180,10 @@ ul.check small{color:var(--muted);display:block}
     <a href="#honbu">本部・進行係</a>
     <a href="#record">記録・掲示係</a>
     <a href="#court">コート係</a>
-    <a href="#coach">監督への案内</a>
     <a href="#prep">前日までの準備</a>
+    <span class="sep" aria-hidden="true"></span>
+    <a class="ext" href="#teams">参加チーム＆監督の動き</a>
+    <a class="ext" href="#audience">観客の動き</a>
     <a class="navp" href="https://skkr-d.github.io/iwate-indoor/staff.html" target="_blank" rel="noopener">運営ポータル ↗</a>
   </div>
 </nav>
@@ -355,27 +368,6 @@ ul.check small{color:var(--muted);display:block}
   </ul>
 </div></section>
 
-<!-- ============ 監督への案内 ============ -->
-<section class="part" id="coach"><div class="wrap">
-  <div class="ptitle"><span class="tag">案内</span><h2>監督への案内</h2></div>
-  <p class="lead">受付やオーダーについて聞かれたときは、この内容で案内してください。</p>
-
-  <h3>受付</h3>
-  <ul class="dots">
-    <li>受付は7:35〜8:00。申込時に届いた受付票（二次元コード）を、スマートフォンの画面か印刷した紙で見せる。</li>
-    <li>参加料は現金。受付が終わると、申込責任者に領収書（PDF）がメールで届く。</li>
-  </ul>
-
-  <h3>団体戦のオーダー提出</h3>
-  <ol class="steps">
-    <li>受付が済んだら、受付票の <span class="btn">📝 オーダー提出（監督用）</span> を開く（チーム専用のページ）。</li>
-    <li>番手ごとに選手名を選んで提出する。選んだ選手はグレーになり、二重には選べない。</li>
-    <li>締切は1回戦が<b>8:40</b>、2回戦以降は<b>前の試合の終了から10分</b>。コート集合は前の試合の終了から15分。</li>
-    <li>相手のオーダーは、両チームが提出すると表示される。提出後の変更は本部へ申し出る。</li>
-  </ol>
-  <p>スマートフォンが使えない場合は、紙のオーダー票を本部へ提出してもらいます。試合の予定時刻・結果は、会場の二次元コードから進行表で確認できます。</p>
-</div></section>
-
 <!-- ============ 前日までの準備 ============ -->
 <section class="part" id="prep"><div class="wrap">
   <div class="ptitle"><span class="tag">準備</span><h2>前日までの準備</h2></div>
@@ -393,6 +385,78 @@ ul.check small{color:var(--muted);display:block}
     <li><span>釣り銭、選手変更届・オーダー票（紙）の予備を用意する</span></li>
   </ul>
 </div></section>
+<!-- ============ 参加チーム＆監督の動き ============ -->
+<section class="part ext" id="teams"><div class="wrap">
+  <div class="ptitle"><span class="tag">チーム</span><h2>参加チーム＆監督の動き</h2></div>
+  <p class="lead">参加チーム（監督・申込責任者・選手）が、いつ・どこで・何をするか。そのとき運営のどの係がどう対応するかをまとめています。</p>
+
+  <h3>時間ごとの動きと運営の対応</h3>
+  <div class="tbl"><table class="flow">
+    <thead><tr><th>時刻</th><th>チーム・監督の動き</th><th>運営の対応（係）</th></tr></thead>
+    <tbody>
+      <tr><td class="t">大会前</td><td>メールの申込リンクから申し込む（11/19 17:00まで）。申込責任者に受付票（二次元コード）が届く</td><td><span class="who">委員長</span> 管理画面で申込状況を確認し、未申込のチームに督促メール</td></tr>
+      <tr><td class="t">7:30</td><td>会場に到着。受付に代表者（監督または申込責任者）が並ぶ</td><td><span class="who">全係</span> 持ち場で端末を起動・ログイン。受付前の列を整理</td></tr>
+      <tr><td class="t">7:35〜8:00</td><td>受付票を見せ、参加料を現金で払う。領収書（PDF）がメールで届く</td><td><span class="who">受付</span> 二次元コードを読む → 金額確認 → 現金受領・受付完了</td></tr>
+      <tr><td class="t">8:00</td><td>（未受付のチームがあれば遅れて到着）</td><td><span class="who">受付</span> 未受付のチームを本部へ報告　<span class="who">本部</span> 監督へ連絡</td></tr>
+      <tr><td class="t">〜8:40</td><td><span class="who">団体戦</span> 監督がスマートフォンで1回戦のオーダーを出す</td><td><span class="who">本部</span> 進行管理で提出状況を見る。8:40を過ぎても未提出なら赤表示 → 監督に声をかけ、紙のオーダー票を受けて代理入力</td></tr>
+      <tr><td class="t">9:00〜</td><td>進行表で自分の試合のコート・予定時刻を見て待機。コールされたらコートへ</td><td><span class="who">本部</span> コール・開始　<span class="who">記録</span> スコアシートをコートへ　<span class="who">コート</span> 試合を進める</td></tr>
+      <tr><td class="t">試合後</td><td>勝者がスコアシートにサインする</td><td><span class="who">コート</span> シートをすぐ本部へ　<span class="who">本部</span> 結果入力 → 勝者が次の試合に自動で入る</td></tr>
+      <tr><td class="t">2回戦以降</td><td><span class="who">団体戦</span> 前の試合の終了から10分以内にオーダー、15分以内にコート集合</td><td><span class="who">本部</span> 締切超過（赤表示）の試合を催促。未提出は紙で代理入力</td></tr>
+      <tr><td class="t">予選終了</td><td><span class="who">個人戦</span> 各ブロック1位・2位が決勝トーナメントへ</td><td><span class="who">本部</span> ブロックの順位を確定 → 決勝トーナメントの対戦が自動で決まる。放送で進出ペアを知らせる</td></tr>
+      <tr><td class="t">決勝後</td><td>表彰を待つ</td><td><span class="who">記録</span> 結果入りの組合せで順位を確認し、表彰へ</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>チームから来る問い合わせと対応する係</h3>
+  <div class="tbl"><table class="flow">
+    <thead><tr><th>問い合わせ</th><th>対応する係</th><th>対応</th></tr></thead>
+    <tbody>
+      <tr><td>受付票が見つからない・開けない</td><td>受付</td><td>「チーム名で探す」で受付する</td></tr>
+      <tr><td>領収書のメールが届かない・紙がほしい</td><td>受付／委員長</td><td>紙の領収書を渡す。メールは管理画面から再送</td></tr>
+      <tr><td>選手を変えたい</td><td>受付 → 委員長</td><td>選手変更届を受け取り、管理画面「選手変更」で入力</td></tr>
+      <tr><td>オーダーを出せない・間違えた</td><td>本部</td><td>紙のオーダー票を受けて代理入力・訂正</td></tr>
+      <tr><td>次の試合はいつ・どのコート？</td><td>全係</td><td>進行表（監督は監督ポータルにも表示）を案内</td></tr>
+      <tr><td>結果に疑問がある</td><td>本部</td><td>スコアシートで確認し、必要なら結果修正</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
+<!-- ============ 観客の動き ============ -->
+<section class="part ext" id="audience"><div class="wrap">
+  <div class="ptitle"><span class="tag">観客</span><h2>観客の動き</h2></div>
+  <p class="lead">保護者・観客が、いつ・何を見て動くか。運営が用意しておくことと、その場での対応をまとめています。</p>
+
+  <h3>時間ごとの動きと運営の対応</h3>
+  <div class="tbl"><table class="flow">
+    <thead><tr><th>時刻</th><th>観客の動き</th><th>運営の対応（係）</th></tr></thead>
+    <tbody>
+      <tr><td class="t">7:30</td><td>来場して観覧席へ。入口や観覧席の二次元コードを読む</td><td><span class="who">記録</span> 入口・観覧席に、その会場の区分の進行表の二次元コードを掲示しておく</td></tr>
+      <tr><td class="t">9:00〜</td><td>スマートフォンの進行表で、目当ての試合のコートと予定時刻を見る</td><td><span class="who">本部</span> 結果を早く入れるほど、観客が見る予定時刻も正確になる</td></tr>
+      <tr><td class="t">試合中</td><td>予定時刻に合わせて観覧場所を移る</td><td><span class="who">本部</span> 放送でコール。遅れが大きいときは「予定時刻は目安」と放送で伝える</td></tr>
+      <tr><td class="t">区切りごと</td><td>組合せ・結果のページや掲示板で勝ち上がりを確かめる</td><td><span class="who">記録</span> 結果入りの組合せを印刷して掲示を貼り替える</td></tr>
+      <tr><td class="t">決勝・表彰</td><td>決勝コートの周りに集まる</td><td><span class="who">本部</span> 決勝のコートと開始時刻を放送する</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>観客が見るページ</h3>
+  <ul class="dots">
+    <li><b>進行表</b>：コートごと・時刻順に試合が並び、試合中・呼出中に印が付く。予定時刻は試合の進み具合で自動で変わる（30秒ごとに更新）。</li>
+    <li><b>組合せ・結果</b>：トーナメント表と予選リーグの表。勝ち上がりが赤線、ゲーム数とともに随時入る。</li>
+    <li>どちらも会場の二次元コード、または大会トップ（<span class="url">https://skkr-d.github.io/iwate-indoor/</span>）の「大会当日の進行表・組合せ・結果」から開く。ログインは不要。</li>
+  </ul>
+
+  <h3>観客から来る問い合わせと対応</h3>
+  <div class="tbl"><table class="flow">
+    <thead><tr><th>問い合わせ</th><th>対応</th></tr></thead>
+    <tbody>
+      <tr><td>二次元コードが読めない</td><td>大会トップのアドレスを伝えるか、掲示板の組合せを見てもらう</td></tr>
+      <tr><td>〇〇の試合は何時から？</td><td>進行表の見方（コート別・時刻順）を伝える。予定時刻は目安と添える</td></tr>
+      <tr><td>結果を知りたい・結果がおかしい</td><td>組合せ・結果のページを案内。疑問は本部へ</td></tr>
+      <tr><td>撮影・観覧場所について</td><td>会場の案内と大会要項に従ってもらう</td></tr>
+    </tbody>
+  </table></div>
+</div></section>
+
 </main>
 
 <footer class="foot"><div class="wrap">岩手県中学生ソフトテニス連盟　競技委員長　坂倉 大</div></footer>
