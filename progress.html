@@ -56,6 +56,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .b-two{background:#e6f0fb;color:var(--blue)}
 .court-tag{display:inline-block;min-width:22px;text-align:center;border-radius:6px;background:var(--main);color:#fff;font-weight:900;font-size:.72rem;padding:1px 6px;margin-right:4px}
 .list .card{display:block}
+.tp{display:grid;grid-template-columns:1.4em 1fr 3em 1fr;gap:2px 6px;padding:6px 10px 8px;border-top:1px dashed var(--line);font-size:.74rem;align-items:center}
+.tp .n{color:var(--text-light);font-weight:900;text-align:center}
+.tp .r{text-align:center;font-weight:900;color:var(--main)}
+.tp .won{font-weight:700;color:var(--main)}
+.tp .won::before{content:'○';color:var(--red);margin-right:2px}
+.tp .lost{color:#999}
 .section-title{font-size:.95rem;font-weight:900;color:var(--main);margin:16px 0 8px}
 .blocks{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px}
 .blk{background:#fff;border-radius:var(--radius);border:1.5px solid var(--line);overflow:hidden}
@@ -151,8 +157,26 @@ function cardHtml(m, showCourt) {
   h += '<span>' + stateBadge(m) + ' <span class="tm">' + esc(timeText(m)) + '</span></span></div>';
   h += '<div class="c-body">' + sideHtml(m, m.left, 'L');
   h += '<div class="vs">' + (m.state === '終了' && m.score ? '<span class="score">' + esc(m.score) + '</span>' : 'vs') + '</div>';
-  h += sideHtml(m, m.right, 'R') + '</div></div>';
+  h += sideHtml(m, m.right, 'R') + '</div>';
+  if (m.team && m.team.open) h += pairsHtml(m);
+  h += '</div>';
   return h;
+}
+
+function pairsHtml(m) {
+  var t = m.team;
+  var h = '<div class="tp">';
+  var i, p, res;
+  for (i = 0; i < 3; i++) {
+    p = t.pairs[i];
+    res = p.kind === 'abort' ? '打切' : p.kind === 'none' ? '―' : p.w ? (p.g && p.g !== '不戦勝' ? p.g : '不戦') : '';
+    if (p.w === 'R' && p.g && /^\d+-\d+$/.test(p.g)) res = p.g;
+    h += '<span class="n">' + (i + 1) + '</span>';
+    h += '<span class="' + (p.w === 'L' ? 'won' : p.w ? 'lost' : '') + '">' + (p.l ? esc(p.l[0]) + '・' + esc(p.l[1]) : (t.orderL && i === 2 ? '不戦敗' : '')) + '</span>';
+    h += '<span class="r">' + esc(res) + '</span>';
+    h += '<span class="' + (p.w === 'R' ? 'won' : p.w ? 'lost' : '') + '">' + (p.r ? esc(p.r[0]) + '・' + esc(p.r[1]) : (t.orderR && i === 2 ? '不戦敗' : '')) + '</span>';
+  }
+  return h + '</div>';
 }
 
 function render() {
