@@ -36,6 +36,12 @@ select:focus{border-color:var(--main);outline:none}
 .msg.ok{display:block;background:#d4edda;color:#155724}
 .msg.ng{display:block;background:#f8d7da;color:#721c24}
 .note{font-size:.75rem;color:var(--text-light);line-height:1.7;margin-top:8px}
+.days{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:10px;margin-top:10px}
+.day{border:1.5px solid #e2e2da;border-radius:var(--radius);padding:10px 12px}
+.dname{font-weight:900;color:var(--main);font-size:.88rem;margin-bottom:6px}
+.drow{display:flex;align-items:center;gap:6px;margin:6px 0;font-size:.84rem}
+.drow span{flex:1;min-width:0}
+.btn.sm{padding:6px 10px;font-size:.78rem;border-radius:8px}
 .footer{text-align:center;padding:24px;font-size:.72rem;color:var(--text-light);line-height:1.7}
 </style>
 </head>
@@ -59,6 +65,22 @@ select:focus{border-color:var(--main);outline:none}
       <tr><th>参加料</th><td>個人戦 1ペア3,000円　団体戦 1チーム10,000円（当日受付で現金）</td></tr>
     </table>
     <div style="margin-top:12px"><a class="btn btn-out" href="youkou.pdf" target="_blank">📄 大会要項（PDF）</a></div>
+  </div>
+
+  <div class="card">
+    <h2>大会当日の進行表・組合せ・結果</h2>
+    <p class="lead">試合の予定時刻と結果は、大会当日に随時更新されます。</p>
+    <div class="days">
+      <div class="day"><div class="dname">11/28（土）個人戦</div>
+        <div class="drow"><span>男子（雫石）</span><a class="btn btn-out sm" href="progress.html?div=MI">進行表</a><a class="btn btn-out sm" href="bracket.html?div=MI">組合せ・結果</a></div>
+        <div class="drow"><span>女子（紫波）</span><a class="btn btn-out sm" href="progress.html?div=WI">進行表</a><a class="btn btn-out sm" href="bracket.html?div=WI">組合せ・結果</a></div>
+      </div>
+      <div class="day"><div class="dname">11/29（日）団体戦</div>
+        <div class="drow"><span>男子（雫石）</span><a class="btn btn-out sm" href="progress.html?div=MT">進行表</a><a class="btn btn-out sm" href="bracket.html?div=MT">組合せ・結果</a></div>
+        <div class="drow"><span>女子（紫波）</span><a class="btn btn-out sm" href="progress.html?div=WT">進行表</a><a class="btn btn-out sm" href="bracket.html?div=WT">組合せ・結果</a></div>
+      </div>
+    </div>
+    <p class="note">組合せは発表後に表示されます。</p>
   </div>
 
   <div class="card">
