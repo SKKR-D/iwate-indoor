@@ -73,7 +73,7 @@ ul.dots{margin:0;padding-left:1.2em}
 ul.dots li{margin:3px 0}
 
 /* こんなときは */
-.qa{display:grid;gap:8px}
+.qa{display:grid;gap:8px;margin:0}
 .qa div{display:grid;grid-template-columns:minmax(0,15em) minmax(0,1fr);gap:4px 14px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
 .qa dt{font-weight:700}
 .qa dd{margin:0}
@@ -108,14 +108,44 @@ ul.check small{color:var(--muted);display:block}
 
 @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 @media print{
-  :root{--bg:#fff;--surface:#fff;--ink:#0e2140;--muted:#4b5f80;--line:#b9cbe6;--accent:#1b5cc4;--deep:#0a2f6b;--soft:#e2ecfb;--soft2:#f4f8fe;--heading:#0a2f6b;color-scheme:light}
+  @page{size:A4 portrait;margin:9mm 10mm}
+  :root{--bg:#fff;--surface:#fff;--ink:#0e2140;--muted:#4b5f80;--line:#b9cbe6;--accent:#1b5cc4;--deep:#0a2f6b;--soft:#e2ecfb;--soft2:#f4f8fe;--heading:#0a2f6b;--warn:#b5461d;--warn-soft:#fdf0e9;color-scheme:light}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
-  body{font-size:10.5pt;line-height:1.6}
-  .nav,body::before{display:none}
-  .part{break-before:page;padding-block:0}
+  html{scroll-behavior:auto}
+  body{font-size:9.3pt;line-height:1.45;background:#fff}
+  .nav,body::before,.cover,.foot{display:none}
+  .wrap{max-width:none;padding:0}
+  /* 1係＝A4 1枚 */
+  .part{break-before:page;break-inside:avoid;padding-block:0}
+  .part:first-of-type{break-before:auto}
   .part+.part{border-top:none}
+  .part::before{content:"第40回岩手県中学校インドアソフトテニス大会　当日運営マニュアル（11/28 個人戦・11/29 団体戦）";display:block;background:var(--deep);color:#fff;font-size:7.6pt;padding:4px 8px;border-radius:4px;margin-bottom:8px}
+  .ptitle{gap:8px}
+  .ptitle h2{font-size:15pt}
+  .tag{font-size:8pt;padding:2px 8px}
+  .lead{margin-top:3px;font-size:9.2pt}
+  h3{font-size:10.5pt;margin:8px 0 4px;padding-left:7px;border-left-width:3px}
+  p{margin:4px 0}
+  .page{margin-top:7px;padding:5px 9px;font-size:8.8pt}
+  .plink{padding:2px 9px;font-size:8.4pt}
+  ol.steps{gap:4px}
+  ol.steps>li{padding:4px 8px 4px 34px;border-radius:6px}
+  ol.steps>li::before{left:8px;top:4px;width:19px;height:19px;font-size:8pt}
+  .btn{font-size:8.6pt;padding:0 4px;line-height:1.45}
+  ul.dots li{margin:1px 0}
+  .qa{gap:4px}
+  .qa div{grid-template-columns:minmax(0,13.5em) minmax(0,1fr);padding:4px 8px;border-radius:6px}
+  .caution{padding:5px 9px;margin:6px 0}
+  table{min-width:0;font-size:8.8pt}
+  th,td{padding:3px 7px}
+  .time div{padding:2px 0 2px 12px}
+  .time div::before{top:7px;width:10px;height:10px;border-width:2.5px;left:-6.5px}
+  .cards{gap:6px;grid-template-columns:repeat(3,minmax(0,1fr))}
+  .card{padding:6px 8px}
+  ul.check{gap:4px}
+  ul.check li{padding:4px 8px}
+  ul.check li::before{margin-top:3px}
   ol.steps>li,.qa div,.card,ul.check li,.caution{break-inside:avoid}
-  .cover{padding-block:14px}
 }
 </style>
 </head>
