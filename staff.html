@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>運営ポータル｜県インドア大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--deep:#0a2f6b;--main:#1b5cc4;--soft:#e2ecfb;--bg:#eef3fa;--line:#cfdcef;--text:#0e2140;--light:#4b5f80;--white:#fff;--radius:12px}
+html{font-size:15px}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:var(--deep);color:#fff;padding:18px 16px 16px}
+.inner{max-width:760px;margin:0 auto}
+.header small{font-size:.72rem;opacity:.85;display:block}
+.header h1{font-size:1.25rem;font-weight:900;margin-top:2px}
+.main{max-width:760px;margin:0 auto;padding:16px 16px 40px}
+.sec{margin-bottom:18px}
+.sec h2{font-size:.85rem;font-weight:900;color:var(--main);margin:0 0 8px 2px;letter-spacing:.05em}
+.venues{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.venue{border:2px solid var(--line);background:var(--white);border-radius:var(--radius);padding:10px 12px;text-align:left;font-family:inherit;color:var(--text);cursor:pointer}
+.venue b{display:block;font-size:.98rem;font-weight:900}
+.venue span{display:block;font-size:.78rem;color:var(--light)}
+.venue.on{border-color:var(--main);background:var(--soft);box-shadow:0 0 0 2px rgba(27,92,196,.18)}
+.venue.on b{color:var(--deep)}
+.cur{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--main);color:#fff;font-weight:700;font-size:.9rem}
+.cur.none{background:#fff;color:var(--light);border:1.5px dashed var(--line);font-weight:500}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}
+.go{display:flex;gap:12px;align-items:center;background:var(--white);border:1.5px solid var(--line);border-radius:var(--radius);padding:12px 14px;text-decoration:none;color:var(--text);font-family:inherit;text-align:left;cursor:pointer;width:100%}
+.go:hover,.go:focus-visible{border-color:var(--main);outline:none}
+.go .ic{flex:0 0 40px;height:40px;border-radius:10px;background:var(--soft);display:grid;place-items:center;font-size:1.25rem}
+.go b{display:block;font-size:.95rem;font-weight:900}
+.go span{display:block;font-size:.74rem;color:var(--light);line-height:1.5}
+.go.dis{opacity:.45;pointer-events:none}
+.note{font-size:.75rem;color:var(--light);line-height:1.7;margin-top:6px}
+.footer{text-align:center;font-size:.72rem;color:var(--light);padding:10px 16px 30px}
+/* 二次元コードの掲示物 */
+.qrwrap{position:fixed;inset:0;background:rgba(10,20,40,.55);display:none;align-items:flex-start;justify-content:center;padding:16px;z-index:50;overflow:auto}
+.qrwrap.open{display:flex}
+.poster{background:#fff;border-radius:12px;padding:24px 20px;width:100%;max-width:520px;text-align:center}
+.poster .t1{font-size:.85rem;color:var(--light)}
+.poster .t2{font-size:1.6rem;font-weight:900;color:var(--deep);margin:4px 0}
+.poster .t3{font-size:1rem;font-weight:700}
+#qr{display:flex;justify-content:center;margin:18px 0}
+#qr img,#qr canvas{width:260px;height:260px}
+.poster .url{font-size:.78rem;color:var(--light);word-break:break-all}
+.poster .how{font-size:.85rem;margin-top:10px;line-height:1.7}
+.pbtns{display:flex;gap:8px;justify-content:center;margin-top:16px}
+.btn{font-family:inherit;font-weight:700;font-size:.9rem;padding:10px 18px;border-radius:10px;border:2px solid var(--main);background:var(--main);color:#fff;cursor:pointer}
+.btn.sub{background:#fff;color:var(--main)}
+@media (max-width:420px){.venues{grid-template-columns:minmax(0,1fr)}}
+@media print{
+  @page{size:A4 portrait;margin:15mm}
+  body.printing .header,body.printing .main,body.printing .footer{display:none}
+  body.printing .qrwrap{position:static;display:block;background:#fff;padding:0}
+  body.printing .poster{max-width:none;border-radius:0;padding:20mm 0 0}
+  body.printing .poster .t2{font-size:30pt}
+  body.printing .poster .t3{font-size:16pt}
+  body.printing #qr img,body.printing #qr canvas{width:110mm;height:110mm}
+  body.printing .poster .how{font-size:13pt}
+  body.printing .pbtns{display:none}
+}
+</style>
+</head>
+<body>
+<header class="header"><div class="inner">
+  <small>第40回岩手県中学校インドアソフトテニス大会</small>
+  <h1>運営ポータル（スタッフ用）</h1>
+</div></header>
+
+<main class="main">
+  <section class="sec">
+    <h2>① 日付・会場を選ぶ</h2>
+    <div class="venues" id="venues"></div>
+    <div class="cur none" id="cur">日付・会場を選ぶと、下のボタンがその区分のページになります。</div>
+  </section>
+
+  <section class="sec">
+    <h2>受付係</h2>
+    <div class="grid">
+      <a class="go" href="reception.html" target="_blank"><span class="ic">📷</span><span><b>当日受付</b><span>受付票の二次元コード読み取り・現金受領・領収書（受付パスワード）</span></span></a>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>本部・進行係</h2>
+    <div class="grid">
+      <a class="go dv" data-href="control.html?div={d}" target="_blank"><span class="ic">🎛</span><span><b>本部 進行管理</b><span>コール・開始・結果入力・オーダー代理入力（本部パスワード）</span></span></a>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>記録・掲示係</h2>
+    <div class="grid">
+      <a class="go dv" data-href="scoresheet.html?div={d}" target="_blank"><span class="ic">📝</span><span><b>スコアシート印刷</b><span>1試合1枚。コート・範囲で絞り込み、白紙も</span></span></a>
+      <a class="go dv" data-href="bracket.html?div={d}" target="_blank"><span class="ic">🏆</span><span><b>組合せ（結果入り）</b><span>結果が随時入る。掲示の貼り替え・表彰の確認に</span></span></a>
+      <a class="go dv" data-href="bracket.html?div={d}&amp;mode=blank" target="_blank"><span class="ic">📄</span><span><b>組合せ（白紙）</b><span>結果なしの記入用・掲示用</span></span></a>
+      <a class="go dv" data-href="progress.html?div={d}" target="_blank"><span class="ic">⏱</span><span><b>進行表</b><span>観客・選手向けの公開ページ</span></span></a>
+      <button class="go dv" type="button" onclick="openQr()"><span class="ic">🔳</span><span><b>進行表の二次元コード</b><span>会場掲示用（A4で印刷できます）</span></span></button>
+      <a class="go" href="bracket.html?div=ALL&amp;mode=blank" target="_blank"><span class="ic">🗂</span><span><b>白紙の組合せ 4区分まとめて</b><span>事前印刷用（4枚）</span></span></a>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>全係共通</h2>
+    <div class="grid">
+      <a class="go" href="manual.html" target="_blank"><span class="ic">📘</span><span><b>当日運営マニュアル</b><span>係ごとの手順・こんなときは</span></span></a>
+      <a class="go" href="index.html" target="_blank"><span class="ic">🏠</span><span><b>大会トップ（公開）</b><span>チーム・観客が見るページ</span></span></a>
+    </div>
+  </section>
+
+  <section class="sec">
+    <h2>競技委員長</h2>
+    <div class="grid">
+      <a class="go" href="admin.html" target="_blank"><span class="ic">⚙️</span><span><b>管理画面</b><span>組合せ入力・選手変更・領収書の作成と再送（管理パスワード）</span></span></a>
+    </div>
+    <p class="note">このページのアドレスはスタッフにだけ伝えてください。各ページはパスワードで守られています。</p>
+  </section>
+</main>
+<div class="footer">岩手県中学生ソフトテニス連盟</div>
+
+<div class="qrwrap" id="qrwrap" onclick="if(event.target===this)closeQr()">
+  <div class="poster">
+    <div class="t1">第40回岩手県中学校インドアソフトテニス大会</div>
+    <div class="t2" id="qrDiv">進行表</div>
+    <div class="t3">試合の予定時刻・結果はこちら</div>
+    <div id="qr"></div>
+    <div class="url" id="qrUrl"></div>
+    <div class="how">スマートフォンのカメラで読み取ってください。<br>予定時刻は試合の進み具合に合わせて自動で更新されます。</div>
+    <div class="pbtns"><button class="btn" onclick="printQr()">🖨 A4で印刷</button><button class="btn sub" onclick="closeQr()">閉じる</button></div>
+  </div>
+</div>
+
+<script>
+var VENUES = [
+  { key: 'MI', day: '11/28（土）', short: '雫石', place: '雫石町営体育館', div: '男子個人戦' },
+  { key: 'WI', day: '11/28（土）', short: '紫波', place: '紫波町総合体育館', div: '女子個人戦' },
+  { key: 'MT', day: '11/29（日）', short: '雫石', place: '雫石町営体育館', div: '男子団体戦' },
+  { key: 'WT', day: '11/29（日）', short: '紫波', place: '紫波町総合体育館', div: '女子団体戦' }
+];
+var STORE = 'iwateIndoorStaffDiv';
+var cur = '';
+
+function siteBase() {
+  return location.href.replace(/[?#].*$/, '').replace(/[^\/]*$/, '');
+}
+
+function renderVenues() {
+  var h = '';
+  var i;
+  for (i = 0; i < VENUES.length; i++) {
+    var v = VENUES[i];
+    h += '<button type="button" class="venue' + (v.key === cur ? ' on' : '') + '" onclick="choose(\'' + v.key + '\')"><b>' + v.day + '　' + v.short + '</b><span>' + v.div + '／' + v.place + '</span></button>';
+  }
+  document.getElementById('venues').innerHTML = h;
+  var el = document.getElementById('cur');
+  var v2 = find(cur);
+  if (v2) {
+    el.className = 'cur';
+    el.textContent = '選択中：' + v2.day + '　' + v2.place + '　' + v2.div;
+  } else {
+    el.className = 'cur none';
+    el.textContent = '日付・会場を選ぶと、下のボタンがその区分のページになります。';
+  }
+  var links = document.querySelectorAll('.dv');
+  for (i = 0; i < links.length; i++) {
+    if (!cur) { links[i].classList.add('dis'); if (links[i].tagName === 'A') links[i].removeAttribute('href'); continue; }
+    links[i].classList.remove('dis');
+    if (links[i].tagName === 'A') links[i].setAttribute('href', links[i].getAttribute('data-href').replace('{d}', cur));
+  }
+}
+
+function find(key) {
+  var i;
+  for (i = 0; i < VENUES.length; i++) if (VENUES[i].key === key) return VENUES[i];
+  return null;
+}
+
+function choose(key) {
+  cur = key;
+  try { localStorage.setItem(STORE, key); } catch (e) {}
+  renderVenues();
+}
+
+function openQr() {
+  var v = find(cur);
+  if (!v) return;
+  var url = siteBase() + 'progress.html?div=' + cur;
+  document.getElementById('qrDiv').textContent = v.div + '　進行表';
+  document.getElementById('qrUrl').textContent = url;
+  var box = document.getElementById('qr');
+  box.innerHTML = '';
+  if (window.QRCode) {
+    new QRCode(box, { text: url, width: 520, height: 520, correctLevel: QRCode.CorrectLevel.M });
+  } else {
+    box.innerHTML = '<div class="note">二次元コードを表示できません（通信を確認してください）。</div>';
+  }
+  document.getElementById('qrwrap').classList.add('open');
+}
+
+function closeQr() {
+  document.getElementById('qrwrap').classList.remove('open');
+}
+
+function printQr() {
+  document.body.classList.add('printing');
+  window.print();
+  setTimeout(function () { document.body.classList.remove('printing'); }, 500);
+}
+
+/* 前回の選択。なければ当日の日付から候補を絞らず未選択のまま */
+try { cur = localStorage.getItem(STORE) || ''; } catch (e) { cur = ''; }
+if (!find(cur)) cur = '';
+var q = new URLSearchParams(location.search).get('div');
+if (find(q)) cur = q;
+renderVenues();
+</script>
+</body>
+</html>
