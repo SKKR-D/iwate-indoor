@@ -255,7 +255,8 @@ function teamPage(d) {
     var yy = y + 26 + i * 38;
     g.text(130, yy, rows[i][0], { size: 15, spread: 100 });
     if (who) {
-      g.text(260, yy, who.full || who.label, { size: 16, spread: Math.min(370, (who.full || who.label).length * 26), bold: i === 0, color: i === 0 ? RED : INK });
+      var tnm = who.label + (who.sub ? '（' + who.sub + '）' : '');
+      g.text(260, yy, tnm, { size: 16, spread: Math.min(370, tnm.length * 26), bold: i === 0, color: i === 0 ? RED : INK });
     }
     g.hr(120, 640, yy + 11, i === rows.length - 1 ? 1 : 0.8);
   }
@@ -512,7 +513,7 @@ function indivPage(d) {
       g.text(282, yy, '・', { size: 15, anchor: 'middle' });
       g.text(304, yy, nms[1], { size: 15, spread: 100, bold: true, color: col });
       g.text(420, yy, '（', { size: 13 });
-      var fsch = fullSchool(who);
+      var fsch = schoolText(who) || who.sub || '';
       var fw = Math.min(270, fsch.length * 24);
       g.text(440, yy, fsch, { size: 13, spread: fw });
       g.text(446 + fw, yy, '）', { size: 13 });
