@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>県インドア大会 当日運営マニュアル</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=BIZ+UDPGothic:wght@400;700&family=Zen+Kaku+Gothic+New:wght@500;700;900&display=swap">
+<style>
+/* レイアウト：濃紺の表紙帯 → 係ごとのタブ（固定）→ 係ごとに1章。印刷すると1係＝改ページ */
+:root{
+  --bg:#eef3fa; --surface:#ffffff; --ink:#0e2140; --muted:#4b5f80; --line:#cfdcef;
+  --accent:#1b5cc4; --deep:#0a2f6b; --soft:#e2ecfb; --soft2:#f4f8fe; --warn:#b5461d; --warn-soft:#fdf0e9;
+  --on-deep:#ffffff; --heading:#0a2f6b;
+  --f-head:'Zen Kaku Gothic New','Hiragino Kaku Gothic ProN','Yu Gothic',sans-serif;
+  --f-body:'BIZ UDPGothic','Hiragino Kaku Gothic ProN','Yu Gothic',Meiryo,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0a1424; --surface:#111f37; --ink:#e4edfb; --muted:#9db0cf; --line:#233a5f;
+  --accent:#6ea8ff; --deep:#0c2b5c; --soft:#16305a; --soft2:#0f1c33; --warn:#ff9b6e; --warn-soft:#3a2016;
+  --on-deep:#ffffff; --heading:#e4edfb; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0a1424; --surface:#111f37; --ink:#e4edfb; --muted:#9db0cf; --line:#233a5f;
+  --accent:#6ea8ff; --deep:#0c2b5c; --soft:#16305a; --soft2:#0f1c33; --warn:#ff9b6e; --warn-soft:#3a2016;
+  --on-deep:#ffffff; --heading:#e4edfb; color-scheme:dark}
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.75}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--deep)}
+.wrap{max-width:880px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+a{color:var(--accent)}
+h1,h2,h3{font-family:var(--f-head);text-wrap:balance;line-height:1.35;margin:0}
+
+/* 表紙帯 */
+.cover{background:var(--deep);color:var(--on-deep);padding-block:28px 22px}
+.cover .eyebrow{font-size:.78rem;letter-spacing:.12em;opacity:.85}
+.cover h1{font-size:clamp(1.5rem,4.6vw,2.2rem);font-weight:900;margin-top:4px}
+.cover .meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-top:16px}
+.cover .day{border:1px solid rgba(255,255,255,.28);border-radius:8px;padding:10px 12px}
+.cover .day b{font-family:var(--f-head);font-size:1.02rem;display:block}
+.cover .day span{font-size:.86rem;opacity:.92;display:block}
+
+/* 係タブ */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;gap:6px;overflow-x:auto;padding-block:8px;scrollbar-width:thin}
+.nav a{flex:0 0 auto;text-decoration:none;color:var(--ink);font-weight:700;font-size:.85rem;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:var(--soft2)}
+.nav a:hover,.nav a:focus-visible{border-color:var(--accent);color:var(--accent);outline:none}
+
+/* 章 */
+.part{padding-block:30px 8px;scroll-margin-top:52px}
+.part+.part{border-top:6px solid var(--soft)}
+.ptitle{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.tag{font-family:var(--f-head);font-weight:900;font-size:.8rem;color:var(--on-deep);background:var(--accent);border-radius:6px;padding:3px 10px;letter-spacing:.06em}
+.ptitle h2{font-size:1.55rem;font-weight:900;color:var(--heading)}
+.lead{color:var(--muted);margin:8px 0 0}
+h3{font-size:1.08rem;font-weight:700;margin:24px 0 10px;padding-left:10px;border-left:4px solid var(--accent)}
+p{margin:8px 0}
+
+.page{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px;padding:10px 12px;background:var(--soft);border-radius:8px;font-size:.9rem}
+.page b{font-family:var(--f-head)}
+.url{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.84rem;word-break:break-all;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:1px 6px}
+
+/* 手順（順番が意味を持つので番号つき） */
+ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;gap:8px}
+ol.steps>li{counter-increment:s;position:relative;padding:10px 12px 10px 50px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+ol.steps>li::before{content:counter(s);position:absolute;left:12px;top:10px;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--on-deep);font-family:var(--f-head);font-weight:900;font-size:.9rem;display:grid;place-items:center;line-height:1}
+ol.steps b{color:var(--accent)}
+.btn{display:inline-block;font-weight:700;font-size:.86rem;border:1.5px solid var(--accent);color:var(--accent);border-radius:6px;padding:0 6px;line-height:1.6;white-space:nowrap}
+
+ul.dots{margin:0;padding-left:1.2em}
+ul.dots li{margin:3px 0}
+
+/* こんなときは */
+.qa{display:grid;gap:8px}
+.qa div{display:grid;grid-template-columns:minmax(0,15em) minmax(0,1fr);gap:4px 14px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.qa dt{font-weight:700}
+.qa dd{margin:0}
+@media (max-width:620px){.qa div{grid-template-columns:minmax(0,1fr)}}
+
+.caution{border:1.5px solid var(--warn);background:var(--warn-soft);border-radius:8px;padding:10px 12px;margin:12px 0}
+.caution b{color:var(--warn)}
+
+/* 表 */
+.tbl{overflow-x:auto;margin:8px 0}
+table{border-collapse:collapse;width:100%;min-width:520px;font-size:.9rem;background:var(--surface)}
+th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+th{background:var(--soft);font-family:var(--f-head);font-weight:700;white-space:nowrap}
+td.t{font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap;color:var(--accent)}
+
+/* 時程 */
+.time{display:grid;gap:0;border-left:3px solid var(--accent);margin-left:6px;padding-left:0}
+.time div{display:grid;grid-template-columns:7.2em minmax(0,1fr);gap:10px;padding:6px 0 6px 14px;position:relative}
+.time div::before{content:"";position:absolute;left:-8px;top:14px;width:13px;height:13px;border-radius:50%;background:var(--surface);border:3px solid var(--accent)}
+.time b{font-variant-numeric:tabular-nums;font-family:var(--f-head);font-weight:900;color:var(--accent)}
+
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px}
+.card h4{margin:0 0 4px;font-family:var(--f-head);font-size:.98rem;color:var(--accent)}
+
+ul.check{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+ul.check li{display:grid;grid-template-columns:22px minmax(0,1fr);gap:8px;align-items:start;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:8px}
+ul.check li::before{content:"";width:16px;height:16px;margin-top:5px;border:2px solid var(--accent);border-radius:3px}
+ul.check small{color:var(--muted);display:block}
+
+.foot{color:var(--muted);font-size:.82rem;padding-block:26px 40px;text-align:center}
+
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+@media print{
+  :root{--bg:#fff;--surface:#fff;--ink:#0e2140;--muted:#4b5f80;--line:#b9cbe6;--accent:#1b5cc4;--deep:#0a2f6b;--soft:#e2ecfb;--soft2:#f4f8fe;--heading:#0a2f6b;color-scheme:light}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  body{font-size:10.5pt;line-height:1.6}
+  .nav,body::before{display:none}
+  .part{break-before:page;padding-block:0}
+  .part+.part{border-top:none}
+  ol.steps>li,.qa div,.card,ul.check li,.caution{break-inside:avoid}
+  .cover{padding-block:14px}
+}
+</style>
+</head>
+<body>
+<header class="cover">
+  <div class="wrap">
+    <div class="eyebrow">岩手県中学生ソフトテニス連盟　競技部</div>
+    <h1>第40回 岩手県中学校インドアソフトテニス大会<br>当日運営マニュアル</h1>
+    <div class="meta">
+      <div class="day"><b>11月28日（土）個人戦</b><span>男子個人戦 16ペア　雫石町営体育館</span><span>女子個人戦 16ペア　紫波町総合体育館</span></div>
+      <div class="day"><b>11月29日（日）団体戦</b><span>男子団体戦 16チーム　雫石町営体育館</span><span>女子団体戦 16チーム　紫波町総合体育館</span></div>
+      <div class="day"><b>各会場 2面（Ａコート・Ｂコート）</b><span>開場 7:30／受付 7:35〜8:00</span><span>競技開始 9:00</span></div>
+    </div>
+  </div>
+</header>
+
+<nav class="nav" aria-label="係">
+  <div class="wrap">
+    <a href="#common">全係共通</a>
+    <a href="#reception">受付係</a>
+    <a href="#honbu">本部・進行係</a>
+    <a href="#record">記録・掲示係</a>
+    <a href="#court">コート係</a>
+    <a href="#coach">監督への案内</a>
+    <a href="#prep">前日までの準備</a>
+  </div>
+</nav>
+
+<main>
+<!-- ============ 共通 ============ -->
+<section class="part" id="common"><div class="wrap">
+  <div class="ptitle"><span class="tag">全係</span><h2>全係共通</h2></div>
+  <p class="lead">会場ごとに、受付・本部・記録・コートの各係を置きます。運営はすべてスマートフォン・タブレットのブラウザで行い、試合結果は本部の入力だけで進行表・組合せ表まで自動で更新されます。</p>
+
+  <h3>当日の時程（両日・両会場共通）</h3>
+  <div class="time">
+    <div><b>7:30</b><span>開場。各係は持ち場で端末を起動し、ページを開いてログインしておく</span></div>
+    <div><b>7:35〜8:00</b><span>受付（参加料の受け取り・領収書）。団体戦は受付後に監督がオーダーを提出</span></div>
+    <div><b>8:00</b><span>受付終了。受付係は未受付のチームを本部へ報告</span></div>
+    <div><b>8:40</b><span>（29日 団体戦のみ）1回戦オーダー提出の締切</span></div>
+    <div><b>9:00</b><span>競技開始。以降の予定時刻は進行表で確認（遅れは自動で再計算）</span></div>
+    <div><b>決勝終了後</b><span>結果入りの組合せ表で順位を確認し、表彰へ</span></div>
+  </div>
+
+  <h3>使うページ</h3>
+  <p>すべて <span class="url">https://skkr-d.github.io/iwate-indoor/</span> の下にあります。<span class="url">?div=</span> のあとの記号で区分を切り替えます（<b>MI</b> 男子個人戦／<b>WI</b> 女子個人戦／<b>MT</b> 男子団体戦／<b>WT</b> 女子団体戦）。</p>
+  <div class="tbl"><table>
+    <thead><tr><th>ページ</th><th>アドレス（末尾）</th><th>使う人</th><th>ログイン</th></tr></thead>
+    <tbody>
+      <tr><td>大会トップ</td><td><span class="url">index.html</span></td><td>全員</td><td>なし</td></tr>
+      <tr><td>当日受付</td><td><span class="url">reception.html</span></td><td>受付係</td><td>受付パスワード＋担当者名</td></tr>
+      <tr><td>本部 進行管理</td><td><span class="url">control.html?div=MI</span></td><td>本部・進行係</td><td>本部パスワード</td></tr>
+      <tr><td>進行表（公開）</td><td><span class="url">progress.html?div=MI</span></td><td>全員・掲示用</td><td>なし</td></tr>
+      <tr><td>組合せ・結果</td><td><span class="url">bracket.html?div=MI</span><br>白紙は末尾に <span class="url">&amp;mode=blank</span></td><td>記録・掲示係</td><td>なし</td></tr>
+      <tr><td>スコアシート印刷</td><td><span class="url">scoresheet.html?div=MI</span></td><td>記録・掲示係</td><td>なし</td></tr>
+      <tr><td>管理画面</td><td><span class="url">admin.html</span></td><td>競技委員長</td><td>管理パスワード</td></tr>
+    </tbody>
+  </table></div>
+  <div class="caution"><b>パスワードの扱い</b>　パスワードは競技委員長から各係の責任者へ直接伝えます。このマニュアル・掲示物・グループの連絡には書かないでください。</div>
+
+  <h3>通信が切れたとき・端末が使えないとき</h3>
+  <div class="cards">
+    <div class="card"><h4>受付</h4>印刷した参加チーム一覧に手書きでチェックし、紙の領収書を渡す。回復したら受付ページで受付完了にする。</div>
+    <div class="card"><h4>本部</h4>スコアシートを試合順に保管して紙で進行する。回復したら結果をまとめて入力する。</div>
+    <div class="card"><h4>掲示</h4>白紙の組合せ表に結果を手書きして掲示する。</div>
+  </div>
+  <p>端末は満充電で持参し、モバイルバッテリーを用意してください。</p>
+</div></section>
+
+<!-- ============ 受付係 ============ -->
+<section class="part" id="reception"><div class="wrap">
+  <div class="ptitle"><span class="tag">受付</span><h2>受付係</h2></div>
+  <p class="lead">受付票の二次元コードを読み、参加料を現金で受け取ります。受付完了と同時に、申込責任者へ領収書（PDF）がメールで届きます。</p>
+  <div class="page"><b>担当ページ</b><span class="url">reception.html</span>受付パスワード＋担当者名でログイン</div>
+
+  <h3>開場までの準備（7:30まで）</h3>
+  <ol class="steps">
+    <li>受付用のスマートフォン・タブレットで受付ページを開く。ホーム画面に追加しておくと次から速い。</li>
+    <li><b>受付パスワード</b>と<b>担当者名</b>（例：受付A、氏名）を入れてログインする。担当者名は受付記録に残る。</li>
+    <li>「受付する区分」でその日・その会場の区分を選ぶ。<br>28日：雫石＝男子個人戦／紫波＝女子個人戦　29日：雫石＝男子団体戦／紫波＝女子団体戦</li>
+    <li><span class="btn">📷 読み取りを開始</span> を押し、カメラの使用を許可する。</li>
+    <li>釣り銭、印刷済みの紙の領収書、選手変更届の用紙を手元に置く。</li>
+  </ol>
+
+  <h3>受付の手順（1チームごと）</h3>
+  <ol class="steps">
+    <li>監督が見せる<b>受付票の二次元コード</b>を読む。スマートフォンの画面でも、印刷した紙でもよい。</li>
+    <li>画面に出たチーム名・区分・参加料を声に出して確認する。<br>団体戦：1チーム 10,000円　個人戦：1ペア 3,000円 × ペア数（合同ペアは申込時に決めた支払チームにまとめて表示）</li>
+    <li>現金を受け取る。</li>
+    <li><span class="btn">💴 現金受領・受付完了</span> を押す。「領収書（PDF）を申込責任者にメールで送りました。」と出れば完了。</li>
+    <li>団体戦の日は監督に「受付票の<b>オーダー提出（監督用）</b>から、1回戦のオーダーを <b>8:40まで</b> に出してください」と伝える。</li>
+    <li><span class="btn">次の受付へ</span> を押して次のチームへ。</li>
+  </ol>
+
+  <h3>こんなときは</h3>
+  <dl class="qa">
+    <div><dt>受付票がない・コードが読めない</dt><dd>「チーム名で探す（受付票がない場合）」にチーム名・略称・地区のどれかを入れ、一覧から選ぶ。</dd></div>
+    <div><dt>「すでに受付済みです」と表示された</dt><dd>別の端末ですでに受付が終わっている。お金は受け取らず、表示された担当者・時刻を確認する。</dd></div>
+    <div><dt>違うチームで受付してしまった</dt><dd><span class="btn">受付を取り消す</span> を押し、受け取った現金を返す。本部へ報告する。</dd></div>
+    <div><dt>「領収書メールを送れませんでした」と出た</dt><dd>受付自体は完了している。チーム名を本部に伝え、管理画面から再送してもらう。</dd></div>
+    <div><dt>紙の領収書がほしいと言われた</dt><dd>印刷済みの領収書から該当チームのものを渡す（1チーム1枚）。</dd></div>
+    <div><dt>選手を変更したいと言われた</dt><dd>選手変更届（紙）を書いてもらい、本部へ届ける。入力は本部が行う。</dd></div>
+    <div><dt>8:00になった</dt><dd>画面の一覧で「未受付」のチームを確認し、本部へ報告する。</dd></div>
+  </dl>
+</div></section>
+
+<!-- ============ 本部・進行係 ============ -->
+<section class="part" id="honbu"><div class="wrap">
+  <div class="ptitle"><span class="tag">本部</span><h2>本部・進行係</h2></div>
+  <p class="lead">試合のコール・開始・結果入力を行います。本部が入力した結果は、進行表・組合せ表・監督ポータルにすぐ反映されます。</p>
+  <div class="page"><b>担当ページ</b><span class="url">control.html?div=MI</span>（女子個人戦は WI、団体戦は MT／WT）本部パスワードでログイン</div>
+
+  <h3>画面の見方</h3>
+  <ul class="dots">
+    <li>Ａコート・Ｂコートの列に、試合が予定順に並ぶ。各カードに第○試合・回戦・予定時刻・対戦が出る。</li>
+    <li>枠の色：<b>黄＝呼出中</b>、<b>赤＝試合中</b>、<b>灰＝終了</b>。</li>
+    <li>予定時刻は、試合が始まると実際の進み具合から自動で再計算される。</li>
+    <li>画面上部の「公開ページ」で進行表、「スコアシート」で一括印刷のページが開く。</li>
+  </ul>
+
+  <h3>1試合の流れ</h3>
+  <ol class="steps">
+    <li>前の試合が終わりそうになったら <span class="btn">コール</span>。放送で選手を呼ぶ。</li>
+    <li>試合が始まったら <span class="btn">開始</span>。</li>
+    <li>コートからスコアシートが届いたら結果を入れる。<br>個人戦：<span class="btn">結果入力</span> で勝者とゲーム数（例：4-2）<br>団体戦：<span class="btn">番手結果</span> で番手ごとの勝者とゲーム数（例：3-1）</li>
+    <li>勝者は自動で次の試合に入る。スコアシートは試合順に保管する。</li>
+    <li>入力を間違えたら <span class="btn">結果修正</span>、状態を戻すときは <span class="btn">戻す</span>。</li>
+  </ol>
+
+  <h3>個人戦（28日）</h3>
+  <ul class="dots">
+    <li>予選リーグは4ブロック×4ペア。Ａ・ＢブロックはＡコート、Ｃ・ＤブロックはＢコート。1試合7ゲーム。</li>
+    <li>ブロックの試合が全部終わったら、「予選リーグの順位」で1位・2位を選び <span class="btn">○ブロックの順位を確定</span>。これで決勝トーナメントの対戦が決まる。</li>
+    <li>決勝トーナメント1回戦：Ａ1位－Ｃ2位、Ｄ2位－Ｂ1位、Ｃ1位－Ａ2位、Ｂ2位－Ｄ1位。</li>
+  </ul>
+
+  <h3>団体戦（29日）</h3>
+  <ul class="dots">
+    <li>3ダブルス、1対戦5ゲーム。<b>1回戦は3番手まで全部行う。2回戦以降は2勝した時点で決着</b>（残りは打ち切り）。</li>
+    <li>選手が6名未満のチームは3番手が不戦敗（自動で処理される）。</li>
+    <li>オーダー締切：1回戦は8:40。2回戦以降は前の試合の終了から10分（コート集合は15分）。締切を過ぎても未提出の試合は赤で表示される。</li>
+    <li>未提出のチームからは紙のオーダー票を受け取り、<span class="btn">オーダー</span> から代理入力する。両チームそろった後の訂正も本部ならできる。</li>
+    <li>勝ち数が同じとき：得失ゲーム差（自動）→ 得失ポイント差（本部が入力）→ 代表戦（本部が入力）の順で決める。画面の案内に従う。</li>
+    <li>決勝は既定で2面展開。ほかの試合も <span class="btn">2面展開</span> で切り替えられる。</li>
+  </ul>
+
+  <h3>進行の調整</h3>
+  <dl class="qa">
+    <div><dt>試合の順番を入れ替えたい</dt><dd>カードの <span class="btn">▲</span> <span class="btn">▼</span>。</dd></div>
+    <div><dt>空いたコートへ回したい</dt><dd><span class="btn">⇄ Bへ</span>／<span class="btn">⇄ Aへ</span>。</dd></div>
+    <div><dt>終了が17時を過ぎそう</dt><dd>「目安時間」で5ゲーム・7ゲームの目安（初期値 20分・30分）を見直す。予定時刻がすぐ再計算される。</dd></div>
+    <div><dt>この試合のスコアシートが欲しい</dt><dd>カードの <span class="btn">🖨 シート</span> で、対戦者・オーダー入りの1枚を印刷できる。</dd></div>
+    <div><dt>選手変更届が届いた</dt><dd>競技委員長が管理画面の「選手変更」タブで入力する（団体戦は登録選手から、個人戦は同じチームの選手と1名まで）。</dd></div>
+  </dl>
+</div></section>
+
+<!-- ============ 記録・掲示係 ============ -->
+<section class="part" id="record"><div class="wrap">
+  <div class="ptitle"><span class="tag">記録</span><h2>記録・掲示係</h2></div>
+  <p class="lead">スコアシートの配布・回収と、組合せ表・進行表の掲示を担当します。</p>
+  <div class="page"><b>担当ページ</b><span class="url">scoresheet.html?div=MI</span><span class="url">bracket.html?div=MI</span><span class="url">progress.html?div=MI</span></div>
+
+  <h3>スコアシート</h3>
+  <ol class="steps">
+    <li>スコアシートのページで区分を選び、「コート」「範囲」を指定して印刷する（A4縦・1試合1枚）。試合番号・コート・予定時刻・対戦者が印字される。</li>
+    <li>予選リーグ・団体戦1回戦は名前入りで前日までに印刷できる。決勝トーナメント・2回戦以降は対戦が決まってから、本部の <span class="btn">🖨 シート</span> で印刷するか、空欄に手書きする。</li>
+    <li>予備として「白紙」の枚数を指定して印刷しておく。</li>
+    <li>当日は試合順にコートへ渡し、試合が終わったらすぐ回収して本部へ届ける。</li>
+  </ol>
+
+  <h3>組合せ表・進行表の掲示</h3>
+  <ul class="dots">
+    <li><b>白紙の組合せ</b>（<span class="url">bracket.html?div=MI&amp;mode=blank</span>）：結果の入らない記入用。掲示して結果を手書きするときに使う。</li>
+    <li><b>結果入りの組合せ</b>（<span class="url">bracket.html?div=MI</span>）：本部の入力で随時更新。区切りのよいところで印刷して貼り替える。</li>
+    <li>どちらも1区分＝A4縦1枚。「4区分まとめて」で4枚一度に印刷できる。</li>
+    <li>進行表（<span class="url">progress.html?div=MI</span>）の二次元コードを会場入口・観覧席に掲示し、選手・保護者がスマートフォンで予定時刻を確認できるようにする。</li>
+  </ul>
+
+  <h3>表彰の準備</h3>
+  <p>決勝が終わると、結果入りの組合せ表の下の欄に優勝〜第3位（個人戦は第1位〜第3位）が入ります。表彰の読み上げはこの欄で確認してください。</p>
+</div></section>
+
+<!-- ============ コート係 ============ -->
+<section class="part" id="court"><div class="wrap">
+  <div class="ptitle"><span class="tag">コート</span><h2>コート係（コート主任・審判）</h2></div>
+  <p class="lead">スコアシートを受け取って試合を進め、終わったらすぐ本部へ戻します。シートが早く戻るほど、次の試合のコールが早くなります。</p>
+
+  <h3>試合の進め方</h3>
+  <ol class="steps">
+    <li>記録・掲示係からスコアシートを受け取る。右上の試合番号・コートが合っているか確認する。</li>
+    <li>選手名・所属をシートで確認する。団体戦はオーダーがそろっていれば番手ごとの選手名が印字されている。</li>
+    <li>試合を行う。<b>個人戦は7ゲーム、団体戦は5ゲーム</b>。</li>
+    <li>終了後、勝者サインをもらい、スコアシートをすぐ本部へ届ける。</li>
+  </ol>
+
+  <h3>団体戦の注意</h3>
+  <ul class="dots">
+    <li>1回戦は3番手まですべて行う。</li>
+    <li>2回戦以降は、どちらかが2勝した時点で対戦終了（残りの番手は行わない）。</li>
+    <li>選手6名未満のチームは3番手が不戦敗。シートに「欠員のため不戦敗」と印字される。</li>
+    <li>2面展開の試合は、2面で番手を並行して行う。進め方は本部の指示に従う。</li>
+  </ul>
+</div></section>
+
+<!-- ============ 監督への案内 ============ -->
+<section class="part" id="coach"><div class="wrap">
+  <div class="ptitle"><span class="tag">案内</span><h2>監督への案内</h2></div>
+  <p class="lead">受付やオーダーについて聞かれたときは、この内容で案内してください。</p>
+
+  <h3>受付</h3>
+  <ul class="dots">
+    <li>受付は7:35〜8:00。申込時に届いた受付票（二次元コード）を、スマートフォンの画面か印刷した紙で見せる。</li>
+    <li>参加料は現金。受付が終わると、申込責任者に領収書（PDF）がメールで届く。</li>
+  </ul>
+
+  <h3>団体戦のオーダー提出</h3>
+  <ol class="steps">
+    <li>受付が済んだら、受付票の <span class="btn">📝 オーダー提出（監督用）</span> を開く（チーム専用のページ）。</li>
+    <li>番手ごとに選手名を選んで提出する。選んだ選手はグレーになり、二重には選べない。</li>
+    <li>締切は1回戦が<b>8:40</b>、2回戦以降は<b>前の試合の終了から10分</b>。コート集合は前の試合の終了から15分。</li>
+    <li>相手のオーダーは、両チームが提出すると表示される。提出後の変更は本部へ申し出る。</li>
+  </ol>
+  <p>スマートフォンが使えない場合は、紙のオーダー票を本部へ提出してもらいます。試合の予定時刻・結果は、会場の二次元コードから進行表で確認できます。</p>
+</div></section>
+
+<!-- ============ 前日までの準備 ============ -->
+<section class="part" id="prep"><div class="wrap">
+  <div class="ptitle"><span class="tag">準備</span><h2>前日までの準備</h2></div>
+  <p class="lead">申込締切（11月19日 17:00）から大会前日までに済ませておくことです。</p>
+  <ul class="check">
+    <li><span>組合せを入力し、進行表を作成する<small>管理画面「組合せ・進行表」</small></span></li>
+    <li><span>領収書PDFを事前作成する<small>管理画面「領収書PDFを事前作成」。受付時のメール送信が速くなる</small></span></li>
+    <li><span>紙の領収書を印刷する<small>管理画面「申込一覧・PDF」→「領収書（印刷用）」</small></span></li>
+    <li><span>参加チーム一覧を印刷する（通信が切れたときの受付用）<small>管理画面「申込一覧・PDF」</small></span></li>
+    <li><span>スコアシートを印刷する（予選リーグ・1回戦＋白紙の予備）<small>scoresheet.html</small></span></li>
+    <li><span>白紙の組合せ表を印刷する（掲示用・記録用）<small>bracket.html?div=ALL&amp;mode=blank</small></span></li>
+    <li><span>進行表の二次元コードの掲示物を作る<small>progress.html?div=MI ／ WI ／ MT ／ WT</small></span></li>
+    <li><span>受付用・本部用の端末を会場ごとに用意し、充電する<small>モバイルバッテリー、通信の確認</small></span></li>
+    <li><span>各係の責任者へパスワードを伝える<small>受付パスワード・本部パスワード</small></span></li>
+    <li><span>釣り銭、選手変更届・オーダー票（紙）の予備を用意する</span></li>
+  </ul>
+</div></section>
+</main>
+
+<footer class="foot"><div class="wrap">岩手県中学生ソフトテニス連盟　競技委員長　坂倉 大</div></footer>
+
+</body>
+</html>

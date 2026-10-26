@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>スコアシート｜県インドア大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--main:#1a4a2e;--gray:#f5f5f0;--text:#222;--light:#666;--line:#e2e2da}
+html{font-size:15px}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--text)}
+.bar{background:linear-gradient(135deg,#123522,var(--main));color:#fff;padding:10px 14px;position:sticky;top:0;z-index:10}
+.bar-inner{max-width:900px;margin:0 auto}
+.bar h1{font-size:.95rem;font-weight:900}
+.bar h1 small{display:block;font-size:.66rem;font-weight:500;opacity:.85}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tabs a{padding:6px 12px;border-radius:16px;background:rgba(255,255,255,.15);color:#fff;text-decoration:none;font-size:.78rem;font-weight:700}
+.tabs a.on{background:#f3d36b;color:#3a2e00}
+.ctl{max-width:900px;margin:12px auto;padding:12px 14px;background:#fff;border-radius:10px;border:1.5px solid var(--line);display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;font-size:.85rem}
+.ctl label{display:flex;align-items:center;gap:6px;font-weight:700}
+.ctl select,.ctl input{font-family:inherit;font-size:.85rem;padding:5px 8px;border:1.5px solid #ccc;border-radius:6px}
+.ctl input[type=number]{width:64px}
+.btn{font-family:inherit;font-weight:700;font-size:.85rem;padding:8px 16px;border-radius:8px;border:none;background:var(--main);color:#fff;cursor:pointer}
+.btn.sub{background:#fff;color:var(--main);border:2px solid var(--main)}
+.count{color:var(--light);font-size:.8rem}
+.pages{max-width:900px;margin:0 auto 30px;padding:0 10px}
+.page{background:#fff;box-shadow:0 1px 8px rgba(0,0,0,.1);margin:0 auto 14px;width:100%;max-width:640px}
+.page svg{display:block;width:100%;height:auto}
+.loading{text-align:center;color:var(--light);padding:40px}
+@media print{
+  @page{size:A4 portrait;margin:0}
+  body{background:#fff}
+  .bar,.ctl{display:none}
+  .pages{margin:0;padding:0;max-width:none}
+  .page{box-shadow:none;margin:0;max-width:none;width:210mm;height:297mm;break-after:page;page-break-after:always}
+  .page:last-child{break-after:auto;page-break-after:auto}
+  .page svg{width:210mm;height:297mm}
+}
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-inner">
+  <h1><small id="sub">第40回岩手県中学校インドアソフトテニス大会</small>スコアシート（一括印刷）</h1>
+  <div class="tabs" id="tabs"></div>
+</div></div>
+<div class="ctl">
+  <label>コート <select id="fCourt" onchange="render()"><option value="">両方</option><option value="A">Ａコート</option><option value="B">Ｂコート</option></select></label>
+  <label>範囲 <select id="fRange" onchange="render()"></select></label>
+  <label><input type="checkbox" id="fOpen" onchange="render()"> 終了した試合は除く</label>
+  <span class="count" id="count"></span>
+  <span style="flex:1"></span>
+  <label>白紙 <input type="number" id="blankN" min="0" max="50" value="0" onchange="render()"> 枚</label>
+  <button class="btn" onclick="window.print()">🖨 印刷</button>
+</div>
+<div class="pages" id="pages"><div class="loading">読み込み中...</div></div>
+
+<script>
+/* ★ GASのウェブアプリURL */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
+
+var params = new URLSearchParams(location.search);
+var div = params.get('div') || 'MI';
+if (['MT', 'WT', 'MI', 'WI'].indexOf(div) < 0) div = 'MI';
+var onlyMatch = params.get('match') || '';
+var DATA = null;
+var ZEN = { A: 'Ａ', B: 'Ｂ', C: 'Ｃ', D: 'Ｄ', '1': '１', '2': '２', '3': '３', '4': '４' };
+var CIRC = ['', '①', '②', '③', '④', '⑤', '⑥'];
+
+function esc(s) {
+  if (s === undefined || s === null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function zen(s) {
+  return String(s || '').replace(/[A-D1-4]/g, function (c) { return ZEN[c] || c; });
+}
+
+/* ============================================================
+   SVG（単位はmm、A4＝210×297）
+   ============================================================ */
+function P() { this.h = []; }
+P.prototype.ln = function (x1, y1, x2, y2, w) {
+  this.h.push('<line x1="' + x1.toFixed(2) + '" y1="' + y1.toFixed(2) + '" x2="' + x2.toFixed(2) + '" y2="' + y2.toFixed(2) + '" stroke="#000" stroke-width="' + (w || 0.15) + '"/>');
+};
+P.prototype.box = function (x1, y1, x2, y2, w) {
+  this.h.push('<rect x="' + x1.toFixed(2) + '" y="' + y1.toFixed(2) + '" width="' + (x2 - x1).toFixed(2) + '" height="' + (y2 - y1).toFixed(2) + '" fill="none" stroke="#000" stroke-width="' + (w || 0.15) + '"/>');
+};
+/* opt: s（文字サイズmm）, a（start/middle/end）, b（太字）, fit（最大幅mm）, c（色） */
+P.prototype.t = function (x, y, str, opt) {
+  opt = opt || {};
+  str = String(str === undefined || str === null ? '' : str);
+  if (!str) return;
+  var s = opt.s || 3.2;
+  var n = 0;
+  var i;
+  for (i = 0; i < str.length; i++) n += str.charCodeAt(i) < 256 ? 0.55 : 1;
+  var extra = '';
+  if (opt.fit && n * s > opt.fit) extra = ' textLength="' + opt.fit.toFixed(2) + '" lengthAdjust="spacingAndGlyphs"';
+  this.h.push('<text x="' + x.toFixed(2) + '" y="' + y.toFixed(2) + '" font-size="' + s + '" text-anchor="' + (opt.a || 'start') + '"' + (opt.b ? ' font-weight="700"' : '') + (opt.c ? ' fill="' + opt.c + '"' : '') + extra + '>' + esc(str) + '</text>');
+};
+/* セル中央に文字 */
+P.prototype.ct = function (x1, x2, y1, y2, str, opt) {
+  opt = opt || {};
+  var s = opt.s || 3.2;
+  opt.a = 'middle';
+  if (!opt.fit) opt.fit = (x2 - x1) - 1.6;
+  this.t((x1 + x2) / 2, (y1 + y2) / 2 + s * 0.36, str, opt);
+};
+/* 縦書き（1文字ずつ） */
+P.prototype.vt = function (x, y1, y2, chars, s) {
+  var step = (y2 - y1) / chars.length;
+  var i;
+  for (i = 0; i < chars.length; i++) this.t(x, y1 + step * (i + 0.5) + s * 0.36, chars[i], { s: s, a: 'middle' });
+};
+P.prototype.circle = function (cx, cy, r) {
+  this.h.push('<circle cx="' + cx.toFixed(2) + '" cy="' + cy.toFixed(2) + '" r="' + r + '" fill="none" stroke="#000" stroke-width="0.3"/>');
+};
+P.prototype.out = function () {
+  return '<svg viewBox="0 0 210 297" xmlns="http://www.w3.org/2000/svg" font-family="Noto Sans JP, sans-serif">' + this.h.join('') + '</svg>';
+};
+
+var THICK = 0.4, MID = 0.3, THIN = 0.14;
+
+/* ゲーム欄（片側）：SR欄＋ポイント14列。games=6ゲーム（各2段）＋ファイナル（3段） */
+function gameGrid(g, xSR, xP0, xP1, y0, gameH, finalH, right) {
+  var cw = (xP1 - xP0) / 14;
+  var y = y0;
+  var k, c, r;
+  var colX = function (i) { return xP0 + cw * i; };
+  for (k = 0; k < 7; k++) {
+    var fin = k === 6;
+    var h = fin ? finalH : gameH;
+    var sub = fin ? 3 : 2;
+    var sh = h / sub;
+    g.t((xSR + xP0) / 2, y + h / 2 + 1.2, 'S R', { s: 3.2, a: 'middle' });
+    g.ln(xP0, y, xP0, y + h, MID);
+    for (r = 1; r < sub; r++) g.ln(xP0, y + sh * r, xP1, y + sh * r, THIN);
+    for (r = 0; r < sub; r++) {
+      for (c = 1; c < 14; c++) {
+        var thick = fin ? c % 2 === 0 : (r === 0 ? (c % 2 === 0 && c >= 6) : c % 2 === 0);
+        g.ln(colX(c), y + sh * r, colX(c), y + sh * (r + 1), thick ? MID : THIN);
+      }
+      if (fin) {
+        var odd = (r === 1) !== !!right;
+        var set = odd ? [3, 4, 7, 8, 11, 12] : [1, 2, 5, 6, 9, 10, 13, 14];
+        for (c = 0; c < set.length; c++) g.t(colX(set[c] - 1) + cw / 2, y + sh * r + Math.min(sh * 0.62, 3.0), '*', { s: Math.min(3.4, sh * 0.75), a: 'middle' });
+      }
+    }
+    y += h;
+    g.ln(xSR, y, xP1, y, k === 6 ? MID : MID);
+  }
+  return y;
+}
+
+/* ============================================================
+   個人戦（ダブルス・シングルス スコアシート）
+   ============================================================ */
+function indivSheet(m, info) {
+  var g = new P();
+  var X0 = 15.5, X1 = 197.5;
+  g.t(105, 34.5, 'ダブルス・シングルス　スコアシート', { s: 5.2, a: 'middle', b: true });
+  topInfo(g, m, info, 24);
+  /* 行の位置 */
+  var Y = { h0: 40.1, h1: 51.6, h2: 63.8, p0: 72.5, p1: 86.6, g0: 101.0, w0: 221.8, w1: 229.7, s0: 246.1, s1: 261.9 };
+  var gameH = (197.6 - 101.0) / 6, finalH = 221.8 - 197.6;
+  /* ヘッダー */
+  var hx = [X0, 55.0, 105.8, 151.5, X1];
+  g.ln(X0, Y.h1, X1, Y.h1, MID);
+  g.ln(X0, Y.h2, X1, Y.h2, MID);
+  for (var i = 1; i < 4; i++) g.ln(hx[i], Y.h0, hx[i], Y.h2, MID);
+  g.t(X0 + 2, 46.8, '種別', { s: 3.2 });
+  g.t(52.5, 44.6, '男', { s: 3.2, a: 'end' });
+  g.t(52.5, 49.8, '女', { s: 3.2, a: 'end' });
+  g.t(58, 46.8, '第', { s: 3.2 });
+  g.t(102.5, 46.8, 'コート', { s: 3.2, a: 'end' });
+  g.t(107, 44.2, '正審', { s: 3.0 });
+  g.t(153, 44.2, '副審', { s: 3.0 });
+  g.t(107, 55.6, '線審', { s: 3.0 });
+  g.t(153, 55.6, '線審', { s: 3.0 });
+  g.t(58, 56.3, '開始', { s: 3.0 });
+  g.t(58, 61.6, '終了', { s: 3.0 });
+  g.t(80, 56.3, ':', { s: 3.0 });
+  g.t(80, 61.6, ':', { s: 3.0 });
+  g.t(101.5, 56.3, '分', { s: 3.0, a: 'end' });
+  g.t(101.5, 61.6, '分', { s: 3.0, a: 'end' });
+  /* No・所属・プレーヤー */
+  var L = { no0: X0, no1: 21.2, nov: 35.3, sh1: 54.5, sv: 93.7, pl1: 30.5, ab1: 35.3 };
+  var R = { no0: 117.1, no1: 122.8, nov: 137.0, sh1: 156.6, sv: X1, pl1: 132.2, ab1: 137.0 };
+  var cx0 = 93.7, cx1 = 117.1;
+  g.ln(X0, Y.p0, cx0, Y.p0, THIN);
+  g.ln(cx1, Y.p0, X1, Y.p0, THIN);
+  g.ln(cx0, Y.h2, cx0, Y.w0, MID);
+  g.ln(cx1, Y.h2, cx1, Y.w0, MID);
+  g.ct(cx0, cx1, Y.h2, Y.p0, '（スコア）', { s: 2.8 });
+  g.ct(cx0, cx1, Y.p0, Y.g0, '―', { s: 4 });
+  var sides = [[L, m ? m.left : null], [R, m ? m.right : null]];
+  var sd;
+  for (sd = 0; sd < 2; sd++) {
+    var c = sides[sd][0], s = sides[sd][1];
+    g.ln(c.no1, Y.h2, c.no1, Y.p0, THIN);
+    g.ln(c.nov, Y.h2, c.nov, Y.p0, THIN);
+    g.ln(c.sh1, Y.h2, c.sh1, Y.p0, THIN);
+    g.t(c.no0 + 0.6, 67.6, 'No', { s: 2.6 });
+    g.ct(c.nov, c.sh1, Y.h2, Y.p0, '所属', { s: 3.4 });
+    g.ln(c.pl1, Y.p0, c.pl1, Y.g0, THIN);
+    g.ln(c.ab1, Y.p0, c.ab1, Y.g0, THIN);
+    g.ln(c.pl1, Y.p1, c.sv, Y.p1, THIN);
+    g.ln(c.no0, 96.6, c.pl1, 96.6, THIN);
+    g.vt((c.no0 + c.pl1) / 2, Y.p0 + 1, 96, ['プ', 'レ', '｜', 'ヤ', '｜'], 3.2);
+    g.ct(c.no0, c.pl1, 96.6, Y.g0, 'サイド', { s: 2.8 });
+    g.ct(c.pl1, c.ab1, Y.p0, Y.p1, 'A', { s: 3 });
+    g.ct(c.pl1, c.ab1, Y.p1, Y.g0, 'B', { s: 3 });
+    /* データ */
+    if (s) {
+      g.ct(c.no1, c.nov, Y.h2, Y.p0, info.noOf(s), { s: 3.8, b: true });
+      if (s.decided) {
+        g.ct(c.sh1, c.sv, Y.h2, Y.p0, info.schoolOf(s), { s: 4.2, b: true });
+        var nm = s.names && s.names.length ? s.names : [s.label, ''];
+        var gr = s.grades || [];
+        g.t(c.ab1 + 4, (Y.p0 + Y.p1) / 2 + 1.8, nm[0], { s: 5, b: true, fit: c.sv - c.ab1 - 22 });
+        g.t(c.sv - 3, (Y.p0 + Y.p1) / 2 + 1.6, gradeText(gr[0]), { s: 3.6, a: 'end' });
+        g.t(c.ab1 + 4, (Y.p1 + Y.g0) / 2 + 1.8, nm[1], { s: 5, b: true, fit: c.sv - c.ab1 - 22 });
+        g.t(c.sv - 3, (Y.p1 + Y.g0) / 2 + 1.6, gradeText(gr[1]), { s: 3.6, a: 'end' });
+      } else {
+        g.ct(c.sh1, c.sv, Y.h2, Y.p0, s.label || '', { s: 3, c: '#777' });
+      }
+    }
+  }
+  g.ln(X0, Y.g0, X1, Y.g0, THICK);
+  /* ゲーム欄 */
+  var yEnd = gameGrid(g, X0, 25.4, cx0, Y.g0, gameH, finalH, false);
+  gameGrid(g, cx1, 127.0, X1, Y.g0, gameH, finalH, true);
+  var k;
+  for (k = 0; k < 7; k++) {
+    var yy = Y.g0 + gameH * k + (k === 6 ? finalH : gameH) / 2;
+    g.t((cx0 + cx1) / 2, yy + 1.3, k === 6 ? '-Ⓕ-' : '-' + CIRC[k + 1] + '-', { s: 3.6, a: 'middle' });
+  }
+  /* 警告・タイム */
+  warnRow(g, [X0, 25.4, 40.1, 54.8, 69.4, 105.5, 142.0, 151.8, 166.5, 182.0, X1], Y.w0, Y.w1, Y.s0);
+  /* サイン欄 */
+  var sx = [X0, 30.5, 54.8, 69.1, 83.8, 100.8, 122.8, 137.0, 156.6, 170.7, X1];
+  signRow(g, sx, Y.s0, Y.s1);
+  /* 種別・コート・回戦（データ） */
+  if (m) {
+    if (info.gender === '男') g.circle(50.9, 43.4, 2.6); else g.circle(50.9, 48.6, 2.6);
+    g.ct(62, 92, Y.h0, Y.h1, zen(m.court), { s: 5, b: true });
+    roundCell(g, X0, 55.0, Y.h1, Y.h2, m, info);
+  } else {
+    g.t(18.5, 58.6, '第', { s: 3.2 });
+    g.t(52.5, 58.6, '回戦', { s: 3.2, a: 'end' });
+  }
+  g.box(X0, Y.h0, X1, Y.s1, THICK);
+  g.ln(X0, Y.w0, X1, Y.w0, THICK);
+  g.ln(X0, Y.s0, X1, Y.s0, THICK);
+  g.t(105, 267.6, '（公財）日本ソフトテニス連盟', { s: 3.4, a: 'middle' });
+  return g.out();
+}
+
+function gradeText(gr) {
+  var n = String(gr || '').replace(/[^0-9]/g, '');
+  return n ? n + '年' : '';
+}
+
+/* 回戦欄 */
+function roundCell(g, x1, x2, y1, y2, m, info) {
+  var label;
+  if (m.stage === 'L') label = '予選リーグ ' + zen(String(m.round).charAt(0)) + 'ブロック';
+  else label = String(m.round).replace(/^決勝T\s*/, info.type === 'indiv' ? '決勝T ' : '');
+  g.ct(x1, x2, y1, y2, label, { s: 4.2, b: true });
+}
+
+/* 試合番号・予定時刻（枠の外・右上） */
+function topInfo(g, m, info, y) {
+  g.t(15.5, y, info.tournament + '　' + info.divName, { s: 2.8, c: '#333' });
+  if (!m) return;
+  var tm = m.plan ? '　予定 ' + m.plan : '';
+  g.t(194.5, y, '第' + m.no + '試合　' + zen(m.court) + 'コート' + (m.two ? '（2面展開）' : '') + tm, { s: 3.4, a: 'end', b: true });
+}
+
+function warnRow(g, wx, y0, y1, y2) {
+  var i;
+  g.ln(wx[0], y1, wx[4], y1, THIN);
+  g.ln(wx[6], y1, wx[10], y1, THIN);
+  for (i = 1; i < 10; i++) g.ln(wx[i], y0, wx[i], y2, i === 4 || i === 5 || i === 6 ? MID : THIN);
+  var lab = ['(警告)', 'Y', 'Y', 'R'];
+  for (i = 0; i < 4; i++) g.ct(wx[i], wx[i + 1], y0, y1, lab[i], { s: i === 0 ? 2.5 : 3.2 });
+  for (i = 0; i < 4; i++) g.ct(wx[i + 6], wx[i + 7], y0, y1, lab[i], { s: i === 0 ? 2.5 : 3.2 });
+  g.ct(wx[0], wx[1], y1, y2, '該当事項', { s: 2.1 });
+  g.ct(wx[6], wx[7], y1, y2, '該当事項', { s: 2.1 });
+  var tb = function (xa) {
+    g.t(xa + 3, y0 + 4.6, 'タ イ ム', { s: 3.2 });
+    g.t(xa + 3, y0 + 11.6, 'A', { s: 3.2 });
+    g.t(xa + 14, y0 + 11.6, '5 ・ 5', { s: 3.2 });
+    g.t(xa + 3, y0 + 18.6, 'B', { s: 3.2 });
+    g.t(xa + 14, y0 + 18.6, '5 ・ 5', { s: 3.2 });
+  };
+  tb(wx[4]);
+  tb(wx[5]);
+}
+
+function signRow(g, sx, y0, y1) {
+  var i;
+  for (i = 1; i < 10; i++) g.ln(sx[i], y0, sx[i], y1, THIN);
+  var lab = ['勝者サイン', '', '勝者No.', '', '進行', '', '点検', '', '記録', ''];
+  for (i = 0; i < 10; i++) if (lab[i]) g.ct(sx[i], sx[i + 1], y0, y1, lab[i], { s: 3.0 });
+}
+
+/* ============================================================
+   団体戦（ソフトテニス スコアシート（団体戦用））
+   ============================================================ */
+function teamSheet(m, info) {
+  var g = new P();
+  /* 列（A〜AI）の位置 */
+  var cw = 67.5 / 14;
+  var W = [4.5, 6.5];
+  var i;
+  for (i = 0; i < 14; i++) W.push(cw);
+  W.push(15.7, 13.3, 4.5, 6.5);
+  for (i = 0; i < 14; i++) W.push(cw);
+  var X = [12];
+  for (i = 0; i < W.length; i++) X.push(X[i] + W[i]);
+  /* X[n]＝n列目の左端（A=0, B=1, C=2 … P=15, Q=16, R=17, S=18, T=19, U=20 … AH=33, 右端=34） */
+  var C = function (col) { return X[col]; };
+  /* 行（2〜69）の位置：Excelの行の高さを用紙に合わせて縮尺 */
+  var RH = { };
+  var hs = [];
+  for (i = 2; i <= 69; i++) hs[i] = 12.75;
+  hs[2] = hs[3] = hs[4] = hs[5] = 15; hs[6] = hs[7] = 15.75; hs[9] = hs[29] = hs[49] = 15; hs[27] = hs[47] = hs[67] = 9;
+  var total = 0;
+  for (i = 2; i <= 69; i++) total += hs[i];
+  var Y0 = 16, k = 267 / total;
+  var Yr = [];
+  var acc = Y0;
+  for (i = 2; i <= 70; i++) { Yr[i] = acc; if (i <= 69) acc += hs[i] * k; }
+  var Y = function (row) { return Yr[row]; };
+  var X0 = C(0), X1 = C(34);
+
+  g.t(105, 11.5, 'ソフトテニス　スコアシート（団体戦用）', { s: 4.6, a: 'middle', b: true });
+  topInfo(g, m, info, 5.8);
+  /* ヘッダー（2〜7行） */
+  g.ln(X0, Y(4), X1, Y(4), MID);
+  g.ln(X0, Y(6), X1, Y(6), MID);
+  var vx = [2, 9, 11, 17, 18, 25, 27];
+  for (i = 0; i < vx.length; i++) g.ln(C(vx[i]), Y(2), C(vx[i]), Y(6), THIN);
+  g.ln(C(9), Y(5), C(17), Y(5), THIN);
+  g.ln(C(25), Y(5), X1, Y(5), THIN);
+  g.ct(C(0), C(2), Y(2), Y(4), '種別', { s: 3.2 });
+  g.ct(C(9), C(11), Y(2), Y(4), 'コート', { s: 2.6 });
+  g.ct(C(17), C(18), Y(2), Y(4), '正審', { s: 3.2 });
+  g.ct(C(25), C(27), Y(2), Y(4), '副審', { s: 3.2 });
+  g.ct(C(0), C(2), Y(4), Y(6), '試合区分', { s: 2.4 });
+  g.ct(C(9), C(11), Y(4), Y(5), '開始', { s: 2.8 });
+  g.ct(C(9), C(11), Y(5), Y(6), '終了', { s: 2.8 });
+  g.ct(C(17), C(18), Y(4), Y(6), 'コート主任', { s: 2.1 });
+  g.ct(C(25), C(27), Y(4), Y(5), '線審', { s: 2.8 });
+  g.ct(C(25), C(27), Y(5), Y(6), '線審', { s: 2.8 });
+  /* No・チーム（6〜7行） */
+  var vx2 = [1, 3, 4, 16, 18, 19, 21, 22];
+  for (i = 0; i < vx2.length; i++) g.ln(C(vx2[i]), Y(6), C(vx2[i]), Y(8), i === 3 || i === 4 ? MID : THIN);
+  g.ct(C(0), C(1), Y(6), Y(8), 'No.', { s: 2.2 });
+  g.ct(C(18), C(19), Y(6), Y(8), 'No.', { s: 2.2 });
+  g.vt((C(3) + C(4)) / 2, Y(6) + 0.3, Y(8) - 0.3, ['チ', '｜', 'ム'], 2.2);
+  g.vt((C(21) + C(22)) / 2, Y(6) + 0.3, Y(8) - 0.3, ['チ', '｜', 'ム'], 2.2);
+  g.box(C(16), Y(6), C(18), Y(8), THICK);
+  g.t((C(16) + C(18)) / 2, Y(6) + 2.6, '(最終)', { s: 2, a: 'middle' });
+  g.t((C(16) + C(18)) / 2, Y(8) - 1.4, '―', { s: 3.4, a: 'middle' });
+  g.ln(X0, Y(8), X1, Y(8), THICK);
+
+  /* 3対戦分のブロック（8〜27、28〜47、48〜67行） */
+  var b;
+  for (b = 0; b < 3; b++) {
+    var r0 = 8 + b * 20;
+    var pr = m && m.team && m.team.pairs ? m.team.pairs[b] : null;
+    var hasOrder = !!(m && m.team && (m.team.both || m.team.open));
+    teamBlock(g, C, Y, r0, X0, X1, pr, hasOrder, b);
+  }
+  /* サイン欄（68〜69行） */
+  var sx = [0, 3, 7, 10, 13, 16, 18, 21, 26, 29, 34];
+  for (i = 1; i < sx.length - 1; i++) g.ln(C(sx[i]), Y(68), C(sx[i]), Y(70), THIN);
+  var lab = ['勝者サイン', '', '勝者No.', '', '進　行', '', '点　検', '', '記　録', ''];
+  for (i = 0; i < 10; i++) if (lab[i]) g.ct(C(sx[i]), C(sx[i + 1]), Y(68), Y(70), lab[i], { s: i === 0 ? 2.6 : 3.2 });
+  g.box(X0, Y(2), X1, Y(70), THICK);
+  g.t(105, Y(70) + 5.2, '岩手県中学生ソフトテニス連盟', { s: 3.4, a: 'middle' });
+
+  /* データ */
+  if (m) {
+    g.ct(C(2), C(9), Y(2), Y(4), info.divName, { s: 4.2, b: true });
+    g.ct(C(11), C(17), Y(2), Y(4), zen(m.court) + (m.two ? '（2面展開）' : ''), { s: 4.6, b: true });
+    g.ct(C(2), C(9), Y(4), Y(6), m.round, { s: 4.2, b: true });
+    var sides = [[m.left, 1, 4, 16], [m.right, 19, 22, 34]];
+    for (i = 0; i < 2; i++) {
+      var s = sides[i][0];
+      if (!s) continue;
+      g.ct(C(sides[i][1]), C(sides[i][1] + 2), Y(6), Y(8), info.noOf(s), { s: 4, b: true });
+      if (s.decided) g.ct(C(sides[i][2]), C(sides[i][3]), Y(6), Y(8), s.label + (s.sub ? '（' + s.sub + '）' : ''), { s: 5, b: true });
+      else g.ct(C(sides[i][2]), C(sides[i][3]), Y(6), Y(8), s.label || '', { s: 3, c: '#777' });
+    }
+  }
+  return g.out();
+}
+
+function teamBlock(g, C, Y, r0, X0, X1, pr, hasOrder, b) {
+  var rP = r0, rS = r0 + 1, rG = r0 + 2, rF = r0 + 14, rW = r0 + 17, rW2 = r0 + 18, rEnd = r0 + 20;
+  var sideCols = [[0, 2, 3, 9, 10, 16], [18, 20, 21, 27, 28, 34]];
+  var i, sc;
+  for (i = 0; i < 2; i++) {
+    sc = sideCols[i];
+    var x0 = C(sc[0]);
+    g.ln(x0, Y(rS), C(sc[0] + 2), Y(rS), THIN);
+    g.t((x0 + C(sc[0] + 2)) / 2, Y(rP) + 2.9, 'プレーヤー', { s: 1.8, a: 'middle' });
+    g.t((x0 + C(sc[0] + 2)) / 2, Y(rS) + 3.3, 'サイド', { s: 2.0, a: 'middle' });
+    var v = [sc[1], sc[2], sc[3], sc[4]];
+    var j;
+    for (j = 0; j < v.length; j++) g.ln(C(v[j]), Y(rP), C(v[j]), Y(rG), THIN);
+    g.ct(C(sc[1]), C(sc[2]), Y(rP), Y(rG), 'A', { s: 3 });
+    g.ct(C(sc[3]), C(sc[4]), Y(rP), Y(rG), 'B', { s: 3 });
+    /* 選手名（オーダーがそろっていれば） */
+    if (pr && hasOrder) {
+      var names = i === 0 ? pr.l : pr.r;
+      if (names) {
+        g.ct(C(sc[2]), C(sc[3]), Y(rP), Y(rG), names[0], { s: 4.4, b: true });
+        g.ct(C(sc[4]), C(sc[5]), Y(rP), Y(rG), names[1], { s: 4.4, b: true });
+      } else if (b === 2) {
+        g.ct(C(sc[2]), C(sc[5]), Y(rP), Y(rG), '（欠員のため不戦敗）', { s: 3.2, c: '#555' });
+      }
+    }
+  }
+  /* 中央 */
+  g.ln(C(16), Y(rP), C(16), Y(rW), MID);
+  g.ln(C(18), Y(rP), C(18), Y(rW), MID);
+  g.t((C(16) + C(18)) / 2, Y(rP) + 2.2, CIRC[b + 1] + '番手　(スコア)', { s: 1.9, a: 'middle' });
+  g.t((C(16) + C(18)) / 2, Y(rG) - 0.9, '―', { s: 3.2, a: 'middle' });
+  g.ln(X0, Y(rG), X1, Y(rG), MID);
+  var gameH = Y(r0 + 4) - Y(r0 + 2), finalH = Y(rW) - Y(rF);
+  gameGrid(g, C(0), C(2), C(16), Y(rG), gameH, finalH, false);
+  gameGrid(g, C(18), C(20), C(34), Y(rG), gameH, finalH, true);
+  var k;
+  for (k = 0; k < 7; k++) {
+    var yy = Y(rG) + gameH * k + (k === 6 ? finalH : gameH) / 2;
+    g.t((C(16) + C(18)) / 2, yy + 1.2, k === 6 ? '―Ⓕ―' : '―' + CIRC[k + 1] + '―', { s: 3.2, a: 'middle' });
+  }
+  /* 警告・タイム（25〜27行） */
+  var wx = [C(0), C(2), C(5), C(8), C(11), C(17), C(23), C(25), C(28), C(31), C(34)];
+  g.ln(wx[0], Y(rW2), wx[4], Y(rW2), THIN);
+  g.ln(wx[6], Y(rW2), wx[10], Y(rW2), THIN);
+  for (i = 1; i < 10; i++) g.ln(wx[i], Y(rW), wx[i], Y(rEnd), i >= 4 && i <= 6 ? MID : THIN);
+  var lab = ['(警告)', 'Y', 'Y', 'R'];
+  for (i = 0; i < 4; i++) g.ct(wx[i], wx[i + 1], Y(rW), Y(rW2), lab[i], { s: i === 0 ? 2.2 : 3 });
+  for (i = 0; i < 4; i++) g.ct(wx[i + 6], wx[i + 7], Y(rW), Y(rW2), lab[i], { s: i === 0 ? 2.2 : 3 });
+  g.ct(wx[0], wx[1], Y(rW2), Y(rEnd), '該当事項', { s: 1.8 });
+  g.ct(wx[6], wx[7], Y(rW2), Y(rEnd), '該当事項', { s: 1.8 });
+  var tb = function (xa, xb) {
+    var mx = (xa + xb) / 2;
+    g.t(mx - 9, Y(rW) + 3.6, 'タイム　A　5 ・ 5', { s: 2.8 });
+    g.t(mx - 9, Y(rEnd) - 1.4, 'タイム　B　5 ・ 5', { s: 2.8 });
+  };
+  tb(wx[4], wx[5]);
+  tb(wx[5], wx[6]);
+  g.ln(X0, Y(rW), X1, Y(rW), THICK);
+  g.ln(X0, Y(rEnd), X1, Y(rEnd), THICK);
+}
+
+/* ============================================================
+   画面
+   ============================================================ */
+var LIST = [['MI', '男子個人戦'], ['WI', '女子個人戦'], ['MT', '男子団体戦'], ['WT', '女子団体戦']];
+
+function renderTabs() {
+  var h = '';
+  var i;
+  for (i = 0; i < LIST.length; i++) h += '<a class="' + (LIST[i][0] === div ? 'on' : '') + '" href="?div=' + LIST[i][0] + '">' + LIST[i][1] + '</a>';
+  document.getElementById('tabs').innerHTML = h;
+  var isTeam = div.charAt(1) === 'T';
+  var opts = isTeam ?
+    [['all', '全試合'], ['R1', '1回戦のみ'], ['later', '準々決勝以降']] :
+    [['all', '全試合'], ['L', '予選リーグのみ'], ['KO', '決勝トーナメントのみ']];
+  var sel = document.getElementById('fRange');
+  sel.innerHTML = '';
+  for (i = 0; i < opts.length; i++) sel.innerHTML += '<option value="' + opts[i][0] + '">' + opts[i][1] + '</option>';
+}
+
+function buildInfo(d) {
+  var isTeam = d.division.type === 'team';
+  var no = {};
+  var i, b, m;
+  if (isTeam) {
+    for (i = 0; i < d.matches.length; i++) {
+      m = d.matches[i];
+      var r = String(m.id).match(/-R1-(\d+)$/);
+      if (!r) continue;
+      if (m.left && m.left.id) no[m.left.id] = String(+r[1] * 2 - 1);
+      if (m.right && m.right.id) no[m.right.id] = String(+r[1] * 2);
+    }
+  } else {
+    for (b in d.blocks) {
+      if (!d.blocks.hasOwnProperty(b)) continue;
+      for (i = 0; i < d.blocks[b].length; i++) no[d.blocks[b][i].id] = zen(b + d.blocks[b][i].pos);
+    }
+  }
+  return {
+    type: isTeam ? 'team' : 'indiv', gender: d.division.gender, divName: d.division.name, tournament: d.tournament,
+    noOf: function (s) {
+      if (s && s.id && no[s.id]) return no[s.id];
+      return s && s.origin ? zen(s.origin.replace('位', '')) + '位' : '';
+    },
+    schoolOf: function (s) {
+      if (s.teams && s.teams.length) return !s.teams[1] || s.teams[0] === s.teams[1] ? s.teams[0] : s.teams[0] + '／' + s.teams[1];
+      return s.sub || '';
+    }
+  };
+}
+
+function pick(d) {
+  if (onlyMatch) return d.matches.filter(function (m) { return m.id === onlyMatch; });
+  var court = document.getElementById('fCourt').value;
+  var range = document.getElementById('fRange').value;
+  var skipDone = document.getElementById('fOpen').checked;
+  var out = d.matches.filter(function (m) {
+    if (m.note === '不戦勝') return false;
+    if (court && m.court !== court) return false;
+    if (skipDone && m.state === '終了') return false;
+    if (range === 'R1' && m.stage !== 'R1') return false;
+    if (range === 'later' && m.stage === 'R1') return false;
+    if (range === 'L' && m.stage !== 'L') return false;
+    if (range === 'KO' && m.stage === 'L') return false;
+    return true;
+  });
+  out.sort(function (a, b) { return a.court === b.court ? (+a.seq || 0) - (+b.seq || 0) || a.no - b.no : (a.court < b.court ? -1 : 1); });
+  return out;
+}
+
+function render() {
+  if (!DATA) return;
+  var info = buildInfo(DATA);
+  var list = pick(DATA);
+  var n = Math.max(0, Math.min(50, +document.getElementById('blankN').value || 0));
+  var fn = info.type === 'team' ? teamSheet : indivSheet;
+  var h = '';
+  var i;
+  for (i = 0; i < list.length; i++) h += '<div class="page">' + fn(list[i], info) + '</div>';
+  for (i = 0; i < n; i++) h += '<div class="page">' + fn(null, info) + '</div>';
+  document.getElementById('pages').innerHTML = h || '<div class="loading">該当する試合がありません</div>';
+  document.getElementById('count').textContent = '試合 ' + list.length + '枚' + (n ? '＋白紙 ' + n + '枚' : '') + '（A4縦・1試合1枚）';
+}
+
+function load() {
+  fetch(GAS_URL + '?action=progress&div=' + div).then(function (r) { return r.text(); }).then(function (t) {
+    var d;
+    try { d = JSON.parse(t); } catch (e) { throw new Error('サーバーの応答を読み取れません'); }
+    if (d.status !== 'ok') throw new Error(d.message);
+    DATA = d;
+    document.getElementById('sub').textContent = d.tournament + '　' + d.division.name + '（' + d.venue + '）';
+    document.title = 'スコアシート ' + d.division.name + '｜' + d.tournament;
+    if (!d.matches.length) {
+      document.getElementById('pages').innerHTML = '<div class="loading">組合せがまだ作成されていません。白紙が必要なときは枚数を入れてください。</div>';
+    }
+    if (d.matches.length || +document.getElementById('blankN').value) render();
+  }).catch(function (err) {
+    document.getElementById('pages').innerHTML = '<div class="loading">読み込めませんでした（' + esc(err.message) + '）</div>';
+  });
+}
+
+renderTabs();
+if (onlyMatch) document.querySelector('.ctl').style.display = 'none';
+load();
+</script>
+</body>
+</html>
