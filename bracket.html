@@ -37,10 +37,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 <div class="bar"><div class="bar-inner">
   <h1><small id="sub">第40回岩手県中学校インドアソフトテニス大会</small><span id="ttl">組合せ・結果</span></h1>
   <div class="tabs" id="tabs"></div>
+  <div class="tabs" id="modes"></div>
 </div></div>
 <div class="wrap">
   <div id="sheet"><div class="page"><div class="loading">読み込み中...</div></div></div>
-  <div class="note">結果が入ると自動で更新します（30秒ごと）。赤い線が勝ち上がり。「印刷」で1区分＝A4用紙1枚に印刷できます。</div>
+  <div class="note" id="noteText"></div>
 </div>
 
 <script>
@@ -50,6 +51,8 @@ var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOi
 var params = new URLSearchParams(location.search);
 var div = params.get('div') || 'MT';
 if (['MT', 'WT', 'MI', 'WI', 'ALL'].indexOf(div) < 0) div = 'MT';
+/* mode=blank：結果を入れない白紙の組合せ（記入用）。省略時は結果入り（随時更新） */
+var BLANK = params.get('mode') === 'blank';
 var RED = '#d0021b';
 var INK = '#111';
 var W = 760;
@@ -523,12 +526,37 @@ function indivPage(d) {
 var LIST = [['MT', '男子団体戦'], ['WT', '女子団体戦'], ['MI', '男子個人戦'], ['WI', '女子個人戦']];
 
 function renderTabs() {
+  var mq = BLANK ? '&mode=blank' : '';
   var h = '';
   var i;
-  for (i = 0; i < LIST.length; i++) h += '<a class="' + (LIST[i][0] === div ? 'on' : '') + '" href="?div=' + LIST[i][0] + '">' + LIST[i][1] + '</a>';
-  h += '<a class="' + (div === 'ALL' ? 'on' : '') + '" href="?div=ALL">4区分まとめて</a>';
-  h += '<a href="progress.html?div=' + (div === 'ALL' ? 'MT' : div) + '">進行表</a><button onclick="window.print()">🖨 印刷</button>';
+  for (i = 0; i < LIST.length; i++) h += '<a class="' + (LIST[i][0] === div ? 'on' : '') + '" href="?div=' + LIST[i][0] + mq + '">' + LIST[i][1] + '</a>';
+  h += '<a class="' + (div === 'ALL' ? 'on' : '') + '" href="?div=ALL' + mq + '">4区分まとめて</a>';
   document.getElementById('tabs').innerHTML = h;
+  document.getElementById('modes').innerHTML =
+    '<a class="' + (BLANK ? '' : 'on') + '" href="?div=' + div + '">結果入り（随時更新）</a>' +
+    '<a class="' + (BLANK ? 'on' : '') + '" href="?div=' + div + '&mode=blank">白紙（記入用）</a>' +
+    '<a href="progress.html?div=' + (div === 'ALL' ? 'MT' : div) + '">進行表</a><button onclick="window.print()">🖨 印刷</button>';
+  document.getElementById('noteText').textContent = BLANK ?
+    '白紙の組合せです（結果は入りません）。会場掲示や記録用に印刷してください。1区分＝A4用紙1枚。' :
+    '結果が入ると自動で更新します（30秒ごと）。赤い線が勝ち上がり。「印刷」で1区分＝A4用紙1枚に印刷できます。';
+}
+
+/* 白紙用：組合せ（団体戦1回戦・個人戦予選リーグの顔ぶれ）だけ残し、結果と勝ち上がりを消す */
+function blankOut(d) {
+  d.ranks = {};
+  var i, m;
+  for (i = 0; i < d.matches.length; i++) {
+    m = d.matches[i];
+    m.state = '待機';
+    m.winner = '';
+    m.score = '';
+    m.team = null;
+    if (m.stage !== 'R1' && m.stage !== 'L') {
+      m.left = { decided: false, label: '', sub: '', origin: m.left ? m.left.origin : '' };
+      m.right = { decided: false, label: '', sub: '', origin: m.right ? m.right.origin : '' };
+    }
+  }
+  return d;
 }
 
 function load() {
@@ -539,11 +567,11 @@ function load() {
   for (i = 0; i < codes.length; i++) jobs.push(get(codes[i]));
   Promise.all(jobs).then(function (ds) {
     document.getElementById('sub').textContent = ds[0].tournament;
-    document.getElementById('ttl').textContent = div === 'ALL' ? '組合せ・結果（4区分）' : ds[0].division.name + '　組合せ・結果';
+    document.getElementById('ttl').textContent = (div === 'ALL' ? '4区分' : ds[0].division.name) + (BLANK ? '　組合せ（白紙）' : '　組合せ・結果');
     document.title = (div === 'ALL' ? '組合せ・結果' : ds[0].division.name) + '｜' + ds[0].tournament;
     var h = '';
     for (i = 0; i < ds.length; i++) {
-      var d = ds[i];
+      var d = BLANK ? blankOut(ds[i]) : ds[i];
       var body;
       if (!d.matches.length) body = '<div class="loading">' + esc(d.division.name) + '：組合せはまだ発表されていません</div>';
       else body = d.division.type === 'team' || d.division.code.charAt(1) === 'T' ? teamPage(d) : indivPage(d);
@@ -557,7 +585,7 @@ function load() {
 
 renderTabs();
 load();
-setInterval(load, 30000);
+if (!BLANK) setInterval(load, 30000);
 </script>
 </body>
 </html>
