@@ -100,12 +100,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
   <div class="header-inner">
     <h1><small id="hdSub">本部用</small><span id="hdTitle">進行管理</span></h1>
     <div class="divtabs" id="divTabs"></div>
-    <div style="display:flex;gap:6px"><a class="hbtn" id="pubLink" target="_blank">公開ページ</a><button class="hbtn" onclick="load(true)">↻</button></div>
+    <div style="display:flex;gap:6px"><a class="hbtn" id="pubLink" target="_blank">公開ページ</a><button class="hbtn" onclick="load(true)">↻</button><button class="hbtn" onclick="logout()">ログアウト</button></div>
   </div>
 </header>
 
 <div class="login" id="loginView" style="display:none">
-  <h3>本部ログイン（管理パスワード）</h3>
+  <h3>本部ログイン</h3>
+  <div class="muted" style="margin-top:4px">本部パスワード（または管理パスワード）を入力してください。</div>
   <input type="password" id="pwInput" onkeydown="if(event.key==='Enter')login()">
   <button class="btn" style="width:100%" onclick="login()">ログイン</button>
   <div class="err" id="loginErr"></div>
@@ -142,7 +143,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
 
 var DIVS = [['MI', '男子個人戦'], ['WI', '女子個人戦'], ['MT', '男子団体戦'], ['WT', '女子団体戦']];
-var PW_KEY = 'iwateIndoorAdminPw';
+var PW_KEY = 'iwateIndoorCtlPw';
+var ADMIN_PW_KEY = 'iwateIndoorAdminPw';
 var params = new URLSearchParams(location.search);
 var divCode = params.get('div') || 'MI';
 var pw = '';
@@ -177,16 +179,22 @@ function api(body) {
 }
 
 /* ========== ログイン ========== */
+function logout() {
+  try { localStorage.removeItem(PW_KEY); } catch (e) { /* 削除できなくても続行 */ }
+  pw = '';
+  location.reload();
+}
+
 function login() {
   pw = document.getElementById('pwInput').value;
   load(true).then(function () {
-    try { sessionStorage.setItem(PW_KEY, pw); } catch (e) { /* 保存できなくても続行 */ }
+    try { localStorage.setItem(PW_KEY, pw); } catch (e) { /* 保存できなくても続行 */ }
   }).catch(function () {});
 }
 
 function load(manual) {
   if (busy || modalOpen) return Promise.resolve();
-  return api({ action: 'adminCtlLoad' }).then(function (d) {
+  return api({ action: 'ctlLoad' }).then(function (d) {
     document.getElementById('loginView').style.display = 'none';
     document.getElementById('appView').style.display = 'block';
     apply(d);
@@ -291,7 +299,7 @@ function render() {
 function op(id, kind, state) {
   if (busy) return;
   busy = true;
-  api({ action: 'adminCtlUpdate', matchId: id, op: kind, state: state }).then(function (d) {
+  api({ action: 'ctlUpdate', matchId: id, op: kind, state: state }).then(function (d) {
     busy = false;
     apply(d);
   }).catch(function (err) {
@@ -356,7 +364,7 @@ function saveResult() {
   if (sc && parseInt(sc[1], 10) < parseInt(sc[2], 10)) { toast('スコアは「勝者－敗者」の順で入力してください', true); return; }
   var stored = sc ? (res.winner === 'L' ? sc[1] + '-' + sc[2] : sc[2] + '-' + sc[1]) : s;
   busy = true;
-  api({ action: 'adminCtlUpdate', matchId: res.id, op: 'result', winner: res.winner, score: stored }).then(function (d) {
+  api({ action: 'ctlUpdate', matchId: res.id, op: 'result', winner: res.winner, score: stored }).then(function (d) {
     busy = false;
     closeModal();
     apply(d);
@@ -416,7 +424,7 @@ function saveRank(blk) {
   var second = document.getElementById('r2_' + blk).value;
   if (!first || !second) { toast('1位と2位を選んでください', true); return; }
   busy = true;
-  api({ action: 'adminCtlRanks', block: blk, first: first, second: second }).then(function (d) {
+  api({ action: 'ctlRanks', block: blk, first: first, second: second }).then(function (d) {
     busy = false;
     apply(d);
     toast(blk + 'ブロックの順位を確定しました');
@@ -428,7 +436,7 @@ function saveRank(blk) {
 
 function saveConfig() {
   busy = true;
-  api({ action: 'adminCtlConfig', values: {
+  api({ action: 'ctlConfig', values: {
     start: document.getElementById('cStart').value, g5: document.getElementById('cG5').value, g7: document.getElementById('cG7').value,
     gapTeam: document.getElementById('cGapT').value, gapIndiv: document.getElementById('cGapI').value
   } }).then(function (d) {
@@ -449,7 +457,7 @@ function saveConfig() {
   for (i = 0; i < DIVS.length; i++) html += '<a class="' + (DIVS[i][0] === divCode ? 'on' : '') + '" href="?div=' + DIVS[i][0] + '">' + DIVS[i][1] + '</a>';
   document.getElementById('divTabs').innerHTML = html;
   document.getElementById('pubLink').href = 'progress.html?div=' + divCode;
-  try { pw = sessionStorage.getItem(PW_KEY) || ''; } catch (e) { pw = ''; }
+  try { pw = localStorage.getItem(PW_KEY) || sessionStorage.getItem(ADMIN_PW_KEY) || ''; } catch (e) { pw = ''; }
   if (pw) load().catch(function () {});
   else document.getElementById('loginView').style.display = 'block';
   setInterval(function () { load().catch(function () {}); }, 20000);
