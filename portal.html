@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>監督ポータル｜県インドア大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--green:#28a745;--green-dark:#1e7e34;--green-light:#e6f4ea;--gold:#c8a020;--red:#b33030;--white:#fff;--gray:#f5f5f0;--text:#222;--text-light:#666;--radius:12px}
+html{font-size:16px}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,var(--green-dark),var(--green));color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.header-inner{max-width:640px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:10px}
+.header h1{font-size:1rem;font-weight:900}
+.header h1 small{display:block;font-size:.68rem;font-weight:500;opacity:.9}
+.clock{font-size:1.2rem;font-weight:900;font-variant-numeric:tabular-nums}
+.main{max-width:640px;margin:0 auto;padding:14px}
+.card{background:#fff;border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.card h2{font-size:.9rem;font-weight:900;color:var(--green-dark);margin-bottom:10px}
+.match{text-align:center}
+.match .rd{font-size:.8rem;color:var(--text-light)}
+.match .vs{font-size:1.25rem;font-weight:900;margin:6px 0;line-height:1.4}
+.match .vs small{display:block;font-size:.7rem;color:var(--text-light);font-weight:500}
+.times{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+.times div{background:var(--green-light);border-radius:8px;padding:6px 4px;text-align:center}
+.times .l{font-size:.66rem;color:var(--text-light)}
+.times .v{font-size:1rem;font-weight:900;color:var(--green-dark)}
+.times .warn{background:#fdeaea}
+.times .warn .v{color:var(--red)}
+.msg{border-radius:var(--radius);padding:14px;font-weight:700;line-height:1.6;margin-bottom:14px;font-size:.92rem}
+.msg.ok{background:#d4edda;color:#155724}
+.msg.wait{background:#fff3cd;color:#7a5d00}
+.msg.ng{background:#f8d7da;color:#721c24}
+.msg.info{background:#e8f1fb;color:#0b3d75}
+.big{font-size:1.4rem;font-weight:900;text-align:center;padding:24px 10px}
+.pair{border:2px solid #e2e2da;border-radius:10px;padding:10px;margin-bottom:10px}
+.pair .t{font-weight:900;color:var(--green-dark);margin-bottom:6px;font-size:.9rem}
+.pair select{width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:1rem;font-family:inherit;margin-bottom:6px;background:#fff}
+.pair.forfeit{background:#f4f4f4;color:#888;text-align:center;font-weight:700}
+.btn{display:block;width:100%;padding:16px;border-radius:var(--radius);border:none;font-size:1.05rem;font-weight:900;font-family:inherit;cursor:pointer}
+.btn-main{background:var(--green);color:#fff}
+.btn-out{background:#fff;color:var(--green-dark);border:2px solid var(--green)}
+.btn:disabled{opacity:.5}
+.order-table{width:100%;border-collapse:collapse;font-size:.92rem}
+.order-table th{background:var(--green-light);padding:8px;font-size:.8rem;width:4.5em}
+.order-table td{padding:8px;border-bottom:1px solid #eee;font-weight:700}
+.order-table td.op{color:#0b3d75}
+.order-table td.ff{color:#999;font-weight:500}
+.hist{font-size:.85rem}
+.hist div{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee}
+.w{color:var(--red);font-weight:900}
+.l{color:#888}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;padding:16px;overflow-y:auto}
+.overlay.show{display:block}
+.modal{max-width:520px;margin:30px auto;background:#fff;border-radius:14px;padding:16px}
+.modal h3{margin-bottom:10px}
+.mbtns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.muted{font-size:.76rem;color:var(--text-light)}
+.loading{text-align:center;color:var(--text-light);padding:40px}
+.footer{text-align:center;font-size:.7rem;color:var(--text-light);padding:16px}
+</style>
+</head>
+<body>
+<header class="header">
+  <div class="header-inner">
+    <h1><small id="hdSub">監督ポータル</small><span id="hdTeam">読み込み中...</span></h1>
+    <div class="clock" id="clock">--:--</div>
+  </div>
+</header>
+<main class="main" id="main"><div class="loading">読み込み中...</div></main>
+<div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+<div class="footer">15秒ごとに自動で更新します。困ったときは大会本部へ。</div>
+
+<script>
+/* ★ GASのウェブアプリURL */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
+
+var token = new URLSearchParams(location.search).get('t') || '';
+var D = null;
+var draft = null;
+var editing = false;
+var sending = false;
+
+function esc(s) {
+  if (s === undefined || s === null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function tick() {
+  var d = new Date();
+  document.getElementById('clock').textContent = d.getHours() + ':' + ('0' + d.getMinutes()).slice(-2);
+}
+
+function load() {
+  if (editing || sending) return;
+  if (!token) { fatal('リンクが正しくありません。受付票の「オーダー提出」ボタンから開いてください。'); return; }
+  fetch(GAS_URL + '?action=portal&t=' + encodeURIComponent(token))
+    .then(function (r) { return r.text(); })
+    .then(function (text) {
+      var d;
+      try { d = JSON.parse(text); } catch (e) { throw new Error('サーバーの応答を読み取れません'); }
+      if (d.status !== 'ok') { fatal(d.message); return; }
+      D = d;
+      render();
+    })
+    .catch(function (err) {
+      if (!D) fatal('読み込みに失敗しました：' + err.message);
+    });
+}
+
+function fatal(msg) {
+  document.getElementById('main').innerHTML = '<div class="msg ng">' + esc(msg) + '</div>';
+}
+
+function needPairs() { return D.players.length >= 6 ? 3 : 2; }
+
+function matchCard() {
+  var m = D.match;
+  var h = '<div class="card match"><div class="rd">第' + m.no + '試合　' + esc(m.round) + '　' + esc(m.court) + '</div>';
+  h += '<div class="vs">' + esc(D.team.abbr) + '<br><small>対</small>' + esc(m.opp.label) + (m.opp.full ? '<small>' + esc(m.opp.full) + '</small>' : '') + '</div>';
+  h += '<div class="times">';
+  h += '<div class="' + (m.deadlinePassed && !m.myOrder ? 'warn' : '') + '"><div class="l">オーダー締切</div><div class="v">' + esc(m.deadline || '-') + '</div></div>';
+  h += '<div><div class="l">コート集合</div><div class="v">' + esc(m.gather || '-') + '</div></div>';
+  h += '<div><div class="l">開始予定</div><div class="v">' + esc(m.plan || '-') + '</div></div>';
+  return h + '</div></div>';
+}
+
+function orderTable(mine, opp) {
+  var h = '<table class="order-table"><tr><th></th><th>' + esc(D.team.abbr) + '</th><th>' + esc(D.match.opp.label) + '</th></tr>';
+  var i;
+  for (i = 0; i < 3; i++) {
+    var a = mine ? mine[i] : null;
+    var b = opp ? opp[i] : null;
+    h += '<tr><th>' + (i + 1) + '番手</th>';
+    h += a ? '<td>' + esc(a[0]) + '<br>' + esc(a[1]) + '</td>' : '<td class="ff">' + (mine ? '不戦敗' : '') + '</td>';
+    h += opp ? (b ? '<td class="op">' + esc(b[0]) + '<br>' + esc(b[1]) + '</td>' : '<td class="ff">不戦敗</td>') : '<td class="ff">（公開前）</td>';
+    h += '</tr>';
+  }
+  return h + '</table>';
+}
+
+function history() {
+  if (!D.history.length) return '';
+  var h = '<div class="card"><h2>これまでの結果</h2><div class="hist">';
+  var i, x;
+  for (i = 0; i < D.history.length; i++) {
+    x = D.history[i];
+    h += '<div><span>第' + x.no + '試合 ' + esc(x.round) + '　対 ' + esc(x.opp) + '</span><span class="' + (x.win ? 'w' : 'l') + '">' + (x.win ? '○' : '●') + ' ' + esc(x.score) + '</span></div>';
+  }
+  return h + '</div></div>';
+}
+
+function render() {
+  document.getElementById('hdTeam').textContent = D.team.name;
+  document.getElementById('hdSub').textContent = D.division + '　監督ポータル';
+  var h = '';
+  var v = D.view;
+  if (v === 'nodraw') {
+    h += '<div class="msg info">組合せが発表されると、ここに対戦が表示されます。</div>';
+  } else if (v === 'champion') {
+    h += '<div class="card big">🏆 優勝おめでとうございます</div>';
+  } else if (v === 'finished') {
+    h += '<div class="card big">大会お疲れさまでした</div>';
+  } else {
+    h += matchCard();
+    var m = D.match;
+    if (v === 'reception') {
+      h += '<div class="msg wait">当日受付が済むと、オーダーを提出できます。受付で受付票の二次元コードを提示してください。</div>';
+    } else if (v === 'waiting') {
+      h += '<div class="msg info">対戦相手は「' + esc(m.opp.label) + '」です。決まるまでお待ちください（自動で更新します）。</div>';
+    } else if (v === 'order') {
+      if (m.myOrder) {
+        h += '<div class="msg ok">✅ オーダー提出済み（' + esc(m.myOrderAt) + (m.myOrderBy === '本部' ? '・本部入力' : '') + '）<br>' + (m.oppSubmitted ? '' : '相手チームの提出を待っています。そろうと相手のオーダーが表示されます。') + '</div>';
+        h += '<div class="card"><h2>提出したオーダー</h2>' + orderTable(m.myOrder, null) + '<div style="margin-top:12px"><button class="btn btn-out" onclick="startEdit()">オーダーを修正する</button></div><div class="muted" style="margin-top:6px">相手チームも提出すると修正できなくなります。</div></div>';
+      } else {
+        h += m.deadlinePassed ? '<div class="msg ng">⚠ 締切（' + esc(m.deadline) + '）を過ぎています。すぐに提出してください。</div>' : '';
+        h += orderForm();
+      }
+    } else if (v === 'locked' || v === 'playing') {
+      h += '<div class="msg ok">両チームのオーダーがそろいました。' + (v === 'playing' ? '試合中です。' : 'コートに集合してください。') + '</div>';
+      h += '<div class="card"><h2>オーダー</h2>' + orderTable(m.myOrder, m.oppOrder) + resultsLine() + '</div>';
+    }
+  }
+  h += history();
+  document.getElementById('main').innerHTML = h;
+  if (v === 'order' && !D.match.myOrder) bindForm();
+}
+
+function resultsLine() {
+  var ps = D.match.pairs;
+  var me = D.match.side;
+  var out = [];
+  var i;
+  for (i = 0; i < 3; i++) {
+    if (!ps[i] || !ps[i].w) continue;
+    out.push((i + 1) + '番手 ' + (ps[i].w === me ? '○' : '●'));
+  }
+  return out.length ? '<div class="muted" style="margin-top:8px">' + out.join('　') + '</div>' : '';
+}
+
+/* ========== オーダー入力 ========== */
+function startEdit() {
+  draft = D.match.myOrder ? JSON.parse(JSON.stringify(D.match.myOrder)) : null;
+  var h = orderForm();
+  document.getElementById('main').innerHTML = matchCard() + h;
+  editing = true;
+  bindForm();
+}
+
+function orderForm() {
+  if (!draft) draft = D.match.myOrder || D.prevOrder || [[ '', '' ], [ '', '' ], [ '', '' ]];
+  var need = needPairs();
+  var h = '<div class="card"><h2>オーダー提出</h2>';
+  h += '<div class="muted" style="margin-bottom:8px">選手名を選んでください。選んだ選手はほかの番手でグレーになります。' + (D.prevOrder && !D.match.myOrder ? '前の試合のオーダーを表示しています。' : '') + '</div>';
+  var i;
+  for (i = 0; i < 3; i++) {
+    if (i >= need) {
+      h += '<div class="pair forfeit">3番手：不戦敗（選手' + D.players.length + '名のため）</div>';
+      continue;
+    }
+    h += '<div class="pair"><div class="t">' + (i + 1) + '番手</div><select data-p="' + i + '" data-k="0"></select><select data-p="' + i + '" data-k="1"></select></div>';
+  }
+  h += '<button class="btn btn-main" onclick="confirmOrder()">オーダーを確認する</button>';
+  if (editing) h += '<div style="margin-top:8px"><button class="btn btn-out" onclick="cancelEdit()">修正をやめる</button></div>';
+  return h + '</div>';
+}
+
+function cancelEdit() {
+  editing = false;
+  draft = null;
+  render();
+}
+
+function bindForm() {
+  var sels = document.querySelectorAll('select[data-p]');
+  var i;
+  for (i = 0; i < sels.length; i++) sels[i].onchange = onPick;
+  fillSelects();
+}
+
+function onPick(e) {
+  var p = parseInt(e.target.getAttribute('data-p'), 10);
+  var k = parseInt(e.target.getAttribute('data-k'), 10);
+  if (!draft[p]) draft[p] = ['', ''];
+  draft[p][k] = e.target.value;
+  editing = true;
+  fillSelects();
+}
+
+function fillSelects() {
+  var used = {};
+  var i, j;
+  var need = needPairs();
+  var valid = {};
+  for (i = 0; i < D.players.length; i++) valid[D.players[i].name] = true;
+  for (i = 0; i < need; i++) {
+    if (!draft[i]) draft[i] = ['', ''];
+    for (j = 0; j < 2; j++) {
+      if (draft[i][j] && !valid[draft[i][j]]) draft[i][j] = '';
+      if (draft[i][j]) used[draft[i][j]] = (i + 1) + '番手';
+    }
+  }
+  var sels = document.querySelectorAll('select[data-p]');
+  for (i = 0; i < sels.length; i++) {
+    var p = parseInt(sels[i].getAttribute('data-p'), 10);
+    var k = parseInt(sels[i].getAttribute('data-k'), 10);
+    var cur = draft[p][k] || '';
+    var h = '<option value="">選手' + (k + 1) + 'を選択</option>';
+    for (j = 0; j < D.players.length; j++) {
+      var n = D.players[j].name;
+      var taken = used[n] && n !== cur;
+      h += '<option value="' + esc(n) + '"' + (n === cur ? ' selected' : '') + (taken ? ' disabled style="color:#bbb"' : '') + '>' +
+        D.players[j].no + '. ' + esc(n) + '（' + esc(D.players[j].grade) + '）' + (taken ? '　' + used[n] : '') + '</option>';
+    }
+    sels[i].innerHTML = h;
+  }
+}
+
+function confirmOrder() {
+  var need = needPairs();
+  var i;
+  for (i = 0; i < need; i++) {
+    if (!draft[i] || !draft[i][0] || !draft[i][1]) { alert((i + 1) + '番手の選手を2名選んでください。'); return; }
+  }
+  var pairs = draft.slice(0, need);
+  editing = true;
+  var h = '<h3>このオーダーで提出しますか？</h3>' + orderTable(pairs.concat(need < 3 ? [null] : []), null);
+  h += '<div class="muted" style="margin-top:8px">相手チームも提出すると、修正はできなくなります。</div>';
+  h += '<div class="mbtns"><button class="btn btn-out" onclick="closeModal()">戻る</button><button class="btn btn-main" id="sendBtn" onclick="sendOrder()">提出する</button></div>';
+  document.getElementById('modal').innerHTML = h;
+  document.getElementById('overlay').className = 'overlay show';
+}
+
+function closeModal() {
+  document.getElementById('overlay').className = 'overlay';
+}
+
+function sendOrder() {
+  var btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+  sending = true;
+  fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'submitOrder', t: token, matchId: D.match.id, pairs: draft.slice(0, needPairs()) }) })
+    .then(function (r) { return r.text(); })
+    .then(function (text) {
+      var d;
+      try { d = JSON.parse(text); } catch (e) { throw new Error('サーバーの応答を読み取れません'); }
+      if (d.status !== 'ok') throw new Error(d.message);
+      sending = false;
+      editing = false;
+      draft = null;
+      closeModal();
+      D = d;
+      render();
+      window.scrollTo(0, 0);
+    })
+    .catch(function (err) {
+      sending = false;
+      btn.disabled = false;
+      btn.textContent = '提出する';
+      alert('提出できませんでした：' + err.message);
+    });
+}
+
+tick();
+setInterval(tick, 10000);
+load();
+setInterval(load, 15000);
+</script>
+</body>
+</html>
