@@ -56,6 +56,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .b-two{background:#e6f0fb;color:var(--blue)}
 .court-tag{display:inline-block;min-width:22px;text-align:center;border-radius:6px;background:var(--main);color:#fff;font-weight:900;font-size:.72rem;padding:1px 6px;margin-right:4px}
 .list .card{display:block}
+.org{display:inline-block;font-size:.66rem;font-weight:900;color:#0056b3;background:#e6f0fb;border-radius:6px;padding:0 5px;margin-right:4px;vertical-align:1px}
+.blink{display:inline-block;padding:6px 12px;border-radius:8px;background:#fff;border:2px solid var(--main);color:var(--main);font-weight:900;font-size:.8rem;text-decoration:none}
 .tp{display:grid;grid-template-columns:1.4em 1fr 3em 1fr;gap:2px 6px;padding:6px 10px 8px;border-top:1px dashed var(--line);font-size:.74rem;align-items:center}
 .tp .n{color:var(--text-light);font-weight:900;text-align:center}
 .tp .r{text-align:center;font-weight:900;color:var(--main)}
@@ -89,6 +91,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 <main class="main">
   <div class="bar">
     <div class="info" id="info">読み込み中...</div>
+    <a class="blink" id="bracketLink" href="bracket.html">🏆 トーナメント表</a>
     <div class="views">
       <button id="vCourt" onclick="setView('court')">コート別</button>
       <button id="vTime" onclick="setView('time')">時刻順</button>
@@ -147,7 +150,7 @@ function sideHtml(m, s, which) {
   var cls = 'side';
   if (!s.decided) cls += ' tbd';
   else if (m.state === '終了' && m.winner) cls += m.winner === which ? ' win' : ' lose';
-  return '<div class="' + cls + '"><div><span class="nm">' + esc(s.label) + '</span>' + (s.sub ? '<span class="sb">' + esc(s.sub) + '</span>' : '') + '</div></div>';
+  return '<div class="' + cls + '"><div>' + (s.origin && s.decided ? '<span class="org">' + esc(s.origin) + '</span>' : '') + '<span class="nm">' + esc(s.label) + '</span>' + (s.sub ? '<span class="sb">' + esc(s.sub) + '</span>' : '') + '</div></div>';
 }
 
 function cardHtml(m, showCourt) {
@@ -289,6 +292,7 @@ function load() {
   var i;
   for (i = 0; i < DIVS.length; i++) html += '<a class="' + (DIVS[i][0] === divCode ? 'on' : '') + '" href="?div=' + DIVS[i][0] + '">' + DIVS[i][1] + '</a>';
   document.getElementById('divTabs').innerHTML = html;
+  document.getElementById('bracketLink').href = 'bracket.html?div=' + divCode;
   setView(store('progressView') || (window.innerWidth < 680 ? 'time' : 'court'));
   load();
   setInterval(load, 30000);
