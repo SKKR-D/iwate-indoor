@@ -92,6 +92,21 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .toast.show{opacity:1}
 .toast.error{background:var(--red)}
 .muted{font-size:.72rem;color:var(--text-light)}
+.tinfo{padding:4px 10px 6px;font-size:.74rem;border-top:1px dashed var(--line)}
+.tinfo .ost{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.ok{color:var(--main);font-weight:700}
+.ng{color:var(--red);font-weight:900}
+.tp{display:grid;grid-template-columns:3.2em 1fr 3.6em 1fr;gap:2px 6px;margin-top:4px;align-items:center}
+.tp .n{font-weight:900;color:var(--text-light)}
+.tp .r{text-align:center;font-weight:900}
+.tp .won{color:var(--main);font-weight:700}
+.prow{border:1.5px solid var(--line);border-radius:8px;padding:8px;margin-bottom:8px}
+.prow .ttl{font-weight:900;font-size:.85rem;margin-bottom:6px}
+.prow .nm{font-size:.78rem;color:var(--text-light)}
+.seg2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+.seg2 button{padding:10px 6px;border-radius:8px;border:2px solid var(--line);background:#fff;font-family:inherit;font-weight:900;cursor:pointer;font-size:.85rem}
+.seg2 button.on{border-color:var(--main);background:var(--main-light)}
+.osel{width:100%;padding:8px;border:2px solid #ddd;border-radius:6px;font-family:inherit;margin-bottom:4px}
 @media(max-width:760px){.cols{grid-template-columns:1fr}}
 </style>
 </head>
@@ -260,12 +275,14 @@ function cardHtml(m, court) {
   h += '<div class="c-head"><span><span class="no">第' + m.no + '試合</span> <span class="rd">' + esc(m.round) + '</span>' + (m.two ? ' <span class="badge b-two">2面展開</span>' : '') + '</span>';
   h += '<span>' + stateBadge(m) + ' <span class="tm">' + esc(timeText(m)) + '</span></span></div>';
   h += '<div class="c-body">' + sideHtml(m, m.left, 'L') + '<div class="vs">' + (m.state === '終了' && m.score ? '<span class="score">' + esc(m.score) + '</span>' : 'vs') + '</div>' + sideHtml(m, m.right, 'R') + '</div>';
+  if (isTeam && m.team && m.note !== '不戦勝') h += teamInfo(m);
   if (m.note !== '不戦勝' && (!m.two || court === 'A')) {
     var id = esc(m.id);
     h += '<div class="ctl">';
     if (m.state === '待機') h += '<button class="g" ' + (ready ? '' : 'disabled') + ' onclick="op(\'' + id + '\',\'state\',\'呼出\')">コール</button>';
     if (m.state === '待機' || m.state === '呼出') h += '<button class="p" ' + (ready ? '' : 'disabled') + ' onclick="op(\'' + id + '\',\'state\',\'試合中\')">開始</button>';
-    if (m.state !== '待機' || ready) h += '<button class="p" ' + (ready ? '' : 'disabled') + ' onclick="openResult(\'' + id + '\')">' + (m.state === '終了' ? '結果修正' : '結果入力') + '</button>';
+    if (isTeam && ready && m.state !== '終了') h += '<button onclick="openOrder(\'' + id + '\')">オーダー</button>';
+    if (m.state !== '待機' || ready) h += '<button class="p" ' + (ready ? '' : 'disabled') + ' onclick="' + (isTeam ? 'openPairs' : 'openResult') + '(\'' + id + '\')">' + (m.state === '終了' ? '結果修正' : isTeam ? '番手結果' : '結果入力') + '</button>';
     if (m.state !== '待機') h += '<button class="r" onclick="undo(\'' + id + '\')">戻す</button>';
     h += '<span class="sp"></span>';
     if (m.state !== '終了' && m.state !== '試合中') {
@@ -293,6 +310,187 @@ function render() {
     html += '</div>';
   }
   document.getElementById('board').innerHTML = html + '</div>';
+}
+
+/* ========== 団体戦 ========== */
+function pairNames(p) { return p ? esc(p[0]) + '・' + esc(p[1]) : ''; }
+
+function teamInfo(m) {
+  var t = m.team;
+  var h = '<div class="tinfo"><div class="ost">オーダー：' +
+    '<span class="' + (t.orderL ? 'ok' : (t.overdue ? 'ng' : '')) + '">' + esc(m.left.label) + ' ' + (t.orderL ? '✓' + (t.byL === '本部' ? '（本部）' : '') : '未') + '</span>' +
+    '<span class="' + (t.orderR ? 'ok' : (t.overdue ? 'ng' : '')) + '">' + esc(m.right.label) + ' ' + (t.orderR ? '✓' + (t.byR === '本部' ? '（本部）' : '') : '未') + '</span>' +
+    (t.deadline ? '<span class="' + (t.overdue ? 'ng' : '') + '">締切 ' + esc(t.deadline) + (t.overdue ? ' 超過' : '') + '</span>' : '') +
+    (t.gather ? '<span>集合 ' + esc(t.gather) + '</span>' : '') + '</div>';
+  if (t.orderL || t.orderR || t.wL || t.wR) {
+    h += '<div class="tp">';
+    var i, p;
+    for (i = 0; i < 3; i++) {
+      p = t.pairs[i];
+      var res = p.kind === 'abort' ? '打切' : p.kind === 'none' ? '―' : p.w ? (p.w === 'L' ? '○' + (p.g && p.g !== '不戦勝' ? p.g : p.kind === 'forfeit' ? '不戦' : '') : (p.g && p.g !== '不戦勝' ? p.g : p.kind === 'forfeit' ? '不戦' : '') + '○') : '';
+      h += '<span class="n">' + (i + 1) + '番手</span><span class="' + (p.w === 'L' ? 'won' : '') + '">' + (p.l ? pairNames(p.l) : (t.orderL && i === 2 ? '不戦敗' : '')) + '</span>';
+      h += '<span class="r">' + esc(res) + '</span><span class="' + (p.w === 'R' ? 'won' : '') + '">' + (p.r ? pairNames(p.r) : (t.orderR && i === 2 ? '不戦敗' : '')) + '</span>';
+    }
+    h += '</div>';
+  }
+  if (t.need === 'points') h += '<div class="ng" style="margin-top:4px">勝ち数・得失ゲーム差が同じです。「番手結果」から得失ポイント差を入力してください。</div>';
+  if (t.need === 'rep') h += '<div class="ng" style="margin-top:4px">得失ポイント差も同じです。代表戦の勝者を入力してください。</div>';
+  return h + '</div>';
+}
+
+/* オーダーの代理入力 */
+var ord = { id: '', side: 'L', p: [['', ''], ['', ''], ['', '']] };
+
+function openOrder(id) {
+  var m = findMatch(id);
+  ord = { id: id, side: !m.team.orderL ? 'L' : (!m.team.orderR ? 'R' : 'L'), p: null };
+  loadOrderDraft();
+  modalOpen = true;
+  renderOrder();
+  document.getElementById('overlay').className = 'overlay show';
+}
+
+function loadOrderDraft() {
+  var m = findMatch(ord.id);
+  var cur = [];
+  var i;
+  for (i = 0; i < 3; i++) cur.push(m.team.pairs[i][ord.side === 'L' ? 'l' : 'r'] || ['', '']);
+  ord.p = JSON.parse(JSON.stringify(cur));
+}
+
+function renderOrder() {
+  var m = findMatch(ord.id);
+  var players = ord.side === 'L' ? m.team.playersL : m.team.playersR;
+  var need = players.length >= 6 ? 3 : 2;
+  var used = {};
+  var i, j, k;
+  for (i = 0; i < need; i++) for (j = 0; j < 2; j++) if (ord.p[i] && ord.p[i][j]) used[ord.p[i][j]] = i + 1;
+  var h = '<h3>第' + m.no + '試合　オーダー入力（本部代理）</h3>';
+  h += '<div class="seg2"><button class="' + (ord.side === 'L' ? 'on' : '') + '" onclick="setOrdSide(\'L\')">' + esc(m.left.label) + (m.team.orderL ? ' ✓' : '') + '</button><button class="' + (ord.side === 'R' ? 'on' : '') + '" onclick="setOrdSide(\'R\')">' + esc(m.right.label) + (m.team.orderR ? ' ✓' : '') + '</button></div>';
+  for (i = 0; i < 3; i++) {
+    h += '<div class="prow"><div class="ttl">' + (i + 1) + '番手</div>';
+    if (i >= need) { h += '<div class="muted">不戦敗（選手' + players.length + '名）</div></div>'; continue; }
+    for (j = 0; j < 2; j++) {
+      h += '<select class="osel" onchange="setOrd(' + i + ',' + j + ',this.value)"><option value="">選手を選択</option>';
+      for (k = 0; k < players.length; k++) {
+        var n = players[k].name;
+        var cur = ord.p[i] && ord.p[i][j] === n;
+        var taken = used[n] && !cur;
+        h += '<option value="' + esc(n) + '"' + (cur ? ' selected' : '') + (taken ? ' disabled' : '') + '>' + players[k].no + '. ' + esc(n) + (taken ? '（' + used[n] + '番手）' : '') + '</option>';
+      }
+      h += '</select>';
+    }
+    h += '</div>';
+  }
+  h += '<div class="muted" style="margin-bottom:8px">紙のオーダー票を受け取ったときや、提出後の訂正に使います（両チームそろった後も変更できます）。</div>';
+  h += '<div class="mbtns"><button class="btn btn-out" onclick="closeModal()">やめる</button><button class="btn" onclick="saveOrder()">このオーダーで登録</button></div>';
+  document.getElementById('modal').innerHTML = h;
+}
+
+function setOrdSide(s) { ord.side = s; loadOrderDraft(); renderOrder(); }
+function setOrd(i, j, v) { if (!ord.p[i]) ord.p[i] = ['', '']; ord.p[i][j] = v; renderOrder(); }
+
+function saveOrder() {
+  var m = findMatch(ord.id);
+  var players = ord.side === 'L' ? m.team.playersL : m.team.playersR;
+  var need = players.length >= 6 ? 3 : 2;
+  busy = true;
+  api({ action: 'ctlOrder', matchId: ord.id, side: ord.side, pairs: ord.p.slice(0, need) }).then(function (d) {
+    busy = false;
+    closeModal();
+    apply(d);
+    toast('オーダーを登録しました');
+  }).catch(function (err) { busy = false; toast(err.message, true); });
+}
+
+/* 番手ごとの結果 */
+var pr = { id: '', rows: [], tb: {} };
+
+function openPairs(id) {
+  var m = findMatch(id);
+  pr = { id: id, rows: [], tb: JSON.parse(JSON.stringify(m.team.tb || {})) };
+  var i, p, sc;
+  for (i = 0; i < 3; i++) {
+    p = m.team.pairs[i];
+    var g = '';
+    if (p.kind === 'played' && p.g) {
+      sc = String(p.g).match(/^(\d+)-(\d+)$/);
+      g = sc ? (p.w === 'L' ? sc[1] + '-' + sc[2] : sc[2] + '-' + sc[1]) : p.g;
+    } else if (p.kind === 'forfeit' && p.g === '不戦勝') g = '不戦勝';
+    pr.rows.push({ w: p.kind === 'played' || (p.kind === 'forfeit' && p.g === '不戦勝') ? p.w : '', g: g, auto: p.kind === 'forfeit' && p.g !== '不戦勝', none: p.kind === 'none' });
+  }
+  modalOpen = true;
+  renderPairs();
+  document.getElementById('overlay').className = 'overlay show';
+}
+
+function renderPairs() {
+  var m = findMatch(pr.id);
+  var isR1 = m.stage === 'R1';
+  var quick = ['3-0', '3-1', '3-2'];
+  var h = '<h3>第' + m.no + '試合　番手ごとの結果</h3><div class="muted" style="margin-bottom:8px">' + (isR1 ? '1回戦は3番手まで行います。' : '2勝した時点で決着（残りは打ち切り）。') + 'ゲーム数は「勝者－敗者」で選びます。</div>';
+  var i, j, r, p;
+  var wL = 0, wR = 0;
+  for (i = 0; i < 3; i++) {
+    r = pr.rows[i];
+    p = m.team.pairs[i];
+    h += '<div class="prow"><div class="ttl">' + (i + 1) + '番手</div>';
+    if (r.none) { h += '<div class="muted">両チームとも不戦敗</div></div>'; continue; }
+    if (r.auto) { h += '<div class="muted">' + (p.w === 'L' ? esc(m.right.label) : esc(m.left.label)) + 'が不戦敗（選手不足）→ ' + esc(p.w === 'L' ? m.left.label : m.right.label) + 'の勝ち</div></div>'; if (p.w === 'L') wL++; else wR++; continue; }
+    h += '<div class="seg2"><button class="' + (r.w === 'L' ? 'on' : '') + '" onclick="setPW(' + i + ',\'L\')">' + esc(m.left.label) + '<br><span class="nm">' + (p.l ? pairNames(p.l) : '') + '</span></button>';
+    h += '<button class="' + (r.w === 'R' ? 'on' : '') + '" onclick="setPW(' + i + ',\'R\')">' + esc(m.right.label) + '<br><span class="nm">' + (p.r ? pairNames(p.r) : '') + '</span></button></div>';
+    h += '<div class="quick">';
+    for (j = 0; j < quick.length; j++) h += '<button class="' + (r.g === quick[j] ? 'on' : '') + '" onclick="setPG(' + i + ',\'' + quick[j] + '\')">' + quick[j] + '</button>';
+    h += '<button class="' + (r.g === '不戦勝' ? 'on' : '') + '" onclick="setPG(' + i + ',\'不戦勝\')">不戦勝</button>';
+    h += '<button onclick="clearP(' + i + ')">クリア</button></div></div>';
+    if (r.w === 'L') wL++;
+    if (r.w === 'R') wR++;
+  }
+  var need = m.team.need;
+  var allDone = true;
+  for (i = 0; i < 3; i++) if (!pr.rows[i].w && !pr.rows[i].auto && !pr.rows[i].none) allDone = false;
+  var tie = allDone && wL === wR;
+  if (tie) {
+    h += '<div class="prow" style="border-color:#b33030"><div class="ttl">同数の判定</div><div class="muted">勝ち数が同じ場合：得失ゲーム差 → 得失ポイント差 → 代表戦（勝ったペア同士・ファイナルゲーム）</div>';
+    h += '<div class="muted" style="margin:6px 0 4px">得失ポイント差で上回ったチーム（ゲーム差が同じときのみ使用）</div><div class="seg2">';
+    h += '<button class="' + (pr.tb.points === 'L' ? 'on' : '') + '" onclick="setTB(\'points\',\'L\')">' + esc(m.left.label) + '</button><button class="' + (pr.tb.points === 'R' ? 'on' : '') + '" onclick="setTB(\'points\',\'R\')">' + esc(m.right.label) + '</button></div>';
+    h += '<div class="quick"><button class="' + (pr.tb.pointsTie ? 'on' : '') + '" onclick="setTB(\'pointsTie\',true)">ポイント差も同じ</button></div>';
+    if (pr.tb.pointsTie) {
+      h += '<div class="muted" style="margin:6px 0 4px">代表戦の勝者</div><div class="seg2"><button class="' + (pr.tb.rep === 'L' ? 'on' : '') + '" onclick="setTB(\'rep\',\'L\')">' + esc(m.left.label) + '</button><button class="' + (pr.tb.rep === 'R' ? 'on' : '') + '" onclick="setTB(\'rep\',\'R\')">' + esc(m.right.label) + '</button></div>';
+    }
+    h += '</div>';
+  }
+  h += '<div class="mbtns"><button class="btn btn-out" onclick="closeModal()">やめる</button><button class="btn" onclick="savePairs()">保存</button></div>';
+  document.getElementById('modal').innerHTML = h;
+}
+
+function setPW(i, w) { pr.rows[i].w = w; renderPairs(); }
+function setPG(i, g) { pr.rows[i].g = g; renderPairs(); }
+function clearP(i) { pr.rows[i].w = ''; pr.rows[i].g = ''; renderPairs(); }
+function setTB(k, v) {
+  if (k === 'points') { pr.tb.points = pr.tb.points === v ? '' : v; pr.tb.pointsTie = false; pr.tb.rep = ''; }
+  else if (k === 'pointsTie') { pr.tb.pointsTie = !pr.tb.pointsTie; pr.tb.points = ''; if (!pr.tb.pointsTie) pr.tb.rep = ''; }
+  else pr.tb[k] = pr.tb[k] === v ? '' : v;
+  renderPairs();
+}
+
+function savePairs() {
+  var out = [];
+  var i, r, sc;
+  for (i = 0; i < 3; i++) {
+    r = pr.rows[i];
+    if (!r.w || r.auto || r.none) { out.push({}); continue; }
+    sc = String(r.g || '').match(/^(\d+)-(\d+)$/);
+    out.push({ w: r.w, g: sc ? (r.w === 'L' ? sc[1] + '-' + sc[2] : sc[2] + '-' + sc[1]) : r.g });
+  }
+  busy = true;
+  api({ action: 'ctlPairs', matchId: pr.id, pairs: out, tb: pr.tb }).then(function (d) {
+    busy = false;
+    closeModal();
+    apply(d);
+    var m = findMatch(pr.id);
+    toast(m.state === '終了' ? '決着：' + (m.winner === 'L' ? m.left.label : m.right.label) + 'の勝ち（' + m.score + '）' : '保存しました（' + m.team.wL + '-' + m.team.wR + '）');
+  }).catch(function (err) { busy = false; toast(err.message, true); });
 }
 
 /* ========== 操作 ========== */
