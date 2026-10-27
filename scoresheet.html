@@ -235,6 +235,8 @@ function indivSheet(m, info) {
     var yy = Y.g0 + gameH * k + (k === 6 ? finalH : gameH) / 2;
     g.t((cx0 + cx1) / 2, yy + 1.3, k === 6 ? '-Ⓕ-' : '-' + CIRC[k + 1] + '-', { s: 3.6, a: 'middle' });
   }
+  /* 中央欄のゲーム区切り（左右のゲーム区切り線とつなぐ） */
+  for (k = 1; k <= 6; k++) g.ln(cx0, Y.g0 + gameH * k, cx1, Y.g0 + gameH * k, MID);
   /* 警告・タイム */
   warnRow(g, [X0, 25.4, 40.1, 54.8, 69.4, 105.5, 142.0, 151.8, 166.5, 182.0, X1], Y.w0, Y.w1, Y.s0);
   /* サイン欄 */
@@ -439,6 +441,8 @@ function teamBlock(g, C, Y, r0, X0, X1, pr, hasOrder, b) {
     var yy = Y(rG) + gameH * k + (k === 6 ? finalH : gameH) / 2;
     g.t((C(16) + C(18)) / 2, yy + 1.2, k === 6 ? '―Ⓕ―' : '―' + CIRC[k + 1] + '―', { s: 3.2, a: 'middle' });
   }
+  /* 中央欄のゲーム区切り（左右のゲーム区切り線とつなぐ） */
+  for (k = 1; k <= 6; k++) g.ln(C(16), Y(rG) + gameH * k, C(18), Y(rG) + gameH * k, MID);
   /* 警告・タイム（25〜27行） */
   var wx = [C(0), C(2), C(5), C(8), C(11), C(17), C(23), C(25), C(28), C(31), C(34)];
   g.ln(wx[0], Y(rW2), wx[4], Y(rW2), THIN);
