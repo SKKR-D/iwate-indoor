@@ -42,6 +42,7 @@ select:focus{border-color:var(--main);outline:none}
 .drow{display:flex;align-items:center;gap:6px;margin:6px 0;font-size:.84rem}
 .drow span{flex:1;min-width:0}
 .btn.sm{padding:6px 10px;font-size:.78rem;border-radius:8px}
+[hidden]{display:none!important}
 .footer{text-align:center;padding:24px;font-size:.72rem;color:var(--text-light);line-height:1.7}
 </style>
 </head>
@@ -67,7 +68,7 @@ select:focus{border-color:var(--main);outline:none}
     <div style="margin-top:12px"><a class="btn btn-out" href="youkou.pdf" target="_blank">📄 大会要項（PDF）</a></div>
   </div>
 
-  <div class="card">
+  <div class="card after" id="cardDay" hidden>
     <h2>大会当日の進行表・組合せ・結果</h2>
     <p class="lead">試合の予定時刻と結果は、大会当日に随時更新されます。</p>
     <div class="days">
@@ -80,10 +81,10 @@ select:focus{border-color:var(--main);outline:none}
         <div class="drow"><span>女子（紫波）</span><a class="btn btn-out sm" href="progress.html?div=WT">進行表</a><a class="btn btn-out sm" href="bracket.html?div=WT">組合せ・結果</a></div>
       </div>
     </div>
-    <p class="note">組合せは発表後に表示されます。</p>
+    <p class="note"><strong>組合せは11月24日（火）掲載予定です。</strong>掲載までは「組合せ・結果」「進行表」に「まだ発表されていません」と表示されます。</p>
   </div>
 
-  <div class="card">
+  <div class="card before">
     <h2>参加申込の方法</h2>
     <p class="lead">本大会は<strong>強化スタッフが選考したチーム・ペアのみ</strong>出場できます。出場チームには、団体登録システムに登録された<strong>代表者メールアドレス</strong>へ、チーム専用の申込リンクをお送りします。</p>
     <ol class="steps" style="margin-top:12px">
@@ -93,7 +94,7 @@ select:focus{border-color:var(--main);outline:none}
     </ol>
   </div>
 
-  <div class="card">
+  <div class="card before">
     <h2>申込リンクが届いていない場合</h2>
     <p class="lead">申込リンクは、<strong>申込開始（11月11日）まで</strong>に出場チームの代表者メールアドレスへお送りします。届いていない場合や、代表者メールアドレスが変わった場合は、下記の問合せ先へご連絡ください。連盟から改めてお送りします。</p>
     <p class="note">・迷惑メールフォルダに入っていないかもご確認ください。<br>・申込リンクはチーム専用です。他チームへの転送はご遠慮ください。</p>
@@ -106,5 +107,18 @@ select:focus{border-color:var(--main);outline:none}
   &copy; 岩手県中学生ソフトテニス連盟
 </footer>
 
+<script>
+/* 申込締切（11月19日 17:00）を過ぎたら、申込の案内を隠して大会当日の案内を出す。
+   締切を変えるときはこの日時を直す。確認用：?view=after／?view=before */
+var SWITCH_AT = new Date('2026-11-19T17:00:00+09:00');
+(function () {
+  var view = new URLSearchParams(location.search).get('view');
+  var after = view === 'after' ? true : view === 'before' ? false : new Date() >= SWITCH_AT;
+  var i;
+  var b = document.querySelectorAll('.card.before');
+  for (i = 0; i < b.length; i++) b[i].hidden = after;
+  document.getElementById('cardDay').hidden = !after;
+})();
+</script>
 </body>
 </html>
