@@ -43,6 +43,7 @@ select:focus{border-color:var(--main);outline:none}
 .drow span{flex:1;min-width:0}
 .btn.sm{padding:6px 10px;font-size:.78rem;border-radius:8px}
 [hidden]{display:none!important}
+.vbtns{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-top:12px}
 .footer{text-align:center;padding:24px;font-size:.72rem;color:var(--text-light);line-height:1.7}
 </style>
 </head>
@@ -84,6 +85,12 @@ select:focus{border-color:var(--main);outline:none}
     <p class="note"><strong>組合せは11月24日（火）掲載予定です。</strong>掲載までは「組合せ・結果」「進行表」に「まだ発表されていません」と表示されます。</p>
   </div>
 
+  <div class="card after" id="cardVideo" hidden>
+    <h2>監督向け　大会当日の動き（動画）</h2>
+    <p class="lead">受付からオーダー提出・試合の確認までの手順を、実際の画面で説明しています（字幕つき・約1分30秒〜2分）。</p>
+    <div class="vbtns"><a class="btn btn-out" href="coach-video.html?div=indiv">▶ 個人戦の監督（11/28）</a><a class="btn btn-out" href="coach-video.html?div=team">▶ 団体戦の監督（11/29）</a></div>
+  </div>
+
   <div class="card before">
     <h2>参加申込の方法</h2>
     <p class="lead">本大会は<strong>強化スタッフが選考したチーム・ペアのみ</strong>出場できます。出場チームには、団体登録システムに登録された<strong>代表者メールアドレス</strong>へ、チーム専用の申込リンクをお送りします。</p>
@@ -108,7 +115,7 @@ select:focus{border-color:var(--main);outline:none}
 </footer>
 
 <script>
-/* 申込締切（11月19日 17:00）を過ぎたら、申込の案内を隠して大会当日の案内を出す。
+/* 申込締切（11月19日 17:00）を過ぎたら、申込の案内を隠して大会当日の案内（進行表・組合せ、監督向け動画）を出す。
    締切を変えるときはこの日時を直す。確認用：?view=after／?view=before */
 var SWITCH_AT = new Date('2026-11-19T17:00:00+09:00');
 (function () {
@@ -117,7 +124,8 @@ var SWITCH_AT = new Date('2026-11-19T17:00:00+09:00');
   var i;
   var b = document.querySelectorAll('.card.before');
   for (i = 0; i < b.length; i++) b[i].hidden = after;
-  document.getElementById('cardDay').hidden = !after;
+  var af = document.querySelectorAll('.card.after');
+  for (i = 0; i < af.length; i++) af[i].hidden = !after;
 })();
 </script>
 </body>
