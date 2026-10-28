@@ -373,8 +373,9 @@ function teamSheet(m, info) {
   for (b = 0; b < 3; b++) {
     var r0 = 8 + b * 20;
     var pr = m && m.team && m.team.pairs ? m.team.pairs[b] : null;
-    var hasOrder = !!(m && m.team && (m.team.both || m.team.open));
-    teamBlock(g, C, Y, r0, X0, X1, pr, hasOrder, b);
+    /* 本部（パスワードあり）は公開前でも提出済みのオーダーを印字する */
+    var vis = !!(m && m.team && (ADMIN || m.team.open));
+    teamBlock(g, C, Y, r0, X0, X1, pr, vis ? [m.team.orderL, m.team.orderR] : [false, false], b);
   }
   /* サイン欄（68〜69行） */
   var sx = [0, 3, 7, 10, 13, 16, 18, 21, 26, 29, 34];
@@ -401,7 +402,7 @@ function teamSheet(m, info) {
   return g.out();
 }
 
-function teamBlock(g, C, Y, r0, X0, X1, pr, hasOrder, b) {
+function teamBlock(g, C, Y, r0, X0, X1, pr, has, b) {
   var rP = r0, rS = r0 + 1, rG = r0 + 2, rF = r0 + 14, rW = r0 + 17, rW2 = r0 + 18, rEnd = r0 + 20;
   var sideCols = [[0, 2, 3, 9, 10, 16], [18, 20, 21, 27, 28, 34]];
   var i, sc;
@@ -416,8 +417,8 @@ function teamBlock(g, C, Y, r0, X0, X1, pr, hasOrder, b) {
     for (j = 0; j < v.length; j++) g.ln(C(v[j]), Y(rP), C(v[j]), Y(rG), THIN);
     g.ct(C(sc[1]), C(sc[2]), Y(rP), Y(rG), 'A', { s: 3 });
     g.ct(C(sc[3]), C(sc[4]), Y(rP), Y(rG), 'B', { s: 3 });
-    /* 選手名（オーダーがそろっていれば） */
-    if (pr && hasOrder) {
+    /* 選手名（オーダーが見える場合） */
+    if (pr && has[i]) {
       var names = i === 0 ? pr.l : pr.r;
       if (names) {
         g.ct(C(sc[2]), C(sc[3]), Y(rP), Y(rG), names[0], { s: 4.4, b: true });
@@ -547,11 +548,25 @@ function render() {
   document.getElementById('count').textContent = '試合 ' + list.length + '枚' + (n ? '＋白紙 ' + n + '枚' : '') + '（A4縦・1試合1枚）';
 }
 
+/* 本部のパスワードが端末に保存されていれば、公開前のオーダーも含めて読み込む */
+var ADMIN = false;
+function ctlPw() {
+  try { return localStorage.getItem('iwateIndoorCtlPw') || ''; } catch (e) { return ''; }
+}
+
 function load() {
-  fetch(GAS_URL + '?action=progress&div=' + div).then(function (r) { return r.text(); }).then(function (t) {
+  var pw = ctlPw();
+  var req = pw
+    ? fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'ctlLoad', pw: pw, div: div }) })
+    : fetch(GAS_URL + '?action=progress&div=' + div);
+  req.then(function (r) { return r.text(); }).then(function (t) {
     var d;
     try { d = JSON.parse(t); } catch (e) { throw new Error('サーバーの応答を読み取れません'); }
-    if (d.status !== 'ok') throw new Error(d.message);
+    if (d.status !== 'ok') {
+      if (pw && d.code === 'auth') { try { localStorage.removeItem('iwateIndoorCtlPw'); } catch (e) {} return load(); }
+      throw new Error(d.message);
+    }
+    ADMIN = !!pw;
     DATA = d;
     document.getElementById('sub').textContent = d.tournament + '　' + d.division.name + '（' + d.venue + '）';
     document.title = 'スコアシート ' + d.division.name + '｜' + d.tournament;
