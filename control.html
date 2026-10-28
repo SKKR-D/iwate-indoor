@@ -51,6 +51,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .ctl button.g{background:var(--gold);border-color:var(--gold);color:#2b2300}
 .ctl button.r{border-color:var(--red);color:var(--red)}
 .ctl button:disabled{opacity:.4;cursor:not-allowed}
+.ctl button.pub{background:#e8601a;border-color:#e8601a;color:#fff}
+.tinfo .ost .pubwait{color:#e8601a;font-weight:700}
 .ctl .sp{flex:1}
 .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:900;white-space:nowrap}
 .b-wait{background:#eee;color:#666}
@@ -282,6 +284,8 @@ function cardHtml(m, court) {
     if (m.state === '待機') h += '<button class="g" ' + (ready ? '' : 'disabled') + ' onclick="op(\'' + id + '\',\'state\',\'呼出\')">コール</button>';
     if (m.state === '待機' || m.state === '呼出') h += '<button class="p" ' + (ready ? '' : 'disabled') + ' onclick="op(\'' + id + '\',\'state\',\'試合中\')">開始</button>';
     if (isTeam && ready && m.state !== '終了') h += '<button onclick="openOrder(\'' + id + '\')">オーダー</button>';
+    if (isTeam && ready && m.team && m.team.both && !m.team.open) h += '<button class="pub" onclick="publish(\'' + id + '\')">📣 オーダー公開</button>';
+    if (isTeam && m.team && m.team.open && m.team.pubAt && (m.state === '待機' || m.state === '呼出')) h += '<button onclick="unpublish(\'' + id + '\')">非公開に戻す</button>';
     if (m.state !== '待機' || ready) h += '<button class="p" ' + (ready ? '' : 'disabled') + ' onclick="' + (isTeam ? 'openPairs' : 'openResult') + '(\'' + id + '\')">' + (m.state === '終了' ? '結果修正' : isTeam ? '番手結果' : '結果入力') + '</button>';
     if (m.state !== '待機') h += '<button class="r" onclick="undo(\'' + id + '\')">戻す</button>';
     h += '<button onclick="window.open(\'scoresheet.html?div=' + divCode + '&match=' + id + '\')" title="この試合のスコアシートを印刷">🖨 シート</button>';
@@ -322,7 +326,8 @@ function teamInfo(m) {
     '<span class="' + (t.orderL ? 'ok' : (t.overdue ? 'ng' : '')) + '">' + esc(m.left.label) + ' ' + (t.orderL ? '✓' + (t.byL === '本部' ? '（本部）' : '') : '未') + '</span>' +
     '<span class="' + (t.orderR ? 'ok' : (t.overdue ? 'ng' : '')) + '">' + esc(m.right.label) + ' ' + (t.orderR ? '✓' + (t.byR === '本部' ? '（本部）' : '') : '未') + '</span>' +
     (t.deadline ? '<span class="' + (t.overdue ? 'ng' : '') + '">締切 ' + esc(t.deadline) + (t.overdue ? ' 超過' : '') + '</span>' : '') +
-    (t.gather ? '<span>集合 ' + esc(t.gather) + '</span>' : '') + '</div>';
+    (t.gather ? '<span>集合 ' + esc(t.gather) + '</span>' : '') +
+    (t.open ? '<span class="ok">公開済' + (t.pubAt ? ' ' + esc(t.pubAt) : '') + '</span>' : (t.both ? '<span class="pubwait">未公開</span>' : '')) + '</div>';
   if (t.orderL || t.orderR || t.wL || t.wR) {
     h += '<div class="tp">';
     var i, p;
@@ -383,7 +388,7 @@ function renderOrder() {
     }
     h += '</div>';
   }
-  h += '<div class="muted" style="margin-bottom:8px">紙のオーダー票を受け取ったときや、提出後の訂正に使います（両チームそろった後も変更できます）。</div>';
+  h += '<div class="muted" style="margin-bottom:8px">紙のオーダー票を受け取ったときや、提出後の訂正に使います（公開した後も、本部は変更できます）。</div>';
   h += '<div class="mbtns"><button class="btn btn-out" onclick="closeModal()">やめる</button><button class="btn" onclick="saveOrder()">このオーダーで登録</button></div>';
   document.getElementById('modal').innerHTML = h;
 }
@@ -505,6 +510,18 @@ function op(id, kind, state) {
     busy = false;
     toast(err.message, true);
   });
+}
+
+function publish(id) {
+  var m = findMatch(id);
+  if (!confirm('第' + m.no + '試合のオーダーを公開します。\n両チームの監督と進行表に表示され、監督はオーダーを修正できなくなります。')) return;
+  op(id, 'publish');
+}
+
+function unpublish(id) {
+  var m = findMatch(id);
+  if (!confirm('第' + m.no + '試合のオーダーを非公開に戻します。よろしいですか？')) return;
+  op(id, 'unpublish');
 }
 
 function undo(id) {
