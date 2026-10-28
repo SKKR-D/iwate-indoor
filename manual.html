@@ -306,7 +306,7 @@ ul.check small{color:var(--muted);display:block}
     <li>選手が6名未満のチームは3番手が不戦敗（自動で処理される）。</li>
     <li>オーダー締切：1回戦は8:40。2回戦以降は前の試合の終了から10分（コート集合は15分）。締切を過ぎても未提出の試合は赤で表示される。</li>
     <li>未提出のチームからは紙のオーダー票を受け取り、<span class="btn">オーダー</span> から代理入力する。本部は公開の前でも後でも訂正できる。</li>
-    <li><b>オーダーは本部が公開するまで、相手チームにも観客にも見えない</b>（監督は公開まで自分で修正できる）。両チームそろうとカードに「未公開」と出る。</li>
+    <li><b>オーダーは本部が公開するまで、相手チームにも観客にも見えない</b>（監督が自分で修正できるのは締切まで。以降の変更は本部が行う）。両チームそろうとカードに「未公開」と出る。</li>
     <li>勝ち数が同じとき：得失ゲーム差（自動）→ 得失ポイント差（本部が入力）→ 代表戦（本部が入力）の順で決める。画面の案内に従う。</li>
     <li>決勝は既定で2面展開。ほかの試合も <span class="btn">2面展開</span> で切り替えられる。</li>
   </ul>
@@ -400,11 +400,11 @@ ul.check small{color:var(--muted);display:block}
       <tr><td class="t">7:30</td><td>会場に到着。受付に代表者（監督または申込責任者）が並ぶ</td><td><span class="who">全係</span> 持ち場で端末を起動・ログイン。受付前の列を整理</td></tr>
       <tr><td class="t">7:35〜8:00</td><td>受付票を見せ、参加料を現金で払う。領収書（PDF）がメールで届く</td><td><span class="who">受付</span> 二次元コードを読む → 金額確認 → 現金受領・受付完了</td></tr>
       <tr><td class="t">8:00</td><td>（未受付のチームがあれば遅れて到着）</td><td><span class="who">受付</span> 未受付のチームを本部へ報告　<span class="who">本部</span> 監督へ連絡</td></tr>
-      <tr><td class="t">〜8:40</td><td><span class="who">団体戦</span> 監督がスマートフォンで1回戦のオーダーを出す</td><td><span class="who">本部</span> 進行管理で提出状況を見る。8:40を過ぎても未提出なら赤表示 → 監督に声をかけ、紙のオーダー票を受けて代理入力</td></tr>
+      <tr><td class="t">〜8:40</td><td><span class="who">団体戦</span> 監督がスマートフォンで1回戦のオーダーを出す（8:40までは修正できる）</td><td><span class="who">本部</span> 進行管理で提出状況を見る。8:40を過ぎても未提出なら赤表示 → 監督に声をかけ、紙のオーダー票を受けて代理入力</td></tr>
       <tr><td class="t">9:00〜</td><td>進行表で自分の試合のコート・予定時刻を見て待機。コールされたらコートへ</td><td><span class="who">本部</span> コール　<span class="who">記録</span> スコアシートをコートへ</td></tr>
       <tr><td class="t">試合前</td><td><span class="who">団体戦</span> コートで整列・あいさつ。ここで初めて相手のオーダーが監督ポータルに出る</td><td><span class="who">本部</span> あいさつに合わせて「オーダー公開」→「開始」　<span class="who">コート</span> 試合を進める</td></tr>
       <tr><td class="t">試合後</td><td>勝者がスコアシートにサインする</td><td><span class="who">コート</span> シートをすぐ本部へ　<span class="who">本部</span> 結果入力 → 勝者が次の試合に自動で入る</td></tr>
-      <tr><td class="t">2回戦以降</td><td><span class="who">団体戦</span> 前の試合の終了から10分以内にオーダー、15分以内にコート集合</td><td><span class="who">本部</span> 締切超過（赤表示）の試合を催促。未提出は紙で代理入力</td></tr>
+      <tr><td class="t">2回戦以降</td><td><span class="who">団体戦</span> 前の試合の終了から10分以内にオーダー（修正もこの締切まで）、15分以内にコート集合</td><td><span class="who">本部</span> 締切超過（赤表示）の試合を催促。未提出は紙で代理入力</td></tr>
       <tr><td class="t">予選終了</td><td><span class="who">個人戦</span> 各ブロック1位・2位が決勝トーナメントへ</td><td><span class="who">本部</span> ブロックの順位を確定 → 決勝トーナメントの対戦が自動で決まる。放送で進出ペアを知らせる</td></tr>
       <tr><td class="t">決勝後</td><td>表彰を待つ</td><td><span class="who">記録</span> 結果入りの組合せで順位を確認し、表彰へ</td></tr>
     </tbody>
