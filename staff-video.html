@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>運営スタッフ向け 当日の動き（動画）｜県インドア大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--main:#0a2f6b;--c:#1b5cc4;--cs:#e2ecfb;--acc:#e8601a;--gray:#eef3fa;--text:#222;--light:#666;--radius:12px}
+html{font-size:15px}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--text);min-height:100vh}
+.header{background:var(--main);color:#fff;padding:18px 16px}
+.inner{max-width:1080px;margin:0 auto}
+.header small{font-size:.72rem;opacity:.85;display:block}
+.header h1{font-size:1.2rem;font-weight:900;margin-top:2px}
+.tabs{max-width:1080px;margin:14px auto 0;padding:0 16px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.tabs a{text-align:center;text-decoration:none;font-weight:900;font-size:.95rem;padding:11px 10px;border-radius:10px;border:2px solid #cfd8d2;background:#fff;color:var(--light)}
+.tabs a.on{border-color:var(--c);background:var(--c);color:#fff}
+.days{max-width:1080px;margin:8px auto 0;padding:0 16px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.days a{text-align:center;text-decoration:none;font-weight:700;font-size:.86rem;padding:8px;border-radius:999px;border:2px solid #cfd8e6;background:#fff;color:var(--light)}
+.days a.on{border-color:var(--main);background:var(--main);color:#fff}
+.back{max-width:1080px;margin:10px auto 0;padding:0 16px;font-size:.8rem}
+.back a{color:var(--c);font-weight:700;text-decoration:none}
+@media (max-width:520px){.tabs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.main{max-width:1080px;margin:14px auto 30px;padding:0 16px;display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+.player{background:#111;border-radius:var(--radius);overflow:hidden;display:flex;justify-content:center}
+video{display:block;width:100%;max-width:520px;aspect-ratio:9/16;background:#111}
+.side{min-width:0}
+.box{background:#fff;border-radius:var(--radius);padding:16px;box-shadow:0 1px 6px rgba(0,0,0,.06);margin-bottom:12px}
+.box h2{font-size:.95rem;font-weight:900;margin-bottom:8px;color:var(--c)}
+.lead{font-size:.86rem;line-height:1.75}
+.lead b{color:var(--c)}
+.chap{list-style:none;display:grid;gap:6px}
+.chap button{width:100%;display:grid;grid-template-columns:5.4em minmax(0,1fr) auto;gap:8px;align-items:center;text-align:left;font-family:inherit;font-size:.88rem;border:1.5px solid #e2e6e3;background:#fff;border-radius:10px;padding:9px 10px;cursor:pointer;color:var(--text)}
+.chap button:hover,.chap button:focus-visible{border-color:var(--c);outline:none}
+.chap .st{font-size:.72rem;font-weight:900;color:var(--c);white-space:nowrap}
+.chap .tm{font-size:.74rem;color:var(--light);font-variant-numeric:tabular-nums}
+.chap button.cur{background:var(--cs);border-color:var(--c);font-weight:700}
+.chap button.cur .st{color:var(--acc)}
+.note{font-size:.75rem;color:var(--light);line-height:1.7;margin-top:8px}
+.footer{text-align:center;padding:10px 16px 30px;font-size:.72rem;color:var(--light);line-height:1.7}
+@media (min-width:860px){
+  .main{grid-template-columns:minmax(0,430px) minmax(0,1fr);align-items:start}
+  .player{position:sticky;top:14px}
+  video{width:auto;height:min(calc(100vh - 40px),764px);max-width:100%}
+}
+</style>
+</head>
+<body>
+<header class="header"><div class="inner">
+  <small>第40回岩手県中学校インドアソフトテニス大会</small>
+  <h1>運営スタッフ向け　係ごとの説明動画</h1>
+</div></header>
+<div class="back"><a href="staff.html">← 運営ポータルへ戻る</a></div>
+<nav class="tabs">
+  <a id="tab_reception" href="?k=reception">受付係</a>
+  <a id="tab_honbu" href="?k=honbu">本部・進行係</a>
+  <a id="tab_record" href="?k=record">記録・掲示係</a>
+  <a id="tab_court" href="?k=court">コート係</a>
+</nav>
+<nav class="days">
+  <a id="day_indiv">個人戦の日（11/28）</a>
+  <a id="day_team">団体戦の日（11/29）</a>
+</nav>
+
+<main class="main">
+  <div class="player">
+    <video id="vid" controls playsinline preload="metadata"></video>
+  </div>
+  <div class="side">
+    <div class="box">
+      <h2 id="ttl"></h2>
+      <p class="lead" id="lead"></p>
+      <p class="note">音声はありません（字幕で説明しています）。画面は見本で、学校名・選手名は架空です。詳しくは当日運営マニュアルも見てください。</p>
+    </div>
+    <div class="box">
+      <h2>見たいところから再生</h2>
+      <ul class="chap" id="chap"></ul>
+    </div>
+  </div>
+</main>
+<div class="footer">岩手県中学生ソフトテニス連盟</div>
+
+<script>
+var DATA = {
+  reception: {
+    indiv: { title: '受付係　個人戦の日（11/28）', src: 'video/staff_reception_indiv.mp4', poster: 'video/staff_reception_indiv.jpg',
+      lead: 'ログインから、二次元コードの読み取り、<b>現金受領・受付完了</b>（3,000円×ペア数）、受付票がないときの探し方、8:00の未受付の確認まで。（約1分30秒）',
+      chap: [[0, 'はじめに'], [4, '使うもの'], [12.4, '受付の時間'], [18.3, '「当日受付」を開く', 1], [24.4, 'ログインする', 2], [30.5, '区分を選ぶ', 3], [35.5, '二次元コードを読む', 4], [41.9, '金額を確かめる', 5], [48.7, '「現金受領・受付完了」', 6], [54.8, '受付完了', 7], [60.3, '受付票がないとき', 8], [66, '「すでに受付済み」と出たら', 9], [73.5, '8:00 未受付を確かめる', 10], [79.4, 'こんなときは'], [91.5, 'まとめ']] },
+    team: { title: '受付係　団体戦の日（11/29）', src: 'video/staff_reception_team.mp4', poster: 'video/staff_reception_team.jpg',
+      lead: 'ログインから、二次元コードの読み取り、<b>現金受領・受付完了</b>（10,000円）、監督への「オーダーは8:40まで」の一声、8:00の未受付の確認まで。（約1分30秒）',
+      chap: [[0, 'はじめに'], [4, '使うもの'], [12.6, '受付の時間'], [18.5, '「当日受付」を開く', 1], [24.6, 'ログインする', 2], [30.7, '区分を選ぶ', 3], [35.7, '二次元コードを読む', 4], [42.1, '金額を確かめる', 5], [47.8, '「現金受領・受付完了」', 6], [53.9, '監督に一声かける', 7], [61.2, '受付票がないとき', 8], [66.9, '「すでに受付済み」と出たら', 9], [74.4, '8:00 未受付を確かめる', 10], [80.3, 'こんなときは'], [92.3, 'まとめ']] }
+  },
+  honbu: {
+    indiv: { title: '本部・進行係　個人戦の日（11/28）', src: 'video/staff_honbu_indiv.mp4', poster: 'video/staff_honbu_indiv.jpg',
+      lead: '<b>コール → 開始 → 結果入力</b>の流れと、予選リーグの<b>順位確定</b>、決勝トーナメント、進行の調整まで。（約1分30秒）',
+      chap: [[0, 'はじめに'], [4, '使うもの'], [9.3, '1試合の流れ'], [15.2, '「本部 進行管理」を開く', 1], [21.3, 'ログインする', 2], [27.4, '画面の見方', 3], [34.6, '「コール」', 4], [41.2, '「開始」', 5], [47.8, '「結果入力」', 6], [53.8, '予選リーグの順位を確定', 7], [59.8, '決勝トーナメント', 8], [66.5, '進行の調整', 9], [72.9, '目安時間を変える', 10], [79.2, 'こんなときは'], [89.2, 'まとめ']] },
+    team: { title: '本部・進行係　団体戦の日（11/29）', src: 'video/staff_honbu_team.mp4', poster: 'video/staff_honbu_team.jpg',
+      lead: '<b>コール → オーダー公開 → 開始 → 番手結果</b>の流れと、オーダーの提出状況・代理入力、進行の調整まで。（約2分）',
+      chap: [[0, 'はじめに'], [4, '使うもの'], [11.6, '1試合の流れ'], [18.4, '「本部 進行管理」を開く', 1], [24.5, 'ログインする', 2], [30.6, '画面の見方', 3], [37.4, '「コール」', 4], [44, 'オーダーの提出状況', 5], [49, '未提出は代理入力', 6], [54.6, 'あいさつで「オーダー公開」', 7], [62.7, '「開始」', 8], [69.3, '「番手結果」を入れる', 9], [76.2, '進行の調整', 10], [85, '目安時間を変える', 11], [91.3, 'こんなときは'], [104.6, 'まとめ']] }
+  },
+  record: {
+    indiv: { title: '記録・掲示係　個人戦の日（11/28）', src: 'video/staff_record_indiv.mp4', poster: 'video/staff_record_indiv.jpg',
+      lead: '前日の印刷（<b>予選リーグのスコアシート・白紙の組合せ・進行表の二次元コード</b>）と、当日のシートの配布・回収、結果の掲示、表彰の準備まで。（約1分30秒）',
+      chap: [[0, 'はじめに'], [4, '仕事'], [13.6, '「スコアシート印刷」を開く', 1], [19.7, 'コートと範囲を選ぶ', 2], [26.8, '個人戦用のシート', 3], [32.7, '白紙の予備も印刷', 4], [37.9, '組合せ（白紙）', 5], [44.2, '組合せ（結果入り）', 6], [49.8, '進行表の二次元コード', 7], [55.8, '当日：スコアシートを配る', 8], [61.8, '表彰の準備', 9], [67, 'まとめ']] },
+    team: { title: '記録・掲示係　団体戦の日（11/29）', src: 'video/staff_record_team.mp4', poster: 'video/staff_record_team.jpg',
+      lead: '前日の印刷（<b>団体戦用スコアシート・白紙の組合せ・進行表の二次元コード</b>）と、当日のシートの配布・回収、結果の掲示、表彰の準備まで。（約1分30秒）',
+      chap: [[0, 'はじめに'], [4, '仕事'], [13.6, '「スコアシート印刷」を開く', 1], [19.7, 'コートと範囲を選ぶ', 2], [26.2, '団体戦用のシート', 3], [32.9, '白紙の予備も印刷', 4], [38.1, '組合せ（白紙）', 5], [43.2, '組合せ（結果入り）', 6], [48.8, '進行表の二次元コード', 7], [54.8, '当日：スコアシートを配る', 8], [60.8, '表彰の準備', 9], [65.8, 'まとめ']] }
+  },
+  court: {
+    indiv: { title: 'コート係　個人戦の日（11/28）', src: 'video/staff_court_indiv.mp4', poster: 'video/staff_court_indiv.jpg',
+      lead: '個人戦用スコアシートの確認、<b>7ゲーム</b>の記録とファイナルゲーム、勝者サインのあと<b>すぐ本部へ</b>届けるまで。（約53秒）',
+      chap: [[0, 'はじめに'], [4, '1試合の流れ'], [11.3, 'シートを受け取る', 1], [16.3, '回戦とコートを確かめる', 2], [22.7, '選手を確かめる', 3], [27.7, '試合を記録する', 4], [32.7, 'ファイナルゲーム', 5], [37.7, '勝者サイン → 本部へ', 6], [44.2, 'まとめ']] },
+    team: { title: 'コート係　団体戦の日（11/29）', src: 'video/staff_court_team.mp4', poster: 'video/staff_court_team.jpg',
+      lead: '団体戦用スコアシートの確認、1対戦5ゲーム、<b>2回戦からは2勝で終了</b>、勝者サインのあと<b>すぐ本部へ</b>届けるまで。（約59秒）',
+      chap: [[0, 'はじめに'], [4, '1試合の流れ'], [11.6, 'シートを受け取る', 1], [16.6, 'チームを確かめる', 2], [21.7, '番手ごとの選手', 3], [27.3, '試合を記録する', 4], [32.3, '何番手まで行うか', 5], [38, '勝者サイン → 本部へ', 6], [44.5, '2面展開の試合', 7], [49.6, 'まとめ']] }
+  }
+};
+
+var q = new URLSearchParams(location.search);
+var key = q.get('k');
+if (!DATA[key]) key = 'reception';
+/* 日：指定がなければ、11/28までは個人戦の日、それ以降は団体戦の日 */
+var day = q.get('d');
+if (day !== 'team' && day !== 'indiv') day = new Date() < new Date('2026-11-29T00:00:00+09:00') ? 'indiv' : 'team';
+var D = DATA[key][day];
+var vid = document.getElementById('vid');
+
+function mmss(s) {
+  s = Math.floor(s);
+  return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60);
+}
+
+function init() {
+  var r = ['reception', 'honbu', 'record', 'court'];
+  var i0;
+  for (i0 = 0; i0 < r.length; i0++) {
+    var a = document.getElementById('tab_' + r[i0]);
+    a.href = '?k=' + r[i0] + '&d=' + day;
+    a.className = r[i0] === key ? 'on' : '';
+  }
+  document.getElementById('day_indiv').href = '?k=' + key + '&d=indiv';
+  document.getElementById('day_team').href = '?k=' + key + '&d=team';
+  document.getElementById('day_' + day).className = 'on';
+  document.getElementById('ttl').textContent = D.title;
+  document.getElementById('lead').innerHTML = D.lead;
+  document.title = D.title + '（動画）｜県インドア大会';
+  vid.poster = D.poster;
+  vid.src = D.src;
+  var steps = 0;
+  var i;
+  for (i = 0; i < D.chap.length; i++) if (D.chap[i][2]) steps++;
+  var h = '';
+  for (i = 0; i < D.chap.length; i++) {
+    var c = D.chap[i];
+    h += '<li><button type="button" data-i="' + i + '" onclick="jump(' + i + ')"><span class="st">' + (c[2] ? 'STEP ' + c[2] + '/' + steps : '') + '</span><span>' + c[1] + '</span><span class="tm">' + mmss(c[0]) + '</span></button></li>';
+  }
+  document.getElementById('chap').innerHTML = h;
+}
+
+function jump(i) {
+  vid.currentTime = D.chap[i][0] + 0.05;
+  mark(D.chap[i][0] + 0.05);
+  var p = vid.play();
+  if (p && p.catch) p.catch(function () {});
+  if (window.innerWidth < 860) vid.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function mark(at) {
+  var t = typeof at === 'number' ? at : vid.currentTime;
+  var cur = 0;
+  var i;
+  for (i = 0; i < D.chap.length; i++) if (t >= D.chap[i][0]) cur = i;
+  var bs = document.querySelectorAll('.chap button');
+  for (i = 0; i < bs.length; i++) bs[i].className = +bs[i].getAttribute('data-i') === cur ? 'cur' : '';
+}
+
+vid.addEventListener('timeupdate', function () { mark(); });
+vid.addEventListener('seeked', function () { mark(); });
+init();
+mark();
+</script>
+</body>
+</html>
