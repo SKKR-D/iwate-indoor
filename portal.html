@@ -173,7 +173,10 @@ function render() {
     } else if (v === 'order') {
       if (m.myOrder) {
         h += '<div class="msg ok">✅ オーダー提出済み（' + esc(m.myOrderAt) + (m.myOrderBy === '本部' ? '・本部入力' : '') + '）<br>' + (m.oppSubmitted ? '相手チームも提出済みです。試合開始のあいさつで本部が両チームのオーダーを公開します。' : '相手チームの提出を待っています。') + '</div>';
-        h += '<div class="card"><h2>提出したオーダー</h2>' + orderTable(m.myOrder, null) + '<div style="margin-top:12px"><button class="btn btn-out" onclick="startEdit()">オーダーを修正する</button></div><div class="muted" style="margin-top:6px">本部がオーダーを公開するまで修正できます。相手のオーダーも公開まで見えません。</div></div>';
+        h += '<div class="card"><h2>提出したオーダー</h2>' + orderTable(m.myOrder, null) +
+          (m.deadlinePassed
+            ? '<div class="muted" style="margin-top:10px">締切（' + esc(m.deadline) + '）を過ぎたため、修正できません。変更は本部へ申し出てください。</div>'
+            : '<div style="margin-top:12px"><button class="btn btn-out" onclick="startEdit()">オーダーを修正する</button></div><div class="muted" style="margin-top:6px">締切（' + esc(m.deadline || '-') + '）までは修正できます。相手のオーダーは、試合開始のあいさつで本部が公開するまで見えません。</div>') + '</div>';
       } else {
         h += m.deadlinePassed ? '<div class="msg ng">⚠ 締切（' + esc(m.deadline) + '）を過ぎています。すぐに提出してください。</div>' : '';
         h += orderForm();
@@ -287,7 +290,7 @@ function confirmOrder() {
   var pairs = draft.slice(0, need);
   editing = true;
   var h = '<h3>このオーダーで提出しますか？</h3>' + orderTable(pairs.concat(need < 3 ? [null] : []), null);
-  h += '<div class="muted" style="margin-top:8px">本部がオーダーを公開する（試合開始のあいさつ）までは、修正できます。</div>';
+  h += '<div class="muted" style="margin-top:8px">' + (D.match.deadline ? '締切（' + esc(D.match.deadline) + '）までは修正できます。' : '締切までは修正できます。') + '締切を過ぎると修正できません。</div>';
   h += '<div class="mbtns"><button class="btn btn-out" onclick="closeModal()">戻る</button><button class="btn btn-main" id="sendBtn" onclick="sendOrder()">提出する</button></div>';
   document.getElementById('modal').innerHTML = h;
   document.getElementById('overlay').className = 'overlay show';
