@@ -112,6 +112,16 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   </section>
 
   <section class="sec">
+    <h2>係ごとの説明動画</h2>
+    <div class="grid">
+      <a class="go vlink" data-k="reception" href="staff-video.html?k=reception" target="_blank"><span class="ic">🎬</span><span><b>受付係</b><span>日付・会場に合わせた動画</span></span></a>
+      <a class="go vlink" data-k="honbu" href="staff-video.html?k=honbu" target="_blank"><span class="ic">🎬</span><span><b>本部・進行係</b><span>日付・会場に合わせた動画</span></span></a>
+      <a class="go vlink" data-k="record" href="staff-video.html?k=record" target="_blank"><span class="ic">🎬</span><span><b>記録・掲示係</b><span>日付・会場に合わせた動画</span></span></a>
+      <a class="go vlink" data-k="court" href="staff-video.html?k=court" target="_blank"><span class="ic">🎬</span><span><b>コート係</b><span>日付・会場に合わせた動画</span></span></a>
+    </div>
+  </section>
+
+  <section class="sec">
     <h2>競技委員長</h2>
     <div class="grid">
       <a class="go" href="admin.html" target="_blank"><span class="ic">⚙️</span><span><b>管理画面</b><span>組合せ入力・選手変更・領収書の作成と再送（管理パスワード）</span></span></a>
@@ -164,6 +174,8 @@ function renderVenues() {
     el.className = 'cur none';
     el.textContent = '日付・会場を選ぶと、下のボタンがその区分のページになります。';
   }
+  var vl = document.querySelectorAll('.vlink');
+  for (i = 0; i < vl.length; i++) vl[i].setAttribute('href', 'staff-video.html?k=' + vl[i].getAttribute('data-k') + (cur ? '&d=' + (cur.charAt(1) === 'T' ? 'team' : 'indiv') : ''));
   var links = document.querySelectorAll('.dv');
   for (i = 0; i < links.length; i++) {
     if (!cur) { links[i].classList.add('dis'); if (links[i].tagName === 'A') links[i].removeAttribute('href'); continue; }
