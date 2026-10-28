@@ -128,6 +128,7 @@ ul.check small{color:var(--muted);display:block}
   /* 1係＝A4 1枚 */
   .part{break-before:page;break-inside:avoid;padding-block:0}
   .part:first-of-type{break-before:auto}
+  #honbu{font-size:8.9pt}
   .part+.part{border-top:none}
   .part.ext{background:#fff;--deep:#07504a;--accent:#0b7a70;--soft:#d9f1ed;--heading:#07504a}
   .part::before{content:"第40回岩手県中学校インドアソフトテニス大会　当日運営マニュアル（11/28 個人戦・11/29 団体戦）";display:block;background:var(--deep);color:#fff;font-size:7.6pt;padding:4px 8px;border-radius:4px;margin-bottom:8px}
@@ -281,16 +282,15 @@ ul.check small{color:var(--muted);display:block}
     <li>Ａコート・Ｂコートの列に、試合が予定順に並ぶ。各カードに第○試合・回戦・予定時刻・対戦が出る。</li>
     <li>枠の色：<b>黄＝呼出中</b>、<b>赤＝試合中</b>、<b>灰＝終了</b>。</li>
     <li>予定時刻は、試合が始まると実際の進み具合から自動で再計算される。</li>
-    <li>画面上部の「公開ページ」で進行表、「スコアシート」で一括印刷のページが開く。</li>
   </ul>
 
   <h3>1試合の流れ</h3>
   <ol class="steps">
     <li>前の試合が終わりそうになったら <span class="btn">コール</span>。放送で選手を呼ぶ。</li>
+    <li><span class="who">団体戦</span> 試合開始のあいさつで <span class="btn">📣 オーダー公開</span>。両チームの監督と進行表にオーダーが出る（押し忘れても <span class="btn">開始</span> で自動公開）。</li>
     <li>試合が始まったら <span class="btn">開始</span>。</li>
     <li>コートからスコアシートが届いたら結果を入れる。<br>個人戦：<span class="btn">結果入力</span> で勝者とゲーム数（例：4-2）<br>団体戦：<span class="btn">番手結果</span> で番手ごとの勝者とゲーム数（例：3-1）</li>
-    <li>勝者は自動で次の試合に入る。スコアシートは試合順に保管する。</li>
-    <li>入力を間違えたら <span class="btn">結果修正</span>、状態を戻すときは <span class="btn">戻す</span>。</li>
+    <li>勝者は自動で次の試合に入る。間違えたら <span class="btn">結果修正</span>、状態を戻すときは <span class="btn">戻す</span>。スコアシートは試合順に保管する。</li>
   </ol>
 
   <h3>個人戦（28日）</h3>
@@ -305,7 +305,8 @@ ul.check small{color:var(--muted);display:block}
     <li>3ダブルス、1対戦5ゲーム。<b>1回戦は3番手まで全部行う。2回戦以降は2勝した時点で決着</b>（残りは打ち切り）。</li>
     <li>選手が6名未満のチームは3番手が不戦敗（自動で処理される）。</li>
     <li>オーダー締切：1回戦は8:40。2回戦以降は前の試合の終了から10分（コート集合は15分）。締切を過ぎても未提出の試合は赤で表示される。</li>
-    <li>未提出のチームからは紙のオーダー票を受け取り、<span class="btn">オーダー</span> から代理入力する。両チームそろった後の訂正も本部ならできる。</li>
+    <li>未提出のチームからは紙のオーダー票を受け取り、<span class="btn">オーダー</span> から代理入力する。本部は公開の前でも後でも訂正できる。</li>
+    <li><b>オーダーは本部が公開するまで、相手チームにも観客にも見えない</b>（監督は公開まで自分で修正できる）。両チームそろうとカードに「未公開」と出る。</li>
     <li>勝ち数が同じとき：得失ゲーム差（自動）→ 得失ポイント差（本部が入力）→ 代表戦（本部が入力）の順で決める。画面の案内に従う。</li>
     <li>決勝は既定で2面展開。ほかの試合も <span class="btn">2面展開</span> で切り替えられる。</li>
   </ul>
@@ -314,6 +315,7 @@ ul.check small{color:var(--muted);display:block}
   <dl class="qa">
     <div><dt>試合の順番を入れ替えたい</dt><dd>カードの <span class="btn">▲</span> <span class="btn">▼</span>。</dd></div>
     <div><dt>空いたコートへ回したい</dt><dd><span class="btn">⇄ Bへ</span>／<span class="btn">⇄ Aへ</span>。</dd></div>
+    <div><dt>オーダーを間違えて公開した</dt><dd>試合開始前なら <span class="btn">非公開に戻す</span>。</dd></div>
     <div><dt>終了が17時を過ぎそう</dt><dd>「目安時間」で5ゲーム・7ゲームの目安（初期値 20分・30分）を見直す。予定時刻がすぐ再計算される。</dd></div>
     <div><dt>この試合のスコアシートが欲しい</dt><dd>カードの <span class="btn">🖨 シート</span> で、対戦者・オーダー入りの1枚を印刷できる。</dd></div>
     <div><dt>選手変更届が届いた</dt><dd>競技委員長が管理画面の「選手変更」タブで入力する（団体戦は登録選手から、個人戦は同じチームの選手と1名まで）。</dd></div>
@@ -354,7 +356,7 @@ ul.check small{color:var(--muted);display:block}
   <h3>試合の進め方</h3>
   <ol class="steps">
     <li>記録・掲示係からスコアシートを受け取る。右上の試合番号・コートが合っているか確認する。</li>
-    <li>選手名・所属をシートで確認する。団体戦はオーダーがそろっていれば番手ごとの選手名が印字されている。</li>
+    <li>選手名・所属をシートで確認する。団体戦は、本部が印刷したシートなら番手ごとの選手名が入っている。</li>
     <li>試合を行う。<b>個人戦は7ゲーム、団体戦は5ゲーム</b>。</li>
     <li>終了後、勝者サインをもらい、スコアシートをすぐ本部へ届ける。</li>
   </ol>
@@ -399,7 +401,8 @@ ul.check small{color:var(--muted);display:block}
       <tr><td class="t">7:35〜8:00</td><td>受付票を見せ、参加料を現金で払う。領収書（PDF）がメールで届く</td><td><span class="who">受付</span> 二次元コードを読む → 金額確認 → 現金受領・受付完了</td></tr>
       <tr><td class="t">8:00</td><td>（未受付のチームがあれば遅れて到着）</td><td><span class="who">受付</span> 未受付のチームを本部へ報告　<span class="who">本部</span> 監督へ連絡</td></tr>
       <tr><td class="t">〜8:40</td><td><span class="who">団体戦</span> 監督がスマートフォンで1回戦のオーダーを出す</td><td><span class="who">本部</span> 進行管理で提出状況を見る。8:40を過ぎても未提出なら赤表示 → 監督に声をかけ、紙のオーダー票を受けて代理入力</td></tr>
-      <tr><td class="t">9:00〜</td><td>進行表で自分の試合のコート・予定時刻を見て待機。コールされたらコートへ</td><td><span class="who">本部</span> コール・開始　<span class="who">記録</span> スコアシートをコートへ　<span class="who">コート</span> 試合を進める</td></tr>
+      <tr><td class="t">9:00〜</td><td>進行表で自分の試合のコート・予定時刻を見て待機。コールされたらコートへ</td><td><span class="who">本部</span> コール　<span class="who">記録</span> スコアシートをコートへ</td></tr>
+      <tr><td class="t">試合前</td><td><span class="who">団体戦</span> コートで整列・あいさつ。ここで初めて相手のオーダーが監督ポータルに出る</td><td><span class="who">本部</span> あいさつに合わせて「オーダー公開」→「開始」　<span class="who">コート</span> 試合を進める</td></tr>
       <tr><td class="t">試合後</td><td>勝者がスコアシートにサインする</td><td><span class="who">コート</span> シートをすぐ本部へ　<span class="who">本部</span> 結果入力 → 勝者が次の試合に自動で入る</td></tr>
       <tr><td class="t">2回戦以降</td><td><span class="who">団体戦</span> 前の試合の終了から10分以内にオーダー、15分以内にコート集合</td><td><span class="who">本部</span> 締切超過（赤表示）の試合を催促。未提出は紙で代理入力</td></tr>
       <tr><td class="t">予選終了</td><td><span class="who">個人戦</span> 各ブロック1位・2位が決勝トーナメントへ</td><td><span class="who">本部</span> ブロックの順位を確定 → 決勝トーナメントの対戦が自動で決まる。放送で進出ペアを知らせる</td></tr>
@@ -416,6 +419,7 @@ ul.check small{color:var(--muted);display:block}
       <tr><td>選手を変えたい</td><td>受付 → 委員長</td><td>選手変更届を受け取り、管理画面「選手変更」で入力</td></tr>
       <tr><td>オーダーを出せない・間違えた</td><td>本部</td><td>紙のオーダー票を受けて代理入力・訂正</td></tr>
       <tr><td>次の試合はいつ・どのコート？</td><td>全係</td><td>進行表（監督は監督ポータルにも表示）を案内</td></tr>
+      <tr><td>相手のオーダーを先に知りたい</td><td>全係</td><td>試合開始のあいさつで本部が公開するまで、どちらのチームにも見えないと伝える</td></tr>
       <tr><td>結果に疑問がある</td><td>本部</td><td>スコアシートで確認し、必要なら結果修正</td></tr>
     </tbody>
   </table></div>
@@ -442,6 +446,7 @@ ul.check small{color:var(--muted);display:block}
   <ul class="dots">
     <li><b>進行表</b>：コートごと・時刻順に試合が並び、試合中・呼出中に印が付く。予定時刻は試合の進み具合で自動で変わる（30秒ごとに更新）。</li>
     <li><b>組合せ・結果</b>：トーナメント表と予選リーグの表。勝ち上がりが赤線、ゲーム数とともに随時入る。</li>
+    <li>団体戦の番手ごとの選手名は、試合開始のあいさつで本部がオーダーを公開した後に表示される。</li>
     <li>どちらも会場の二次元コード、または大会トップ（<span class="url">https://skkr-d.github.io/iwate-indoor/</span>）の「大会当日の進行表・組合せ・結果」から開く。ログインは不要。</li>
   </ul>
 
