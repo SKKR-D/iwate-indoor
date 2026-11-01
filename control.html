@@ -44,6 +44,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .side.win .nm::before{content:'○ ';color:var(--red)}
 .side.lose .nm{color:#888}
 .vs{font-size:.65rem;color:#aaa;margin:-2px 0}
+.refr{padding:4px 10px;font-size:.76rem;color:#555;border-top:1px dashed var(--line)}
+.refr b{color:#333}
+.refr.tbd b{color:#999;font-weight:500}
+.refr.off b{color:#8a4b00}
 .score{font-weight:900;font-size:.9rem;color:var(--main)}
 .ctl{display:flex;flex-wrap:wrap;gap:4px;padding:6px 10px;border-top:1px dashed var(--line);background:#fcfcf9}
 .ctl button{border:1.5px solid #ccc;background:#fff;border-radius:6px;padding:5px 8px;font-size:.74rem;font-family:inherit;font-weight:700;cursor:pointer;color:#333}
@@ -133,7 +137,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
   <div class="bar"><div class="info" id="info"></div></div>
   <div id="board"></div>
   <div class="panel" id="rankPanel" style="display:none">
-    <h3>予選リーグの順位（1位・2位を確定すると決勝トーナメントの対戦が決まります）</h3>
+    <h3>予選リーグの順位（1位・2位を確定すると決勝トーナメントの対戦が決まります。A・Bブロックの3位は決勝トーナメント1回戦の初戦の審判です）</h3>
     <div class="ranks" id="ranks"></div>
   </div>
   <div class="panel">
@@ -277,6 +281,7 @@ function cardHtml(m, court) {
   h += '<div class="c-head"><span><span class="no">第' + m.no + '試合</span> <span class="rd">' + esc(m.round) + '</span>' + (m.two ? ' <span class="badge b-two">2面展開</span>' : '') + '</span>';
   h += '<span>' + stateBadge(m) + ' <span class="tm">' + esc(timeText(m)) + '</span></span></div>';
   h += '<div class="c-body">' + sideHtml(m, m.left, 'L') + '<div class="vs">' + (m.state === '終了' && m.score ? '<span class="score">' + esc(m.score) + '</span>' : 'vs') + '</div>' + sideHtml(m, m.right, 'R') + '</div>';
+  if (m.referee && m.note !== '不戦勝') h += '<div class="refr' + (m.referee.official ? ' off' : (m.referee.decided ? '' : ' tbd')) + '">審判：<b>' + esc(m.referee.label) + '</b>' + (m.referee.sub ? ' <span class="muted">' + esc(m.referee.sub) + '</span>' : '') + '</div>';
   if (isTeam && m.team && m.note !== '不戦勝') h += teamInfo(m);
   if (m.note !== '不戦勝' && (!m.two || court === 'A')) {
     var id = esc(m.id);
@@ -598,21 +603,23 @@ function renderRanks() {
   panel.style.display = 'block';
   var bl = ['A', 'B', 'C', 'D'];
   var html = '';
-  var i, j, p, rows, t, opts1, opts2;
+  var i, j, p, rows, t, opts1, opts2, opts3;
   for (i = 0; i < bl.length; i++) {
     if (!DATA.blocks[bl[i]]) continue;
     rows = leagueTable(bl[i]);
     html += '<div class="rk"><h4>' + bl[i] + 'ブロック</h4><table>';
     opts1 = '<option value="">1位を選択</option>';
     opts2 = '<option value="">2位を選択</option>';
+    opts3 = '<option value="">3位を選択（審判）</option>';
     for (j = 0; j < DATA.blocks[bl[i]].length; j++) {
       p = DATA.blocks[bl[i]][j];
       t = rows[p.id];
       html += '<tr><td>' + p.pos + '</td><td><strong>' + esc(p.label) + '</strong> <span class="muted">' + esc(p.sub) + '</span></td><td>' + t.w + '勝' + t.l + '敗</td><td>得失' + (t.gf - t.ga > 0 ? '+' : '') + (t.gf - t.ga) + '</td></tr>';
       opts1 += '<option value="' + esc(p.id) + '"' + (DATA.ranks[bl[i] + '1'] === p.id ? ' selected' : '') + '>' + esc(p.label) + '</option>';
       opts2 += '<option value="' + esc(p.id) + '"' + (DATA.ranks[bl[i] + '2'] === p.id ? ' selected' : '') + '>' + esc(p.label) + '</option>';
+      opts3 += '<option value="' + esc(p.id) + '"' + (DATA.ranks[bl[i] + '3'] === p.id ? ' selected' : '') + '>' + esc(p.label) + '</option>';
     }
-    html += '</table><select id="r1_' + bl[i] + '">' + opts1 + '</select><select id="r2_' + bl[i] + '">' + opts2 + '</select>';
+    html += '</table><select id="r1_' + bl[i] + '">' + opts1 + '</select><select id="r2_' + bl[i] + '">' + opts2 + '</select>' + (bl[i] === 'A' || bl[i] === 'B' ? '<select id="r3_' + bl[i] + '">' + opts3 + '</select>' : '');
     html += '<button class="btn" style="width:100%" onclick="saveRank(\'' + bl[i] + '\')">' + bl[i] + 'ブロックの順位を確定</button></div>';
   }
   document.getElementById('ranks').innerHTML = html;
@@ -638,9 +645,12 @@ function leagueTable(blk) {
 function saveRank(blk) {
   var first = document.getElementById('r1_' + blk).value;
   var second = document.getElementById('r2_' + blk).value;
+  var el3 = document.getElementById('r3_' + blk);
+  var third = el3 ? el3.value : '';
   if (!first || !second) { toast('1位と2位を選んでください', true); return; }
+  if (el3 && !third && DATA.blocks[blk].length >= 3) { toast('3位も選んでください（決勝トーナメント1回戦の審判）', true); return; }
   busy = true;
-  api({ action: 'ctlRanks', block: blk, first: first, second: second }).then(function (d) {
+  api({ action: 'ctlRanks', block: blk, first: first, second: second, third: third }).then(function (d) {
     busy = false;
     apply(d);
     toast(blk + 'ブロックの順位を確定しました');

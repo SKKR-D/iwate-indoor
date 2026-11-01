@@ -48,6 +48,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .order-table td{padding:8px;border-bottom:1px solid #eee;font-weight:700}
 .order-table td.op{color:#0b3d75}
 .order-table td.ff{color:#999;font-weight:500}
+.duty{border:2px solid #e08a00;background:#fffaf0}
+.duty h2{color:#8a4b00}
+.duty .it{display:flex;justify-content:space-between;gap:8px;padding:7px 0;border-bottom:1px dashed #f0d3a3;font-size:.88rem}
+.duty .it:last-of-type{border-bottom:0}
+.duty .it b{font-weight:900}
 .hist{font-size:.85rem}
 .hist div{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid #eee}
 .w{color:var(--red);font-weight:900}
@@ -152,17 +157,31 @@ function history() {
   return h + '</div></div>';
 }
 
+function dutyCard() {
+  var ds = D.refDuties || [];
+  if (!ds.length) return '';
+  var h = '<div class="card duty"><h2>🟧 審判の担当</h2>';
+  var i, x;
+  for (i = 0; i < ds.length; i++) {
+    x = ds[i];
+    h += '<div class="it"><span><b>第' + x.no + '試合</b> ' + esc(x.round) + '　' + esc(x.court) + 'コート</span><span>' +
+      (x.state === '試合中' ? '試合中' : x.state === '呼出' ? 'コール済み' : '開始予定 ' + esc(x.plan || '-')) + '</span></div>';
+  }
+  h += '<div class="muted" style="margin-top:8px">' + (ds[0].partner ? '選手から1名を出してください（もう1名は' + esc(ds[0].partner) + 'から）。' : '選手から正審・副審を出してください。') + (ds[0].after ? '第' + ds[0].after + '試合の敗者として、続けて同じコートの次の試合の審判をお願いします。' : '本部のコールに合わせてコートへ向かいます。') + 'スコアシートはコート主任（審判員）から受け取ります。</div>';
+  return h + '</div>';
+}
+
 function render() {
   document.getElementById('hdTeam').textContent = D.team.name;
   document.getElementById('hdSub').textContent = D.division + '　監督ポータル';
-  var h = '';
+  var h = dutyCard();
   var v = D.view;
   if (v === 'nodraw') {
     h += '<div class="msg info">組合せが発表されると、ここに対戦が表示されます。</div>';
   } else if (v === 'champion') {
     h += '<div class="card big">🏆 優勝おめでとうございます</div>';
   } else if (v === 'finished') {
-    h += '<div class="card big">大会お疲れさまでした</div>';
+    h += '<div class="card big">' + ((D.refDuties || []).length ? '試合はすべて終了しました。上の審判をお願いします' : '大会お疲れさまでした') + '</div>';
   } else {
     h += matchCard();
     var m = D.match;

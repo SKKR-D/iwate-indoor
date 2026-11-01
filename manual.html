@@ -128,7 +128,7 @@ ul.check small{color:var(--muted);display:block}
   /* 1係＝A4 1枚 */
   .part{break-before:page;break-inside:avoid;padding-block:0}
   .part:first-of-type{break-before:auto}
-  #honbu{font-size:8.9pt}
+  #honbu,#teams{font-size:8.9pt}
   .part+.part{border-top:none}
   .part.ext{background:#fff;--deep:#07504a;--accent:#0b7a70;--soft:#d9f1ed;--heading:#07504a}
   .part::before{content:"第40回岩手県中学校インドアソフトテニス大会　当日運営マニュアル（11/28 個人戦・11/29 団体戦）";display:block;background:var(--deep);color:#fff;font-size:7.6pt;padding:4px 8px;border-radius:4px;margin-bottom:8px}
@@ -158,6 +158,8 @@ ul.check small{color:var(--muted);display:block}
   ul.check li{padding:4px 8px}
   ul.check li::before{margin-top:3px}
   ol.steps>li,.qa div,.card,ul.check li,.caution{break-inside:avoid}
+  #teams table{font-size:8.3pt}
+  #teams th,#teams td{padding:2px 6px}
 }
 </style>
 </head>
@@ -177,6 +179,7 @@ ul.check small{color:var(--muted);display:block}
 <nav class="nav" aria-label="係">
   <div class="wrap">
     <a href="#common">全係共通</a>
+    <a href="#crew">体制・審判</a>
     <a href="#reception">受付係</a>
     <a href="#honbu">本部・進行係</a>
     <a href="#record">記録・掲示係</a>
@@ -193,7 +196,7 @@ ul.check small{color:var(--muted);display:block}
 <!-- ============ 共通 ============ -->
 <section class="part" id="common"><div class="wrap">
   <div class="ptitle"><span class="tag">全係</span><h2>全係共通</h2></div>
-  <p class="lead">会場ごとに、受付・本部・記録・コートの各係を置きます。運営はすべてスマートフォン・タブレットのブラウザで行い、試合結果は本部の入力だけで進行表・組合せ表まで自動で更新されます。</p>
+  <p class="lead">各会場<b>9人（運営スタッフ5人＋審判員4人）</b>で、受付・本部・記録・コートの各係を担当します（配置と審判のきまりは「体制・審判」）。運営はすべてスマートフォン・タブレットのブラウザで行い、試合結果は本部の入力だけで進行表・組合せ表まで自動で更新されます。</p>
 
   <h3>当日の時程（両日・両会場共通）</h3>
   <div class="time">
@@ -232,6 +235,41 @@ ul.check small{color:var(--muted);display:block}
     <div class="card"><h4>掲示</h4>白紙の組合せ表に結果を手書きして掲示する。</div>
   </div>
   <p>端末は満充電で持参し、モバイルバッテリーを用意してください。</p>
+</div></section>
+
+<!-- ============ 体制・審判 ============ -->
+<section class="part" id="crew"><div class="wrap">
+  <div class="ptitle"><span class="tag">体制</span><h2>運営体制と審判</h2></div>
+  <p class="lead">各会場9人（運営スタッフ5人＋審判員4人）で運営します。審判は、決勝（個人戦は準決勝から）を除き<b>選手が行います</b>。誰が審判をするかは本部画面・進行表のカードに「審判：」として自動で表示されます。</p>
+
+  <h3>各会場の配置（9人）</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>係</th><th>人数</th><th>7:30〜8:00</th><th>9:00以降</th></tr></thead>
+    <tbody>
+      <tr><td>本部・進行係</td><td>2</td><td>端末の準備、スコアシート印刷、（団体戦）オーダー提出の確認</td><td>1人が結果入力、1人がコール・放送・オーダー公開。交代で休憩</td></tr>
+      <tr><td>受付係</td><td>2</td><td>読み取り係と現金係に分かれて受付</td><td>1人は記録・掲示の応援。1人は<b>会場責任者</b>（トラブル・救護・体育館との窓口・参加料の保管・表彰の進行）</td></tr>
+      <tr><td>記録・掲示係</td><td>1</td><td>開場・掲示・受付の補助</td><td>スコアシートの受け渡し、組合せ表・進行表の掲示、表彰の準備</td></tr>
+      <tr><td>審判員（コート主任）</td><td>4</td><td>コートの準備</td><td>Ａ・Ｂコートに2人ずつ。コート主任として進行と選手審判の確認。下の試合は審判員が審判</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>審判のきまり</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>試合</th><th>個人戦（28日）</th><th>団体戦（29日）</th></tr></thead>
+    <tbody>
+      <tr><td>予選リーグ</td><td>リーグ内のペア（各ペア1〜2回。割当は下）</td><td>―</td></tr>
+      <tr><td>各コートの初戦</td><td>決勝トーナメント1回戦の初戦：Ａコート＝<b>Ａブロック3位</b>、Ｂコート＝<b>Ｂブロック3位</b></td><td>Ａコート（1-2戦）＝<b>7番・8番</b>、Ｂコート（9-10戦）＝<b>15番・16番</b>のチームから<b>1名ずつ</b>（組合せ番号）</td></tr>
+      <tr><td>2戦目以降</td><td>決勝トーナメント1回戦の2戦目：同じコートの初戦の<b>敗者</b></td><td>同じコートの直前の試合の<b>敗者（負けたチーム）</b></td></tr>
+      <tr><td>審判員が審判</td><td><b>準決勝・決勝</b>（準決勝はＡ・Ｂに2人ずつ）</td><td><b>決勝</b>（2面展開なのでＡ・Ｂに2人ずつ）</td></tr>
+    </tbody>
+  </table></div>
+  <p><b>予選リーグの割当（ブロック内の番号）</b>　1-2戦→<b>3</b>番　3-4戦→<b>1</b>番　1-3戦→<b>4</b>番　2-4戦→<b>1</b>番　2-3戦→<b>4</b>番　1-4戦→<b>2</b>番</p>
+  <ul class="dots">
+    <li>審判は選手から正審・副審の2人を出す。敗者審判は、結果を入力した時点で次の試合のカードに自動で表示される。</li>
+    <li>本部はコールのとき、選手と一緒に審判も呼ぶ。コート主任は審判がそろっているか確認してから試合を始める。</li>
+    <li>団体戦の監督には、監督ポータルに「審判の担当」が表示される。</li>
+    <li>審判員は交代で休憩を取り、準決勝（個人戦）・決勝の前には4人そろう。</li>
+  </ul>
 </div></section>
 
 <!-- ============ 受付係 ============ -->
@@ -286,7 +324,7 @@ ul.check small{color:var(--muted);display:block}
 
   <h3>1試合の流れ</h3>
   <ol class="steps">
-    <li>前の試合が終わりそうになったら <span class="btn">コール</span>。放送で選手を呼ぶ。</li>
+    <li>前の試合が終わりそうになったら <span class="btn">コール</span>。放送で選手と審判（カードの「審判：」）を呼ぶ。</li>
     <li><span class="who">団体戦</span> 試合開始のあいさつで <span class="btn">📣 オーダー公開</span>。両チームの監督と進行表にオーダーが出る（押し忘れても <span class="btn">開始</span> で自動公開）。</li>
     <li>試合が始まったら <span class="btn">開始</span>。</li>
     <li>コートからスコアシートが届いたら結果を入れる。<br>個人戦：<span class="btn">結果入力</span> で勝者とゲーム数（例：4-2）<br>団体戦：<span class="btn">番手結果</span> で番手ごとの勝者とゲーム数（例：3-1）</li>
@@ -295,8 +333,8 @@ ul.check small{color:var(--muted);display:block}
 
   <h3>個人戦（28日）</h3>
   <ul class="dots">
-    <li>予選リーグは4ブロック×4ペア。Ａ・ＢブロックはＡコート、Ｃ・ＤブロックはＢコート。1試合7ゲーム。</li>
-    <li>ブロックの試合が全部終わったら、「予選リーグの順位」で1位・2位を選び <span class="btn">○ブロックの順位を確定</span>。これで決勝トーナメントの対戦が決まる。</li>
+    <li>予選リーグは4ブロック×4ペア。Ａ・ＢブロックはＡコート、Ｃ・ＤブロックはＢコートで、2つのブロックを1試合ずつ交互に行う。1試合7ゲーム。</li>
+    <li>ブロックの試合が全部終わったら、「予選リーグの順位」で1位・2位（Ａ・Ｂブロックは審判をする3位も）を選び <span class="btn">○ブロックの順位を確定</span>。これで決勝トーナメントの対戦が決まる。</li>
     <li>決勝トーナメント1回戦：Ａ1位－Ｃ2位、Ｄ2位－Ｂ1位、Ｃ1位－Ａ2位、Ｂ2位－Ｄ1位。</li>
   </ul>
 
@@ -350,16 +388,24 @@ ul.check small{color:var(--muted);display:block}
 
 <!-- ============ コート係 ============ -->
 <section class="part" id="court"><div class="wrap">
-  <div class="ptitle"><span class="tag">コート</span><h2>コート係（コート主任・審判）</h2></div>
-  <p class="lead">スコアシートを受け取って試合を進め、終わったらすぐ本部へ戻します。シートが早く戻るほど、次の試合のコールが早くなります。</p>
+  <div class="ptitle"><span class="tag">コート</span><h2>コート係（審判員・コート主任）</h2></div>
+  <p class="lead">審判員4人がコート主任としてＡ・Ｂコートに2人ずつ入り、選手審判の確認と進行を行います。終わったらスコアシートをすぐ本部へ戻します。シートが早く戻るほど、次の試合のコールが早くなります。</p>
 
   <h3>試合の進め方</h3>
   <ol class="steps">
     <li>記録・掲示係からスコアシートを受け取る。右上の試合番号・コートが合っているか確認する。</li>
+    <li>審判の選手（正審・副審）がそろっているか確認し、シートを渡す。審判は進行表のカードの「審判：」に出る。</li>
     <li>選手名・所属をシートで確認する。団体戦は、本部が印刷したシートなら番手ごとの選手名が入っている。</li>
     <li>試合を行う。<b>個人戦は7ゲーム、団体戦は5ゲーム</b>。</li>
-    <li>終了後、勝者サインをもらい、スコアシートをすぐ本部へ届ける。</li>
+    <li>終了後、勝者サインをもらい、スコアシートをすぐ本部へ届ける。敗者審判の試合では、負けたペア・チームにそのまま次の試合の審判を頼む。</li>
   </ol>
+
+  <h3>審判員が審判をする試合</h3>
+  <ul class="dots">
+    <li>個人戦：<b>準決勝・決勝</b>。準決勝はＡ・Ｂ同時なので、4人がＡ・Ｂに2人ずつ入る。</li>
+    <li>団体戦：<b>決勝</b>。2面展開なので、Ａ・Ｂに2人ずつ入る。</li>
+    <li>それまでは交代で休憩を取り、この試合の前には4人そろっておく。</li>
+  </ul>
 
   <h3>団体戦の注意</h3>
   <ul class="dots">
@@ -403,6 +449,7 @@ ul.check small{color:var(--muted);display:block}
       <tr><td class="t">〜8:40</td><td><span class="who">団体戦</span> 監督がスマートフォンで1回戦のオーダーを出す（8:40までは修正できる）</td><td><span class="who">本部</span> 進行管理で提出状況を見る。8:40を過ぎても未提出なら赤表示 → 監督に声をかけ、紙のオーダー票を受けて代理入力</td></tr>
       <tr><td class="t">9:00〜</td><td>進行表で自分の試合のコート・予定時刻を見て待機。コールされたらコートへ</td><td><span class="who">本部</span> コール　<span class="who">記録</span> スコアシートをコートへ</td></tr>
       <tr><td class="t">試合前</td><td><span class="who">団体戦</span> コートで整列・あいさつ。ここで初めて相手のオーダーが監督ポータルに出る</td><td><span class="who">本部</span> あいさつに合わせて「オーダー公開」→「開始」　<span class="who">コート</span> 試合を進める</td></tr>
+      <tr><td class="t">審判</td><td><span class="who">個人戦</span> 予選リーグはリーグ内で審判（1〜2回）。決勝T1回戦の初戦はＡ・Ｂブロック3位、2戦目は初戦の敗者<br><span class="who">団体戦</span> 各コートの初戦はＡ＝7番・8番、Ｂ＝15番・16番のチームから1名ずつ。以降は負けたチームが同じコートの次の試合の審判</td><td><span class="who">本部</span> コールで審判も呼ぶ　<span class="who">コート</span> 審判がそろっているか確認</td></tr>
       <tr><td class="t">試合後</td><td>勝者がスコアシートにサインする</td><td><span class="who">コート</span> シートをすぐ本部へ　<span class="who">本部</span> 結果入力 → 勝者が次の試合に自動で入る</td></tr>
       <tr><td class="t">2回戦以降</td><td><span class="who">団体戦</span> 前の試合の終了から10分以内にオーダー（修正もこの締切まで）、15分以内にコート集合</td><td><span class="who">本部</span> 締切超過（赤表示）の試合を催促。未提出は紙で代理入力</td></tr>
       <tr><td class="t">予選終了</td><td><span class="who">個人戦</span> 各ブロック1位・2位が決勝トーナメントへ</td><td><span class="who">本部</span> ブロックの順位を確定 → 決勝トーナメントの対戦が自動で決まる。放送で進出ペアを知らせる</td></tr>
@@ -419,6 +466,7 @@ ul.check small{color:var(--muted);display:block}
       <tr><td>選手を変えたい</td><td>受付 → 委員長</td><td>選手変更届を受け取り、管理画面「選手変更」で入力</td></tr>
       <tr><td>オーダーを出せない・間違えた</td><td>本部</td><td>紙のオーダー票を受けて代理入力・訂正</td></tr>
       <tr><td>次の試合はいつ・どのコート？</td><td>全係</td><td>進行表（監督は監督ポータルにも表示）を案内</td></tr>
+      <tr><td>次はいつ審判をする？</td><td>全係</td><td>進行表のカードの「審判：」を案内（団体戦の監督は監督ポータルにも表示）</td></tr>
       <tr><td>相手のオーダーを先に知りたい</td><td>全係</td><td>試合開始のあいさつで本部が公開するまで、どちらのチームにも見えないと伝える</td></tr>
       <tr><td>結果に疑問がある</td><td>本部</td><td>スコアシートで確認し、必要なら結果修正</td></tr>
     </tbody>
