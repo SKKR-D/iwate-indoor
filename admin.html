@@ -128,6 +128,11 @@ tr.locked td{background:#f4f4f4;color:#777}
   .list-table .no-print{display:none}
   @page{size:A4 landscape;margin:10mm}
 }
+.draw-only{display:none}
+.role-draw .tabs .tab:not([data-tab="draw"]){display:none}
+.role-draw .admin-only{display:none !important}
+.role-draw .draw-only{display:block}
+.draw-only.note{background:#fff8e1;border:2px solid #c8a020;border-radius:8px;padding:10px 14px;font-size:.84rem;line-height:1.7;margin-bottom:12px;color:#5a4500}
 </style>
 </head>
 <body>
@@ -144,7 +149,7 @@ tr.locked td{background:#f4f4f4;color:#777}
 
 <div id="loginView" class="login">
   <h2>🔒 管理者ログイン</h2>
-  <input type="password" id="pwInput" placeholder="管理パスワード" onkeydown="if(event.key==='Enter')login()">
+  <input type="password" id="pwInput" placeholder="パスワード" onkeydown="if(event.key==='Enter')login()">
   <button class="btn btn-main" onclick="login()">ログイン</button>
   <div class="err" id="loginErr"></div>
 </div>
@@ -212,12 +217,13 @@ tr.locked td{background:#f4f4f4;color:#777}
     <!-- ===== 組合せ・進行表 ===== -->
     <section class="panel" id="panel-draw">
       <h2>組合せ・進行表</h2>
-      <div class="lead">枠ごとにチーム（ペア）を選ぶか、Excelの組合せ表を下の欄に貼り付けて「取り込む」を押します。保存後「進行表を作成」で、会場別の進行表（Aコート・Bコート、予定時刻つき）ができます。当日の操作は「本部 進行管理」で行います。</div>
+      <div class="draw-only note"><b>組合せ係の画面です。</b>枠ごとに選ぶか、Excelの組合せ表を貼り付けて「取り込む」を押し、最後に<b>「組合せを保存」</b>を押してください。保存しても公開されません。何度でも保存し直せます。公開（進行表の作成）は競技委員長が行います。</div>
+      <div class="lead admin-only">枠ごとにチーム（ペア）を選ぶか、Excelの組合せ表を下の欄に貼り付けて「取り込む」を押します。保存後「進行表を作成」で、会場別の進行表（Aコート・Bコート、予定時刻つき）ができます。当日の操作は「本部 進行管理」で行います。</div>
       <div class="row">
         <div class="seg" id="drawSeg"></div>
         <span class="counter" id="drawCounter"></span>
       </div>
-      <div class="row" id="drawLinks"></div>
+      <div class="row admin-only" id="drawLinks"></div>
       <div id="drawGrid"></div>
       <h3>Excelから貼り付け</h3>
       <div class="muted" style="margin-bottom:6px" id="pasteHint"></div>
@@ -228,7 +234,7 @@ tr.locked td{background:#f4f4f4;color:#777}
       </div>
       <div class="row" style="margin-top:10px">
         <button class="btn btn-main" onclick="saveDraw(false)">組合せを保存</button>
-        <button class="btn btn-main" onclick="saveDraw(true)">保存して進行表を作成</button>
+        <button class="btn btn-main admin-only" onclick="saveDraw(true)">保存して進行表を作成</button>
         <span class="muted" id="drawStatus"></span>
       </div>
     </section>
@@ -383,6 +389,12 @@ function reload() {
     document.getElementById('appView').style.display = 'block';
     document.getElementById('hdBtns').style.display = 'flex';
     document.getElementById('hdTitle').textContent = D.config['大会名'] || '県インドア大会';
+    if (D.role === 'draw') {
+      document.body.classList.add('role-draw');
+      document.getElementById('hdTitle').textContent += '（組合せ係）';
+      showTab('draw');
+      return;
+    }
     loadTeamSelection();
     renderAll();
   }).catch(function (err) {
@@ -868,7 +880,9 @@ function renderDraw() {
   var k;
   for (k in DRAW.draw) if (DRAW.draw.hasOwnProperty(k) && DRAW.draw[k]) filled++;
   document.getElementById('drawCounter').textContent = '入力 ' + filled + ' / ' + DRAW.slots.length;
-  document.getElementById('drawStatus').textContent = DRAW.matchCount ? '進行表：作成済（' + DRAW.matchCount + '試合' + (DRAW.progressed ? '・進行中' + DRAW.progressed + '試合' : '') + '）' : '進行表：未作成';
+  document.getElementById('drawStatus').textContent = D.role === 'draw'
+    ? (DRAW.matchCount ? 'この区分は公開済みのため、組合せ係では変更できません' : '未公開（保存しても公開されません）')
+    : (DRAW.matchCount ? '進行表：作成済（' + DRAW.matchCount + '試合' + (DRAW.progressed ? '・進行中' + DRAW.progressed + '試合' : '') + '）' : '進行表：未作成');
 }
 
 function onDrawChange(sel) {
