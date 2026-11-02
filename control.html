@@ -44,6 +44,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .side.win .nm::before{content:'○ ';color:var(--red)}
 .side.lose .nm{color:#888}
 .vs{font-size:.65rem;color:#aaa;margin:-2px 0}
+.chg{display:inline-block;margin-left:4px;font-size:.62rem;font-weight:900;color:#fff;background:#c0392b;border-radius:4px;padding:0 4px;vertical-align:1px}
+.reqwait{background:#e08a00;color:#fff;border-radius:10px;padding:1px 8px;font-weight:700}
+.chglink{color:inherit;font-weight:700}
 .refr{padding:4px 10px;font-size:.76rem;color:#555;border-top:1px dashed var(--line)}
 .refr b{color:#333}
 .refr.tbd b{color:#999;font-weight:500}
@@ -247,7 +250,9 @@ function apply(d) {
   }
   var done = 0, i;
   for (i = 0; i < d.matches.length; i++) if (d.matches[i].state === '終了') done++;
-  document.getElementById('info').innerHTML = '終了 <strong>' + done + '</strong> / ' + d.matches.length + '試合　終了見込み <strong>' + esc(d.finishPlan || '-') + '</strong>　（更新 ' + esc(d.updated) + '）';
+  document.getElementById('info').innerHTML = '終了 <strong>' + done + '</strong> / ' + d.matches.length + '試合　終了見込み <strong>' + esc(d.finishPlan || '-') + '</strong>　（更新 ' + esc(d.updated) + '）' +
+    (d.pendingChanges ? '　<span class="reqwait">📝 変更申請 ' + d.pendingChanges + '件（競技委員長が確認中）</span>' : '') +
+    '　<a class="chglink" href="changes.html?div=' + divCode + '" target="_blank">選手変更一覧</a>';
   render();
   renderRanks();
 }
@@ -270,7 +275,7 @@ function sideHtml(m, s, which) {
   var cls = 'side';
   if (!s.decided) cls += ' tbd';
   else if (m.state === '終了' && m.winner) cls += m.winner === which ? ' win' : ' lose';
-  return '<div class="' + cls + '"><span class="nm">' + esc(s.label) + '</span>' + (s.sub ? '<span class="sb">' + esc(s.sub) + '</span>' : '') + '</div>';
+  return '<div class="' + cls + '"><span class="nm">' + esc(s.label) + '</span>' + (s.changed ? '<span class="chg">変更</span>' : '') + (s.sub ? '<span class="sb">' + esc(s.sub) + '</span>' : '') + '</div>';
 }
 
 function cardHtml(m, court) {

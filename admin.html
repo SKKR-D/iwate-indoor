@@ -133,6 +133,16 @@ tr.locked td{background:#f4f4f4;color:#777}
 .role-draw .admin-only{display:none !important}
 .role-draw .draw-only{display:block}
 .draw-only.note{background:#fff8e1;border:2px solid #c8a020;border-radius:8px;padding:10px 14px;font-size:.84rem;line-height:1.7;margin-bottom:12px;color:#5a4500}
+.req-card{border:2px solid #e08a00;background:#fffaf0;border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.req-card .h{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between}
+.req-card .k{font-weight:900;color:#8a4b00}
+.req-card .ft{font-size:.95rem;margin:6px 0}
+.req-card .ft b{color:var(--red)}
+.req-card .rs{font-size:.8rem;color:#555}
+.req-card .act{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.req-card .act input{flex:1;min-width:200px}
+.req-none{font-size:.85rem;color:#777;padding:6px 2px 12px}
+.st-ok{color:#1a7f37;font-weight:700}.st-ng{color:var(--red);font-weight:700}
 </style>
 </head>
 <body>
@@ -241,8 +251,11 @@ tr.locked td{background:#f4f4f4;color:#777}
 
     <!-- ===== 選手変更 ===== -->
     <section class="panel" id="panel-change">
-      <h2>選手変更（本部入力）</h2>
-      <div class="lead">選手変更届（紙）を受け取ったら、ここで差し替えます（要項11(3)：個人戦は1ペア1名のみ、団体戦はやむを得ない場合）。変更は申込一覧・PDF・今後のオーダー画面やスコアシートに反映されます。当日の欠員は団体戦の「欠員にする」で入力します（6名未満のチームは3ペア目が不戦敗）。</div>
+      <h2>選手・監督の変更</h2>
+      <div class="lead">監督がスマートフォンから申請した変更は、下の「変更申請」で許可・却下します。許可すると自動で反映され、申請した監督にメールで結果が届きます。紙の選手変更届を受け取ったときは、その下の欄で直接入力します（要項11(3)：個人戦は1ペア1名のみ、団体戦はやむを得ない場合）。変更は申込一覧・PDF・オーダー画面・スコアシート・進行表・選手変更一覧（公開）に反映されます。</div>
+      <h3>変更申請（監督から）</h3>
+      <div id="reqList"></div>
+      <h3>直接入力（紙の届・本部で受けたもの）</h3>
       <div class="row">
         <div class="seg" id="chgSeg"></div>
         <select id="chgTarget" onchange="renderChangeForm()" style="min-width:260px"></select>
@@ -998,7 +1011,48 @@ function setChgDiv(code) {
   renderChange();
 }
 
+function renderRequests() {
+  var rs = D.requests || [];
+  var pend = rs.filter(function (r) { return r.state === '申請中'; }).reverse(); /* 古い申請から */
+  var done = rs.filter(function (r) { return r.state !== '申請中'; });
+  var h = '';
+  var i, r;
+  if (!pend.length) h += '<div class="req-none">確認待ちの申請はありません。</div>';
+  for (i = 0; i < pend.length; i++) {
+    r = pend[i];
+    h += '<div class="req-card"><div class="h"><span class="k">' + esc(r.kind) + '　' + esc(r.divName) + '　' + esc(r.team) + '</span><span class="muted">' + esc(String(r.at).slice(5, 16)) + ' 申請</span></div>' +
+      '<div class="ft">' + esc(r.target) + '：' + esc(r.from) + ' → <b>' + esc(r.to) + '</b>' + (r.offRoster ? ' <span class="flag">登録名簿にない選手</span>' : '') + '</div>' +
+      '<div class="rs">理由：' + esc(r.reason) + (r.by ? '　申請者：' + esc(r.by) : '') + '</div>' +
+      '<div class="act"><input type="text" id="cm_' + esc(r.id) + '" placeholder="監督への連絡（却下のときは必須）">' +
+      '<button class="btn btn-main" onclick="decideReq(\'' + esc(r.id) + '\', \'approve\')">許可して反映</button>' +
+      '<button class="btn btn-red" onclick="decideReq(\'' + esc(r.id) + '\', \'reject\')">却下</button></div></div>';
+  }
+  if (done.length) {
+    h += '<details><summary class="muted" style="cursor:pointer;margin:4px 0 10px">処理済みの申請（' + done.length + '件）</summary><div class="scroll"><table><thead><tr><th>申請</th><th>区分</th><th>チーム</th><th>内容</th><th>結果</th></tr></thead><tbody>';
+    for (i = 0; i < done.length; i++) {
+      r = done[i];
+      h += '<tr><td style="white-space:nowrap">' + esc(String(r.at).slice(5, 16)) + '</td><td>' + esc(r.divName) + '</td><td>' + esc(r.team) + '</td><td>' + esc(r.target) + '：' + esc(r.from) + ' → ' + esc(r.to) + '</td><td><span class="' + (r.state === '許可' ? 'st-ok' : 'st-ng') + '">' + esc(r.state) + '</span>' + (r.comment ? '<br><span class="muted">' + esc(r.comment) + '</span>' : '') + '</td></tr>';
+    }
+    h += '</tbody></table></div></details>';
+  }
+  document.getElementById('reqList').innerHTML = h;
+  var tab = document.querySelector('.tab[data-tab="change"]');
+  if (tab) tab.innerHTML = '選手変更' + (pend.length ? ' <span style="background:#e08a00;color:#fff;border-radius:9px;padding:0 7px;font-size:.72rem">' + pend.length + '</span>' : '');
+}
+
+function decideReq(id, decision) {
+  var cm = document.getElementById('cm_' + id).value.trim();
+  if (decision === 'reject' && !cm) { toast('却下の理由（監督への連絡）を入力してください', true); return; }
+  if (!confirm(decision === 'approve' ? 'この申請を許可して反映します。よろしいですか？' : 'この申請を却下します。よろしいですか？')) return;
+  api({ action: 'adminChangeDecide', id: id, decision: decision, comment: cm }).then(function (r) {
+    toast(decision === 'approve' ? '許可して反映しました' : '却下しました');
+    if (r.orderNote && r.orderNote.length) alert(r.orderNote.join('\n'));
+    return reload();
+  }).catch(function (err) { toast('処理できません：' + err.message, true); });
+}
+
 function renderChange() {
+  renderRequests();
   var i, code, html = '';
   for (i = 0; i < D.divOrder.length; i++) {
     code = D.divOrder[i];
@@ -1062,8 +1116,11 @@ function renderChangeForm() {
       if (!p.vacant) { count++; ex.push(String(p.name).replace(/[\s　]/g, '')); }
       html += '<div class="chg-slot' + (String(i + 1) === chgSlot ? ' on' : '') + '" onclick="pickSlot(\'' + (i + 1) + '\')"><div class="no">No.' + (i + 1) + '</div><div class="nm">' + (p.vacant ? '<span style="color:#aaa">欠員</span>' : esc(p.name) + '（' + esc(p.grade) + '）' + (p.offRoster ? '<span class="flag">※</span>' : '')) + '</div>' + (p.changedFrom ? '<div class="was">変更前：' + esc(p.changedFrom) + '</div>' : '') + '</div>';
     }
+    html += '<div class="chg-slot' + (chgSlot === 'coach' ? ' on' : '') + '" onclick="pickSlot(\'coach\')"><div class="no">監督</div><div class="nm">' + esc(e.coachName || '（未登録）') + '</div><div class="muted">' + esc(e.coachTitle || '') + '</div></div>';
     html += '</div><div class="muted" style="margin-bottom:8px">現在 ' + count + '名' + (count < 6 ? '（6名未満のため3ペア目は不戦敗）' : '') + '</div>';
-    if (chgSlot) {
+    if (chgSlot === 'coach') {
+      html += coachFields('entryId', e.entryId);
+    } else if (chgSlot) {
       html += '<div class="chg-fields"><strong>No.' + chgSlot + ' を</strong>';
       html += '<select id="chgName" onchange="onChgName()">' + rosterOptions(e.teamName, ex) + '</select>';
       html += '<input type="text" id="chgManual" placeholder="氏名" style="display:none">';
@@ -1090,7 +1147,9 @@ function renderChangeForm() {
       var dis = locked && locked !== sd;
       html += '<div class="chg-slot' + (chgSlot === sd ? ' on' : '') + '" style="' + (dis ? 'opacity:.45;cursor:not-allowed' : '') + '" onclick="' + (dis ? '' : 'pickSlot(\'' + sd + '\')') + '"><div class="no">選手' + sd + '</div><div class="nm">' + esc(nm) + '（' + esc(gr) + '）</div><div class="muted">' + esc(tm) + '</div>' + (locked === sd ? '<div class="was">変更前：' + esc(pr.change.from) + '</div>' : '') + (dis ? '<div class="was">変更不可（1名のみ）</div>' : '') + '</div>';
     }
+    html += '<div class="chg-slot' + (chgSlot === 'coach' ? ' on' : '') + '" onclick="pickSlot(\'coach\')"><div class="no">監督</div><div class="nm">' + esc(pr.coachName || '（未登録）') + '</div><div class="muted">' + esc(pr.coachTitle || '') + '</div></div>';
     html += '</div>';
+    if (chgSlot === 'coach') html += coachFields('pairId', pr.pairId);
     if (chgSlot === 'A' || chgSlot === 'B') {
       var team = chgSlot === 'A' ? pr.aTeam : pr.bTeam;
       html += '<div class="chg-fields"><strong>選手' + chgSlot + '（' + esc(team) + '）を</strong>';
@@ -1133,6 +1192,31 @@ function doTeamChange(entryId, vacant) {
   if (!confirm('No.' + chgSlot + ' を' + (vacant ? '欠員に' : '「' + v.name + '」に') + '変更します。よろしいですか？')) return;
   api({ action: 'adminChangeTeamPlayer', entryId: entryId, slot: chgSlot, mode: vacant ? 'vacant' : 'replace', name: v.name, grade: v.grade, reason: v.reason }).then(function (r) {
     toast('変更しました（現在' + r.count + '名）' + (r.count < 6 ? '：3ペア目は不戦敗になります' : ''), r.count < 4);
+    if (r.orderNote && r.orderNote.length) alert(r.orderNote.join('\n'));
+    chgSlot = '';
+    return reload();
+  }).catch(function (err) { toast('変更できません：' + err.message, true); });
+}
+
+var COACH_TITLES = ['教職員', '部活動指導員', '外部コーチ', '校外コーチ', 'クラブ指導者'];
+function coachFields(key, id) {
+  var h = '<div class="chg-fields"><strong>監督を</strong><input type="text" id="coachName" placeholder="新しい監督の氏名"><select id="coachTitle"><option value="">役職</option>';
+  var i;
+  for (i = 0; i < COACH_TITLES.length; i++) h += '<option>' + COACH_TITLES[i] + '</option>';
+  h += '</select><input type="text" id="chgReason" placeholder="理由（例：出張のため）">';
+  h += '<button class="btn btn-main" onclick="doCoachChange(\'' + key + '\', \'' + esc(id) + '\')">この監督に変更</button></div>';
+  return h;
+}
+
+function doCoachChange(key, id) {
+  var name = document.getElementById('coachName').value.trim();
+  var title = document.getElementById('coachTitle').value;
+  if (!name || !title) { toast('新しい監督の氏名と役職を入れてください', true); return; }
+  if (!confirm('監督を「' + name + '（' + title + '）」に変更します。よろしいですか？')) return;
+  var body = { action: 'adminChangeCoach', name: name, title: title, reason: document.getElementById('chgReason').value.trim() };
+  body[key] = id;
+  api(body).then(function () {
+    toast('監督を変更しました');
     chgSlot = '';
     return reload();
   }).catch(function (err) { toast('変更できません：' + err.message, true); });

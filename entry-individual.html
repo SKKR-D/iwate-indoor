@@ -169,8 +169,8 @@ input:focus,select:focus{border-color:var(--green)}
 
     <div class="card" id="consentCard">
       <h2>個人情報の取扱い</h2>
-      <div class="consent-text">申込で取得した選手の氏名・学年・学校名、および試合結果（組合せ・団体戦オーダー・スコア・順位）は、組合せ表・進行表・スコアシートの作成と会場掲示、大会ホームページへの掲載、報道機関への結果提供等に使用します。<br>申込責任者・監督の氏名と連絡先は、大会に関する連絡と領収書の送付に使用し、公開しません。<br>同意を得られない選手がいる場合は、申込前に連盟へご相談ください。</div>
-      <label class="consent"><input type="checkbox" id="consent"><span>上記について、選手本人および保護者の同意を得ています<span class="req">※必須</span></span></label>
+      <div class="consent-text">申込で取得した選手の氏名・学年・学校名、監督（ベンチ入り指導者）の氏名、および試合結果（組合せ・団体戦オーダー・スコア・順位）は、組合せ表・進行表・スコアシートの作成と会場掲示、大会ホームページへの掲載、報道機関への結果提供等に使用します。<br>申込責任者の氏名と連絡先、監督の連絡先は、大会に関する連絡と領収書の送付に使用し、公開しません。<br>同意を得られない選手がいる場合は、申込前に連盟へご相談ください。</div>
+      <label class="consent"><input type="checkbox" id="consent"><span>上記について、選手本人および保護者、監督（ベンチ入り指導者）の同意を得ています<span class="req">※必須</span></span></label>
     </div>
 
     <button type="button" class="btn btn-green btn-block" id="submitBtn" onclick="showConfirm()">入力内容を確認する</button>
@@ -310,7 +310,7 @@ function showConfirm() {
   html += '<tr><th>携帯番号</th><td>' + esc(d.applicantPhone) + '</td></tr>';
   html += '<tr><th>メール</th><td>' + esc(d.applicantEmail) + '</td></tr>';
   html += '<tr><th>参加料</th><td>' + E.fee.toLocaleString() + '円（当日現金）</td></tr>';
-  html += '<tr><th>個人情報</th><td>取扱いに同意済み（選手本人・保護者）</td></tr>';
+  html += '<tr><th>個人情報</th><td>取扱いに同意済み（選手本人・保護者・監督）</td></tr>';
   html += '</table>';
   document.getElementById('confirmContent').innerHTML = html;
   document.getElementById('confirmModal').classList.add('show');

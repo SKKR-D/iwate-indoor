@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大会プログラム｜第40回岩手県中学校インドアソフトテニス大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--deep:#123522;--main:#1a4a2e;--soft:#e8efe9;--line:#c9d6cc;--gold:#b8902a;--red:#c0392b;--muted:#5d6b62;--bg:#eef0ec}
+html{font-size:15px;scroll-behavior:smooth;scroll-padding-top:110px}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:#111;line-height:1.6}
+/* ---- 画面上部 ---- */
+.bar{background:linear-gradient(135deg,var(--deep),var(--main));color:#fff;position:sticky;top:0;z-index:20;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.bar-in{max-width:900px;margin:0 auto;padding:8px 12px}
+.bar-top{display:flex;gap:8px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.bar h1{font-size:.92rem;font-weight:900;line-height:1.3}
+.bar h1 small{display:block;font-size:.64rem;font-weight:500;opacity:.85}
+.ctrl{display:flex;gap:6px;flex-wrap:wrap}
+.ctrl button{padding:6px 11px;border-radius:16px;border:none;background:rgba(255,255,255,.16);color:#fff;font-family:inherit;font-size:.74rem;font-weight:700;cursor:pointer}
+.ctrl button.on{background:#f3d36b;color:#3a2e00}
+.toc{display:flex;gap:4px;overflow-x:auto;padding:6px 0 2px;scrollbar-width:thin}
+.toc a{flex:none;color:#fff;text-decoration:none;font-size:.72rem;padding:3px 9px;border-radius:12px;background:rgba(255,255,255,.1);white-space:nowrap}
+.status{max-width:900px;margin:8px auto 0;padding:0 12px;font-size:.72rem;color:var(--muted)}
+/* ---- ページ ---- */
+.book{max-width:900px;margin:0 auto;padding:10px 10px 40px}
+.pg{background:#fff;border-radius:8px;box-shadow:0 1px 8px rgba(0,0,0,.08);padding:22px 22px;margin-bottom:16px;position:relative}
+.pg h2{font-size:1.2rem;font-weight:900;color:var(--deep);border-bottom:3px solid var(--main);padding-bottom:4px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.pg h2 small{font-size:.72rem;font-weight:500;color:var(--muted)}
+.pg h3{font-size:.98rem;font-weight:900;color:var(--main);margin:14px 0 6px;border-left:4px solid var(--main);padding-left:8px}
+.pg p{font-size:.88rem}
+.later{border:2px dashed var(--line);border-radius:10px;padding:40px 16px;text-align:center;color:var(--muted);font-size:.95rem}
+.wait{border:2px dashed var(--line);border-radius:10px;padding:30px 16px;text-align:center;color:var(--muted)}
+.scroll{overflow-x:auto}
+table.t{width:100%;border-collapse:collapse;font-size:.84rem}
+table.t th{background:var(--soft);color:var(--deep);font-size:.76rem;padding:5px 6px;border:1px solid var(--line);text-align:left;white-space:nowrap}
+table.t td{padding:5px 6px;border:1px solid #d6ded8;vertical-align:top}
+table.t td.c,table.t th.c{text-align:center}
+table.t td.n{white-space:nowrap}
+.chg{white-space:nowrap;display:inline-block;font-size:.62rem;font-weight:900;color:#fff;background:var(--red);border-radius:4px;padding:0 4px;margin-left:3px;vertical-align:1px}
+.was{display:block;font-size:.68rem;color:var(--red)}
+/* 表紙 */
+.cover{padding:0;overflow:hidden}
+.cv-top{background:linear-gradient(160deg,var(--deep),var(--main) 70%,#2c6a45);color:#fff;padding:46px 28px 34px;text-align:center}
+.cv-no{display:inline-block;border:1.5px solid rgba(255,255,255,.6);border-radius:20px;padding:2px 16px;font-size:.8rem;letter-spacing:.2em}
+.cv-title{font-family:'Noto Serif JP',serif;font-weight:900;font-size:2.05rem;line-height:1.35;margin:16px 0 10px;letter-spacing:.04em}
+.cv-sub{font-size:.8rem;opacity:.92;line-height:1.7}
+.cv-word{font-family:'Noto Serif JP',serif;font-size:3rem;letter-spacing:.5em;color:#f3d36b;margin-top:14px;padding-left:.5em}
+.cv-body{padding:24px 28px 26px}
+.cv-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.cv-box{border:1.5px solid var(--line);border-radius:10px;padding:12px 14px}
+.cv-box b{display:block;color:var(--main);font-size:.8rem;margin-bottom:4px}
+.cv-box div{font-size:.95rem;font-weight:700;line-height:1.6}
+.cv-box div small{font-weight:500;color:var(--muted);font-size:.78rem}
+.cv-foot{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-top:18px;flex-wrap:wrap}
+.cv-org{font-size:.85rem;line-height:1.8}
+.cv-org b{color:var(--main)}
+.cv-qr{display:flex;gap:10px;align-items:center;font-size:.74rem;color:var(--muted);line-height:1.5}
+.cv-qr #qr{width:96px;height:96px;flex:none}
+.cv-qr #qr img,.cv-qr #qr canvas{width:96px!important;height:96px!important}
+/* 目次 */
+.toc-list{columns:2;column-gap:24px;font-size:.88rem;margin-bottom:6px}
+.toc-list a{display:flex;justify-content:space-between;border-bottom:1px dotted #bbb;color:#111;text-decoration:none;padding:3px 0;break-inside:avoid}
+.toc-list a span:last-child{color:var(--muted);font-size:.78rem}
+/* 要項 */
+.yk img{display:block;width:100%;height:auto;border:1px solid #ddd}
+/* 注意 */
+ol.notes{counter-reset:n;list-style:none;font-size:.86rem}
+ol.notes>li{position:relative;padding:5px 0 5px 30px;border-bottom:1px dashed #e1e5e2}
+ol.notes>li::before{counter-increment:n;content:counter(n);position:absolute;left:0;top:6px;width:21px;height:21px;border-radius:50%;background:var(--main);color:#fff;font-size:.72rem;font-weight:900;display:flex;align-items:center;justify-content:center}
+ol.notes b{color:var(--deep)}
+ol.notes ul{margin:3px 0 0 1.1em}
+/* 組合せ */
+.br svg{display:block;width:100%;height:auto}
+/* 進行表 */
+.prog td.st{white-space:nowrap;font-size:.76rem}
+.prog td.rs{font-weight:700;white-space:nowrap}
+.prog tr.done td{color:#555}
+.prog .win{font-weight:900}
+.prog .sub{color:var(--muted);font-size:.72rem}
+.prog td.ref{font-size:.74rem;color:#444}
+.court{display:inline-block;min-width:20px;text-align:center;border-radius:5px;background:var(--main);color:#fff;font-weight:900;font-size:.72rem}
+/* チーム名簿 */
+.teams{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.tm{border:1.2px solid var(--line);border-radius:6px;overflow:hidden;font-size:.78rem;break-inside:avoid}
+.tm .h{background:var(--soft);padding:4px 6px;font-weight:900;color:var(--deep);display:flex;justify-content:space-between;gap:4px}
+.tm .h small{font-weight:500;color:var(--muted);font-size:.66rem}
+.tm ol{list-style:none}
+.tm li{display:flex;justify-content:space-between;gap:4px;padding:1px 6px;border-top:1px solid #eef1ee}
+.tm li span:first-child{color:var(--muted);width:1.3em;flex:none}
+.tm li .nm{flex:1}
+.tm li.v .nm{color:#aaa}
+.tm li .chm{color:var(--red);font-weight:900;margin-left:2px}
+.tm li.wl{border-top:none;color:var(--red);font-size:.68rem;padding-top:0;line-height:1.2}
+.tm li.co{background:#f6f8f6;font-weight:700}
+.tm li.co span:first-child{color:var(--main)}
+/* 栄光の記録・役員 */
+.off{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+.foot{font-size:.74rem;color:var(--muted);margin-top:10px}
+@media (max-width:640px){
+  .pg{padding:16px 12px}
+  .cv-title{font-size:1.5rem}
+  .cv-word{font-size:1.7rem;letter-spacing:.2em;padding-left:.2em}
+  .scroll table.t{min-width:600px}
+  .prog td.vs,.prog td.ref,.prog td.n{white-space:nowrap}
+  .cv-grid,.off{grid-template-columns:1fr}
+  .teams{grid-template-columns:repeat(2,1fr)}
+  .toc-list{columns:1}
+}
+/* ---- 印刷：1ページ＝A4 1枚 ---- */
+@media print{
+  @page{size:A4 portrait;margin:10mm}
+  html{font-size:10.5pt}
+  body{background:#fff}
+  .bar,.status{display:none}
+  .book{max-width:none;padding:0;margin:0}
+  .pg{box-shadow:none;border-radius:0;margin:0;padding:0;break-before:page;page-break-before:always;min-height:0}
+  .pg:first-child{break-before:auto;page-break-before:auto}
+  .cover{height:277mm;display:flex;flex-direction:column}
+  .cv-top{padding:70px 28px 50px}
+  .cv-title{font-size:26pt}
+  .cv-word{font-size:40pt}
+  .cv-body{flex:1;display:flex;flex-direction:column;justify-content:space-between}
+  .br svg{max-height:268mm;width:auto;max-width:100%;margin:0 auto}
+  .yk img{max-height:270mm;width:auto;max-width:100%;margin:0 auto;border:none}
+  .yk h2{display:none}
+  table.t{font-size:8.6pt}
+  table.t th,table.t td{padding:2.5px 4px}
+  .teams{grid-template-columns:repeat(4,1fr);gap:5px}
+  .tm{font-size:8pt}
+  tr{break-inside:avoid}
+  table.prog{font-size:7.8pt}
+  table.prog th,table.prog td{padding:1.5px 4px;line-height:1.35}
+  table.prog td.vs,table.prog td.ref{white-space:nowrap}
+  table.prog td.vs div{display:inline}
+  table.prog td.vs div+div::before{content:'　－　';color:#888}
+  .prog .sub{font-size:6.8pt}
+  a{color:inherit;text-decoration:none}
+  .scroll{overflow:visible}
+}
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-in">
+  <div class="bar-top">
+    <h1><small id="hdSub">第40回岩手県中学校インドアソフトテニス大会</small>大会プログラム</h1>
+    <div class="ctrl">
+      <button id="mLive" onclick="setMode(false)">結果入り</button>
+      <button id="mBlank" onclick="setMode(true)">白紙（記入用）</button>
+      <button onclick="window.print()">🖨 印刷</button>
+    </div>
+  </div>
+  <nav class="toc" id="toc"></nav>
+</div></div>
+<div class="status" id="status"></div>
+<main class="book" id="book"><div class="pg"><div class="wait">読み込み中...</div></div></main>
+
+<script src="bracket-core.js"></script>
+<script>
+/* ===== 設定 ===== */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
+/* ================ */
+var params = new URLSearchParams(location.search);
+var BLANK_MODE = params.get('mode') === 'blank';
+var P = null, DIV = {};
+var CODES = ['MI', 'WI', 'MT', 'WT'];
+var NAME = { MI: '男子個人戦', WI: '女子個人戦', MT: '男子団体戦', WT: '女子団体戦' };
+
+function getJson(q) {
+  return fetch(GAS_URL + '?' + q).then(function (r) { return r.text(); }).then(function (t) {
+    var d;
+    try { d = JSON.parse(t); } catch (e) { throw new Error('サーバーの応答を読み取れません'); }
+    if (d.status !== 'ok') throw new Error(d.message);
+    return d;
+  });
+}
+
+function load() {
+  var jobs = [getJson('action=programData')];
+  var i;
+  for (i = 0; i < CODES.length; i++) jobs.push(getJson('action=progress&div=' + CODES[i]));
+  return Promise.all(jobs).then(function (rs) {
+    P = rs[0];
+    for (i = 0; i < CODES.length; i++) { rs[i + 1].division.code = CODES[i]; DIV[CODES[i]] = rs[i + 1]; }
+    render();
+  }).catch(function (err) {
+    document.getElementById('status').textContent = '読み込めませんでした（' + err.message + '）。自動で再試行します。';
+  });
+}
+
+/* 白紙用は表示のたびに元データを複製してから消す */
+function dataFor(code) {
+  var d = DIV[code];
+  return BLANK_MODE ? blankOut(JSON.parse(JSON.stringify(d))) : d;
+}
+
+/* ============================================================
+   各ページ
+   ============================================================ */
+var SECTIONS = [
+  ['cover', '表紙'], ['contents', '目次・日程'], ['officials', '大会役員・競技役員'], ['youkou', '大会要項'], ['notes', '競技上の注意'],
+  ['br-MI', '男子個人戦 組合せ'], ['br-WI', '女子個人戦 組合せ'], ['br-MT', '男子団体戦 組合せ'], ['br-WT', '女子団体戦 組合せ'],
+  ['pr-MI', '進行表 男子個人戦'], ['pr-WI', '進行表 女子個人戦'], ['pr-MT', '進行表 男子団体戦'], ['pr-WT', '進行表 女子団体戦'],
+  ['pairs', '個人戦 出場ペア一覧'], ['tm-MT', '男子団体戦 出場チーム名簿'], ['tm-WT', '女子団体戦 出場チーム名簿'],
+  ['changes', '選手変更一覧'], ['history', '栄光の記録']
+];
+
+function pg(id, title, body, sub) {
+  return '<section class="pg" id="' + id + '">' + (title ? '<h2><span>' + title + '</span>' + (sub ? '<small>' + sub + '</small>' : '') + '</h2>' : '') + body + '</section>';
+}
+
+function coverPage() {
+  var f = P.info;
+  return '<section class="pg cover" id="cover"><div class="cv-top">' +
+    '<span class="cv-no">PROGRAM</span>' +
+    '<div class="cv-title">' + esc(f.tournament).replace('岩手県', '<br>岩手県') + '</div>' +
+    '<div class="cv-sub">兼 第38回都道府県対抗全日本中学生ソフトテニス大会 岩手県代表選手二次選考会<br>兼 第35回東北中学校ソフトテニスインドア大会 予選会</div>' +
+    '<div class="cv-word">大会プログラム</div></div>' +
+    '<div class="cv-body"><div class="cv-grid">' +
+    '<div class="cv-box"><b>個人戦</b><div>' + esc(f.indivDate) + '<br><small>男女各16ペア</small></div></div>' +
+    '<div class="cv-box"><b>団体戦</b><div>' + esc(f.teamDate) + '<br><small>男女各16チーム</small></div></div>' +
+    '<div class="cv-box"><b>男子会場</b><div>' + esc(f.venueM) + '<br><small>岩手郡雫石町高前田104</small></div></div>' +
+    '<div class="cv-box"><b>女子会場</b><div>' + esc(f.venueW) + '<br><small>紫波郡紫波町桜町字下川原100</small></div></div>' +
+    '</div><div class="cv-foot"><div class="cv-org"><b>主催</b>　岩手県中学生ソフトテニス連盟<br><b>協賛</b>　ナガセケンコー株式会社　ヨネックス株式会社</div>' +
+    '<div class="cv-qr"><div id="qr"></div><div>最新の組合せ・結果・<br>選手変更は、この<br>二次元コードから</div></div></div></div></section>';
+}
+
+function contentsPage() {
+  var h = '<div class="toc-list">';
+  var i;
+  for (i = 2; i < SECTIONS.length; i++) h += '<a href="#' + SECTIONS[i][0] + '"><span>' + SECTIONS[i][1] + '</span><span></span></a>';
+  h += '</div>';
+  h += '<h3>大会日程</h3><div class="scroll"><table class="t"><thead><tr><th>時刻</th><th>11月28日（土）男女個人戦</th><th>11月29日（日）男女団体戦</th></tr></thead><tbody>' +
+    '<tr><td class="n">7:30</td><td colspan="2">開場</td></tr>' +
+    '<tr><td class="n">7:35〜8:00</td><td colspan="2">受付（参加料の納入）</td></tr>' +
+    '<tr><td class="n">7:45〜</td><td>練習 7:45〜8:30（15分×3ローテ）</td><td>練習 7:45〜8:25（5分×8ローテ）</td></tr>' +
+    '<tr><td class="n">8:25</td><td colspan="2">監督会議</td></tr>' +
+    '<tr><td class="n">8:40</td><td>―</td><td>1回戦オーダー提出の締切</td></tr>' +
+    '<tr><td class="n">8:45〜</td><td colspan="2">開始式</td></tr>' +
+    '<tr><td class="n">9:00〜</td><td colspan="2">競技開始（終了予定 17:00）</td></tr>' +
+    '<tr><td class="n">競技終了後</td><td colspan="2">表彰式</td></tr></tbody></table></div>' +
+    '<p class="foot">両会場とも同じ日程です。各試合の予定時刻は進行表をご覧ください（当日は試合の進み具合に合わせて自動で更新されます）。</p>';
+  h += '<h3>会場</h3><div class="scroll"><table class="t"><tbody>' +
+    '<tr><th>男子会場</th><td>' + esc(P.info.venueM) + '（2面）　〒020-0543 岩手郡雫石町高前田104　TEL 019-692-5030</td></tr>' +
+    '<tr><th>女子会場</th><td>' + esc(P.info.venueW) + '（2面）　〒028-3307 紫波郡紫波町桜町字下川原100　TEL 019-676-2650</td></tr></tbody></table></div>';
+  return pg('contents', '目次・大会日程', h);
+}
+
+function officialsPage() {
+  var rows = P.officials || [];
+  if (!rows.length) return pg('officials', '大会役員・競技役員', '<div class="later">後日掲載します</div>');
+  var groups = [], by = {};
+  var i, k;
+  for (i = 0; i < rows.length; i++) {
+    k = rows[i]['区分'] || '役員';
+    if (!by[k]) { by[k] = []; groups.push(k); }
+    by[k].push(rows[i]);
+  }
+  var h = '';
+  for (i = 0; i < groups.length; i++) {
+    h += '<h3>' + esc(groups[i]) + '</h3><div class="off">';
+    var half = Math.ceil(by[groups[i]].length / 2);
+    var cols = [by[groups[i]].slice(0, half), by[groups[i]].slice(half)];
+    var c, j;
+    for (c = 0; c < 2; c++) {
+      h += '<table class="t"><tbody>';
+      for (j = 0; j < cols[c].length; j++) h += '<tr><th>' + esc(cols[c][j]['役職']) + '</th><td>' + esc(cols[c][j]['氏名']) + '</td><td class="sub">' + esc(cols[c][j]['所属']) + '</td></tr>';
+      h += '</tbody></table>';
+    }
+    h += '</div>';
+  }
+  return pg('officials', '大会役員・競技役員', h);
+}
+
+function youkouPages() {
+  return '<section class="pg yk" id="youkou"><h2><span>大会要項</span><small><a href="youkou.pdf" target="_blank">PDFで開く</a></small></h2><img src="img/youkou-1.png" alt="大会要項 1ページ"></section>' +
+    '<section class="pg yk"><h2><span>大会要項（2）</span></h2><img src="img/youkou-2.png" alt="大会要項 2ページ"></section>';
+}
+
+function notesPage() {
+  var h = '<ol class="notes">' +
+    '<li><b>競技規則</b>　ソフトテニスルールブック（2026.4.1発行版）による。使用球は公認球（ケンコー）。</li>' +
+    '<li><b>個人戦</b>　16ペアを4ブロックに分けて予選リーグ（1ブロック4ペア）を行い、各ブロック1位・2位で決勝トーナメントを行う。マッチはすべて7ゲーム。<ul><li>決勝トーナメント1回戦：A1位－C2位、D2位－B1位、C1位－A2位、B2位－D1位</li><li>予選リーグは、各コートで2つのブロックを1試合ずつ交互に行う（試合順：1-2、3-4、1-3、2-4、2-3、1-4）。</li></ul></li>' +
+    '<li><b>団体戦</b>　3ダブルスによるトーナメント。1回戦は3番手まですべて行い、2回戦以降は先取法（2勝した時点で決着）。マッチはすべて5ゲーム。選手が6名未満のチームは3番手が不戦敗となる。決勝は2面展開で行う。</li>' +
+    '<li><b>オーダー（団体戦）</b>　受付票の「オーダー提出（監督用）」から提出する。締切は1回戦が8:40、2回戦以降は前の試合の終了から10分以内（コート集合は15分以内）。締切までは修正できる。両チームのオーダーは、試合開始のあいさつで大会本部が公開する。</li>' +
+    '<li><b>審判</b><ul><li>個人戦：予選リーグはリーグ内のペアが審判を行う（割当は進行表に表示）。決勝トーナメント1回戦の初戦はAブロック3位（Aコート）・Bブロック3位（Bコート）、2戦目は初戦の敗者。準決勝・決勝は審判員が行う。</li><li>団体戦：各コートの初戦はAコート＝7番・8番、Bコート＝15番・16番のチームから1名ずつ。2戦目以降は同じコートの直前の試合の敗者（負けたチーム）。決勝は審判員が行う。</li></ul></li>' +
+    '<li><b>選手・監督の変更</b>　個人戦（1名のみ）、団体戦ともにやむを得ない場合に受け付ける。受付票の「選手・監督の変更申請」から、<b>大会当日の受付終了時刻（8:00）まで</b>に申請し、競技委員長の許可をもって変更とする（同じ時刻までに大会本部へ選手変更届〔紙〕を提出してもよい）。変更は選手変更一覧で公表する。</li>' +
+    '<li><b>ベンチ</b>　個人戦・団体戦ともに、選手以外に監督（ベンチ入り指導者）が入る。監督は当該校の教職員・部活動指導員・外部コーチ・校外コーチ、またはクラブ指導者とする。</li>' +
+    '<li><b>服装・ゼッケン</b>　選手は背中に公認ゼッケンをつける。選手・監督の服装・ゼッケンは「岩手県中学校体育連盟ソフトテニス専門部服装・ゼッケン規定（2026.09-2027.08）」に準ずる。</li>' +
+    '<li><b>試合の進行</b>　本部のコールを受けたら速やかにコートへ入る。試合の予定時刻・コートは進行表（会場掲示・二次元コード）で確認する。試合後、勝者はスコアシートにサインする。</li>' +
+    '<li><b>表彰</b>　団体戦・個人戦ともに3位まで表彰する。団体戦優勝チームには優勝旗を、個人戦優勝ペア・準優勝ペアには優勝杯・準優勝杯を授与する。</li>' +
+    '<li><b>上位大会</b>　男女個人戦の優勝ペアは、都道府県対抗全日本中学生ソフトテニス大会の岩手県代表選手として内定する。団体戦の男女上位2チームは、第35回ルーセントカップ東北中学校ソフトテニスインドア大会（令和9年1月9日・10日、山形県）への出場権を得る。</li>' +
+    '<li><b>その他</b>　参加者全員が傷害保険に加入しているが、保険の補償内容以外については一切責任を負いかねる。観覧・撮影は会場の案内に従うこと。</li>' +
+    '</ol>';
+  return pg('notes', '競技上の注意', h);
+}
+
+function bracketPage(code) {
+  var d = dataFor(code);
+  var body = d.matches.length ? '<div class="br">' + (code.charAt(1) === 'T' ? teamPage(d) : indivPage(d)) + '</div>' : '<div class="wait">' + NAME[code] + 'の組合せは、11月24日（火）に掲載します。</div>';
+  return '<section class="pg" id="br-' + code + '">' + (d.matches.length ? '' : '<h2><span>' + NAME[code] + ' 組合せ</span></h2>') + body + '</section>';
+}
+
+function sideText(s, m, which) {
+  if (!s || !s.decided) return '<span class="sub">' + esc(s ? s.label : '') + '</span>';
+  var win = !BLANK_MODE && m.state === '終了' && m.winner === which;
+  return '<span class="' + (win ? 'win' : '') + '">' + (win ? '○' : '') + esc(s.label) + '</span>' + (s.changed && !BLANK_MODE ? '<span class="chg">変更</span>' : '') + (s.sub ? ' <span class="sub">' + esc(s.sub) + '</span>' : '');
+}
+
+function progressPage(code) {
+  var d = dataFor(code);
+  if (!d.matches.length) return pg('pr-' + code, '進行表　' + NAME[code], '<div class="wait">進行表は、組合せと同じく11月24日（火）に掲載します。</div>');
+  var ms = d.matches.slice().sort(function (a, b) { return (a.court < b.court ? -1 : a.court > b.court ? 1 : 0) || a.seq - b.seq; });
+  var h = '<div class="scroll"><table class="t prog"><thead><tr><th class="c">No.</th><th class="c">コート</th><th>予定</th><th>回戦</th><th>対戦</th><th>審判</th><th>結果</th></tr></thead><tbody>';
+  var i, m, res;
+  for (i = 0; i < ms.length; i++) {
+    m = ms[i];
+    if (m.note === '不戦勝') continue;
+    res = '';
+    if (!BLANK_MODE) {
+      if (m.state === '終了') res = esc(m.score || '');
+      else if (m.state === '試合中') res = '<span style="color:var(--red)">試合中</span>';
+      else if (m.state === '呼出') res = '<span style="color:#7a5d00">呼出中</span>';
+    }
+    h += '<tr class="' + (!BLANK_MODE && m.state === '終了' ? 'done' : '') + '"><td class="c n">' + m.no + '</td><td class="c"><span class="court">' + (m.two ? 'A・B' : esc(m.court)) + '</span></td>' +
+      '<td class="st">' + esc(BLANK_MODE ? (m.plan || '') : (m.start || m.plan || '')) + '</td><td class="n">' + esc(m.round) + '</td>' +
+      '<td class="vs"><div>' + sideText(m.left, m, 'L') + '</div><div>' + sideText(m.right, m, 'R') + '</div></td>' +
+      '<td class="ref">' + (m.referee ? esc(m.referee.label) + (m.referee.sub ? ' <span class="sub">' + esc(m.referee.sub) + '</span>' : '') : '') + '</td>' +
+      '<td class="rs">' + res + '</td></tr>';
+  }
+  h += '</tbody></table></div><p class="foot">' + esc(d.date) + '　' + esc(d.venue) + '　予定時刻は目安です。当日の最新の時刻・コートは会場掲示の進行表（二次元コード）で確認してください。</p>';
+  return pg('pr-' + code, '進行表　' + NAME[code], h, BLANK_MODE ? '' : '終了 ' + d.matches.filter(function (x) { return x.state === '終了' && x.note !== '不戦勝'; }).length + '試合');
+}
+
+function slotKey(s) {
+  if (!s) return 'Z99';
+  return /^\d+$/.test(s) ? ('0' + s).slice(-2) : s;
+}
+
+function pairsPage() {
+  var h = '';
+  var c, i, p, list;
+  var codes = ['MI', 'WI'];
+  for (c = 0; c < codes.length; c++) {
+    list = (P.pairs[codes[c]] || []).slice().sort(function (a, b) { return slotKey(a.slot) < slotKey(b.slot) ? -1 : 1; });
+    h += '<h3>' + NAME[codes[c]] + '（' + list.length + 'ペア）</h3>';
+    if (!list.length) { h += '<div class="wait">出場ペアは後日掲載します。</div>'; continue; }
+    h += '<div class="scroll"><table class="t"><thead><tr><th class="c">枠</th><th>選手</th><th class="c">学年</th><th>所属</th><th>選手</th><th class="c">学年</th><th>所属</th><th>監督</th></tr></thead><tbody>';
+    for (i = 0; i < list.length; i++) {
+      p = list[i];
+      h += '<tr><td class="c n">' + (p.slot ? esc(p.slot.charAt(0) + '－' + p.slot.slice(1)) : '') + '</td>' + pairCell(p, 'a') + pairCell(p, 'b') + '<td>' + esc(p.coach || '') + '</td></tr>';
+    }
+    h += '</tbody></table></div>';
+  }
+  return pg('pairs', '個人戦 出場ペア一覧', h);
+}
+
+function pairCell(p, k) {
+  var x = p[k];
+  var changed = !BLANK_MODE && p.change && p.change.side === k.toUpperCase();
+  return '<td>' + esc(x.name) + (changed ? '<span class="chg">変更</span><span class="was">変更前：' + esc(p.change.from) + '</span>' : '') + '</td><td class="c n">' + esc(x.grade) + '</td><td>' + esc(x.team) + '</td>';
+}
+
+function teamsPage(code) {
+  var list = (P.teams[code] || []).slice().sort(function (a, b) { return slotKey(a.slot) < slotKey(b.slot) ? -1 : slotKey(a.slot) > slotKey(b.slot) ? 1 : (a.district + a.name).localeCompare(b.district + b.name, 'ja'); });
+  if (!list.length) return pg('tm-' + code, NAME[code] + ' 出場チーム名簿', '<div class="wait">出場チームは後日掲載します。</div>');
+  var h = '<div class="teams">';
+  var i, j, t, p;
+  for (i = 0; i < list.length; i++) {
+    t = list[i];
+    h += '<div class="tm"><div class="h"><span>' + (t.slot ? esc(t.slot) + '　' : '') + esc(t.name) + '</span><small>' + esc(t.district) + '</small></div><ol>';
+    if (t.applied) h += '<li class="co"><span>監</span><span class="nm">' + esc(t.coach || '') + '</span><span></span></li>';
+    if (!t.applied) h += '<li class="v"><span></span><span class="nm">（申込前）</span></li>';
+    else for (j = 0; j < t.players.length; j++) {
+      p = t.players[j];
+      h += '<li class="' + (p.vacant ? 'v' : '') + '"><span>' + p.no + '</span><span class="nm">' + (p.vacant ? '―' : esc(p.name)) +
+        (!BLANK_MODE && p.changedFrom ? '<span class="chm">※</span>' : '') + '</span><span>' + esc(p.vacant ? '' : p.grade) + '</span></li>' +
+        (!BLANK_MODE && p.changedFrom ? '<li class="wl"><span></span><span class="nm">※変更前：' + esc(p.changedFrom) + '</span></li>' : '');
+    }
+    h += '</ol></div>';
+  }
+  h += '</div><p class="foot">左上の数字は組合せ番号、「監」は監督（ベンチ入り指導者）です。</p>';
+  return pg('tm-' + code, NAME[code] + ' 出場チーム名簿', h, list.length + 'チーム');
+}
+
+function changesPage() {
+  var rows = BLANK_MODE ? [] : (P.changes || []);
+  var h = '';
+  if (!rows.length) h = '<div class="wait">' + (BLANK_MODE ? '大会当日の選手変更は、会場掲示と二次元コードの「選手変更一覧」でお知らせします。' : '現在、選手変更はありません。') + '</div>';
+  else {
+    h = '<div class="scroll"><table class="t"><thead><tr><th>時刻</th><th>区分</th><th>チーム</th><th>対象</th><th>変更前</th><th>変更後</th></tr></thead><tbody>';
+    var i, c;
+    for (i = 0; i < rows.length; i++) {
+      c = rows[i];
+      h += '<tr><td class="n">' + esc(String(c.at).replace('-', '/')) + '</td><td class="n">' + esc(c.div) + '</td><td>' + esc(c.team) + '</td><td>' + esc(c.target) + '</td>' +
+        (c.coach ? '<td colspan="2">' + esc(c.to) + '</td>' : '<td style="color:#666">' + esc(c.from) + '</td><td style="color:var(--red);font-weight:900">' + esc(c.to) + '</td>') + '</tr>';
+    }
+    h += '</tbody></table></div>';
+  }
+  h += '<p class="foot">競技委員長が許可した変更を載せています。</p>';
+  return pg('changes', '選手変更一覧', h);
+}
+
+function historyPage() {
+  var rows = P.history || [];
+  if (!rows.length) return pg('history', '栄光の記録', '<div class="later">後日掲載します</div>');
+  var kinds = [], by = {};
+  var i, k;
+  for (i = 0; i < rows.length; i++) {
+    k = rows[i]['種別'] || '';
+    if (!by[k]) { by[k] = []; kinds.push(k); }
+    by[k].push(rows[i]);
+  }
+  var h = '';
+  for (i = 0; i < kinds.length; i++) {
+    var list = by[kinds[i]].sort(function (a, b) { return (parseInt(b['回'], 10) || 0) - (parseInt(a['回'], 10) || 0); });
+    h += '<h3>' + esc(kinds[i]) + '</h3><div class="scroll"><table class="t"><thead><tr><th class="c">回</th><th>年度</th><th>優勝</th><th>準優勝</th><th>3位</th><th>3位</th></tr></thead><tbody>';
+    var j, r;
+    for (j = 0; j < list.length; j++) {
+      r = list[j];
+      h += '<tr><td class="c n">' + esc(r['回']) + '</td><td class="n">' + esc(r['年度']) + '</td><td>' + esc(r['優勝']) + '</td><td>' + esc(r['準優勝']) + '</td><td>' + esc(r['3位']) + '</td><td>' + esc(r['3位（2）']) + '</td></tr>';
+    }
+    h += '</tbody></table></div>';
+  }
+  return pg('history', '栄光の記録', h);
+}
+
+/* ============================================================ */
+function render() {
+  var y = window.scrollY;
+  document.getElementById('hdSub').textContent = P.info.tournament;
+  var h = coverPage() + contentsPage() + officialsPage() + youkouPages() + notesPage();
+  var i;
+  for (i = 0; i < CODES.length; i++) h += bracketPage(CODES[i]);
+  for (i = 0; i < CODES.length; i++) h += progressPage(CODES[i]);
+  h += pairsPage() + teamsPage('MT') + teamsPage('WT') + changesPage() + historyPage();
+  document.getElementById('book').innerHTML = h;
+  window.scrollTo(0, y);
+  var qr = document.getElementById('qr');
+  var url = (P.info.site || location.href.replace(/[^\/]*$/, '')) + 'program.html';
+  if (qr && typeof QRCode === 'function') new QRCode(qr, { text: url, width: 192, height: 192, correctLevel: QRCode.CorrectLevel.M });
+  var now = new Date();
+  document.getElementById('status').textContent = (BLANK_MODE ? '白紙（記入用）の表示です。結果・選手変更は入りません。' : '結果入りの表示です（1分ごとに自動更新）。') +
+    '　' + now.getHours() + ':' + ('0' + now.getMinutes()).slice(-2) + ' 時点。「印刷」でA4冊子の形で印刷できます。';
+}
+
+function renderToc() {
+  var h = '';
+  var i;
+  for (i = 1; i < SECTIONS.length; i++) h += '<a href="#' + SECTIONS[i][0] + '">' + SECTIONS[i][1] + '</a>';
+  document.getElementById('toc').innerHTML = h;
+}
+
+function setMode(blank) {
+  BLANK_MODE = blank;
+  document.getElementById('mLive').className = blank ? '' : 'on';
+  document.getElementById('mBlank').className = blank ? 'on' : '';
+  try { history.replaceState(null, '', blank ? '?mode=blank' : location.pathname); } catch (e) {}
+  if (P) render();
+}
+
+renderToc();
+setMode(BLANK_MODE);
+load();
+setInterval(function () { if (!BLANK_MODE && document.visibilityState === 'visible') load(); }, 60000);
+</script>
+</body>
+</html>
