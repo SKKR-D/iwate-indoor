@@ -456,10 +456,17 @@ function teamsForGender(g) {
   out.sort(function (a, b) { return (a.district + a.name).localeCompare(b.district + b.name, 'ja'); });
   return out;
 }
-function findTeam(name) {
-  var i;
-  for (i = 0; i < D.teams.length; i++) if (D.teams[i].name === name) return D.teams[i];
-  return null;
+/* 同じ名前で男女別に登録しているチームは、gender（'男'／'女'）に合う種別の登録を優先する */
+function findTeam(name, gender) {
+  var best = null, bestScore = -1;
+  var i, c, sc;
+  for (i = 0; i < D.teams.length; i++) {
+    if (D.teams[i].name !== name) continue;
+    c = String(D.teams[i].category || '');
+    sc = !gender ? 0 : c.indexOf('男女') >= 0 ? 1 : c.indexOf(gender) >= 0 ? 2 : (c ? 0 : 1);
+    if (sc > bestScore) { best = D.teams[i]; bestScore = sc; }
+  }
+  return best;
 }
 function entryLink(e) {
   var site = String(D.config['サイトURL'] || '');
@@ -1083,8 +1090,8 @@ function renderChange() {
 }
 
 function rosterOptions(teamName, exclude) {
-  var team = findTeam(teamName);
   var gender = D.divisions[chgDiv].gender;
+  var team = findTeam(teamName, gender);
   var html = '<option value="">交代する選手を選択</option>';
   var i, p;
   if (team) {
@@ -1338,8 +1345,8 @@ function fillTeamSelect(side) {
 }
 
 function onPairTeam(side) {
-  var team = findTeam(document.getElementById(side + 'Team').value);
   var gender = D.divisions[indivDiv].gender;
+  var team = findTeam(document.getElementById(side + 'Team').value, gender);
   var html = '<option value="">選手を選択</option>';
   var i, p;
   if (team) {
