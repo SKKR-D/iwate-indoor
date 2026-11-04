@@ -859,7 +859,7 @@ function drawOptions(slot) {
   for (i = 0; i < DRAW.candidates.length; i++) {
     c = DRAW.candidates[i];
     h += '<option value="' + esc(c.id) + '"' + (c.id === cur ? ' selected' : '') + (used[c.id] ? ' style="color:#bbb"' : '') + '>' +
-      esc(c.label + '（' + c.sub + '）') + (c.state && c.state !== '申込済' ? '　※' + esc(c.state) : '') + (used[c.id] ? '　→枠' + used[c.id] : '') + '</option>';
+      esc((c.labelG || c.label) + '（' + c.sub + '）') + (c.state && c.state !== '申込済' ? '　※' + esc(c.state) : '') + (used[c.id] ? '　→枠' + used[c.id] : '') + '</option>';
   }
   return h;
 }
