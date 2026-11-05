@@ -28,6 +28,7 @@ td{padding:6px;border:1px solid #d9e0da;vertical-align:top}
 td.tm{white-space:nowrap;color:var(--muted);font-size:.78rem}
 td.fr{color:#666;text-decoration:line-through;text-decoration-color:#aaa}
 td.to{font-weight:900;color:var(--red)}
+td .nt{display:block;font-size:.74rem;color:#7a4b00;font-weight:700;margin-top:2px}
 td.ar{text-align:center;color:#999;width:1.6em;padding:6px 0}
 .none{text-align:center;color:var(--muted);padding:14px;font-size:.88rem}
 .note{font-size:.74rem;color:var(--muted);margin-top:12px;line-height:1.6}
@@ -79,7 +80,7 @@ function changesTable(rows) {
   var i, c;
   for (i = 0; i < rows.length; i++) {
     c = rows[i];
-    h += '<tr><td class="tm">' + esc(String(c.at).replace('-', '/')) + '</td><td>' + esc(c.team) + '</td><td>' + esc(c.target) + '</td>' +
+    h += '<tr><td class="tm">' + esc(String(c.at).replace('-', '/')) + '</td><td>' + esc(c.team) + '</td><td>' + esc(c.target) + (c.note ? '<span class="nt">' + esc(c.note) + '</span>' : '') + '</td>' +
       (c.coach ? '<td colspan="3">' + esc(c.to) + '</td>' : '<td class="fr">' + esc(c.from) + '</td><td class="ar">→</td><td class="to">' + esc(c.to) + '</td>') + '</tr>';
   }
   return h + '</tbody></table>';

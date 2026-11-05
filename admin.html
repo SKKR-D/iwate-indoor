@@ -325,6 +325,7 @@ tr.locked td{background:#f4f4f4;color:#777}
         <thead><tr><th>#</th><th>選手A</th><th>選手B</th><th>支払チーム</th><th>申込</th><th></th></tr></thead>
         <tbody id="pairBody"></tbody>
       </table></div>
+      <div id="preCfg"></div>
     </section>
 
     <!-- ===== 加盟チーム名簿 ===== -->
@@ -1500,11 +1501,55 @@ function renderPairs() {
     html += '<td><strong>' + esc(p.aName) + '</strong>（' + esc(p.aGrade) + '）<br><span class="muted">' + esc(p.aTeam) + '</span></td>';
     html += '<td><strong>' + esc(p.bName) + '</strong>（' + esc(p.bGrade) + '）<br><span class="muted">' + esc(p.bTeam) + '</span></td>';
     html += '<td>' + esc(p.payer) + (p.joint ? ' <span class="badge b-joint">合同</span>' : '') + '</td>';
-    html += '<td><span class="badge ' + (st === '申込済' ? 'b-ok' : 'b-wait') + '">' + esc(st) + '</span>' + (p.coachName ? '<br><span class="muted">監督：' + esc(p.coachName) + '</span>' : '') + '</td>';
-    html += '<td style="white-space:nowrap"><button class="btn btn-out btn-sm" onclick="editPair(\'' + esc(p.pairId) + '\')">編集</button> <button class="btn btn-red" onclick="deletePair(\'' + esc(p.pairId) + '\', \'' + esc(p.aName + '・' + p.bName).replace(/'/g, "\\'") + '\')">削除</button></td>';
+    html += '<td><span class="badge ' + (st === '申込済' ? 'b-ok' : 'b-wait') + '">' + esc(st) + '</span>' + (p.coachName ? '<br><span class="muted">監督：' + esc(p.coachName) + '</span>' : '') +
+      (p.preChange ? '<br><span class="badge b-ng">申込時変更：' + esc(p.change ? p.change.from + '→' + (p.change.side === 'A' ? p.aName : p.bName) : '選手' + p.preChange.side + '（' + (p.preChange.side === 'A' ? p.aName : p.bName) + '）') + '</span>' : '') + '</td>';
+    html += '<td style="white-space:nowrap"><button class="btn btn-out btn-sm" onclick="editPair(\'' + esc(p.pairId) + '\')">編集</button> <button class="btn btn-out btn-sm" onclick="openPreCfg(\'' + esc(p.pairId) + '\')">申込時変更</button> <button class="btn btn-red" onclick="deletePair(\'' + esc(p.pairId) + '\', \'' + esc(p.aName + '・' + p.bName).replace(/'/g, "\\'") + '\')">削除</button></td>';
     html += '</tr>';
   }
   document.getElementById('pairBody').innerHTML = html || '<tr><td colspan="6" class="loading">まだペアが登録されていません</td></tr>';
+}
+
+/* ========== 申込時の選手変更（競技委員会承認） ========== */
+function openPreCfg(pairId) {
+  var p = null;
+  var i;
+  for (i = 0; i < D.pairs.length; i++) if (D.pairs[i].pairId === pairId) p = D.pairs[i];
+  if (!p) return;
+  var cur = p.preChange || {};
+  var lockSide = p.change ? p.change.side : '';
+  var h = '<div class="chg-box" style="margin-top:12px"><strong>申込時の選手変更（競技委員会承認）：' + esc(p.aName) + '・' + esc(p.bName) + '</strong>' +
+    '<div class="muted" style="margin:4px 0 8px">設定すると、このペアの申込フォームに「代わりの選手を選ぶ欄」が出ます。監督が選んで申し込むと、選手変更として記録されます（1ペア1名の枠を使います）。</div>' +
+    '<div class="chg-fields"><strong>変わる選手</strong>' +
+    '<label><input type="radio" name="preSide" value="A"' + (cur.side === 'A' ? ' checked' : '') + (lockSide === 'B' ? ' disabled' : '') + '> 選手A：' + esc(p.change && p.change.side === 'A' ? p.change.from : p.aName) + '</label>' +
+    '<label><input type="radio" name="preSide" value="B"' + (cur.side === 'B' ? ' checked' : '') + (lockSide === 'A' ? ' disabled' : '') + '> 選手B：' + esc(p.change && p.change.side === 'B' ? p.change.from : p.bName) + '</label></div>' +
+    '<div class="chg-fields" style="margin-top:8px"><strong>理由</strong><input type="text" id="preReason" style="flex:1;min-width:260px" value="' + esc(cur.reason || 'step4出場のため競技委員会で承認') + '">' +
+    '<label><input type="checkbox" id="prePub"' + (cur.side ? (cur.pub ? ' checked' : '') : ' checked') + '> 理由を選手変更一覧（公開）に載せる</label></div>' +
+    '<div class="chg-fields" style="margin-top:10px"><button class="btn btn-main" onclick="savePreCfg(\'' + esc(p.pairId) + '\')">設定する</button>' +
+    (cur.side ? '<button class="btn btn-red" onclick="clearPreCfg(\'' + esc(p.pairId) + '\')">解除する</button>' : '') +
+    '<button class="btn btn-out" onclick="document.getElementById(\'preCfg\').innerHTML=\'\'">閉じる</button></div></div>';
+  document.getElementById('preCfg').innerHTML = h;
+  document.getElementById('preCfg').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function savePreCfg(pairId) {
+  var r = document.querySelector('input[name="preSide"]:checked');
+  if (!r) { toast('変わる選手（A・B）を選んでください', true); return; }
+  var reason = document.getElementById('preReason').value.trim();
+  if (!reason) { toast('理由を入れてください', true); return; }
+  api({ action: 'adminSetPreChange', pairId: pairId, side: r.value, reason: reason, publicReason: document.getElementById('prePub').checked }).then(function () {
+    toast('申込時の選手変更を設定しました');
+    document.getElementById('preCfg').innerHTML = '';
+    return reload();
+  }).catch(function (err) { toast('設定できません：' + err.message, true); });
+}
+
+function clearPreCfg(pairId) {
+  if (!confirm('申込時の選手変更の設定を解除します（すでに記録された選手変更は残ります）。よろしいですか？')) return;
+  api({ action: 'adminSetPreChange', pairId: pairId, side: '' }).then(function () {
+    toast('解除しました');
+    document.getElementById('preCfg').innerHTML = '';
+    return reload();
+  }).catch(function (err) { toast('解除できません：' + err.message, true); });
 }
 
 /* ========== 加盟チーム名簿 ========== */

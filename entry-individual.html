@@ -92,6 +92,12 @@ input:focus,select:focus{border-color:var(--green)}
 .pp .tm{font-size:.74rem;color:var(--text-light)}
 .same{display:flex;align-items:center;gap:6px;font-size:.78rem;font-weight:700;color:var(--green-dark);margin-bottom:6px;cursor:pointer}
 .same input{width:auto}
+.pre-box{margin:4px 0 10px;border:2px solid #b33030;border-radius:8px;background:#fdf3f3;padding:10px 12px}
+.pre-h{font-weight:900;color:#b33030;font-size:.85rem;margin-bottom:4px}
+.pre-t{font-size:.8rem;line-height:1.6;margin-bottom:8px}
+.pre-box select,.pre-box input{width:100%}
+.pre-man{margin-top:8px}
+.pre-man[hidden]{display:none}
 </style>
 </head>
 <body>
@@ -230,6 +236,7 @@ function buildPairs() {
     html += '<div class="pp"><div class="ab">選手A</div><div class="nm">' + esc(p.aName) + '</div><div class="tm">' + esc(p.aTeam) + '　' + esc(p.aGrade) + '</div></div>';
     html += '<div class="pp"><div class="ab">選手B</div><div class="nm">' + esc(p.bName) + '</div><div class="tm">' + esc(p.bTeam) + '　' + esc(p.bGrade) + '</div></div>';
     html += '</div>';
+    if (p.preChange) html += preBox(p, i);
     if (i > 0) html += '<label class="same"><input type="checkbox" id="same_' + i + '" onchange="onSame(' + i + ')">ペア1と同じ監督</label>';
     html += '<div class="grid-2">';
     html += '<div class="form-row"><label>監督 氏名<span class="req">※必須</span></label><input type="text" id="cname_' + i + '" required></div>';
@@ -237,6 +244,62 @@ function buildPairs() {
     html += '</div></div>';
   }
   document.getElementById('pairArea').innerHTML = html || '<div class="banner ng">出場ペアが登録されていません。連盟へお問い合わせください。</div>';
+}
+
+/* ========== 申込時の選手変更（競技委員会承認） ========== */
+function preInfo(p) {
+  var side = p.preChange.side === 'B' ? 'B' : 'A';
+  return { side: side, origin: p.change ? p.change.from : (side === 'A' ? p.aName : p.bName), team: side === 'A' ? p.aTeam : p.bTeam,
+    partner: side === 'A' ? p.bName : p.aName, current: side === 'A' ? p.aName : p.bName };
+}
+function normN(s) { return String(s || '').replace(/[\s　]/g, ''); }
+function preBox(p, i) {
+  var f = preInfo(p);
+  var roster = (E.preRosters || {})[f.team] || [];
+  var used = {};
+  var k;
+  for (k = 0; k < E.pairs.length; k++) { used[normN(E.pairs[k].aName)] = 1; used[normN(E.pairs[k].bName)] = 1; }
+  delete used[normN(f.current)];
+  var h = '<div class="pre-box"><div class="pre-h">競技委員会承認の選手変更</div>' +
+    '<div class="pre-t">' + esc(p.preChange.reason) + '。<b>' + esc(f.origin) + '</b>さん（選手' + f.side + '・' + esc(f.team) + '）に代わる選手を選んでください。この変更で、このペアの選手変更（1名）を使います。</div>' +
+    '<select id="pre_' + i + '" onchange="onPre(' + i + ')"><option value="">代わりの選手を選択</option>';
+  for (k = 0; k < roster.length; k++) {
+    if (normN(roster[k].name) === normN(f.origin)) continue;
+    h += '<option value="' + k + '"' + (used[normN(roster[k].name)] ? ' disabled' : '') + '>' + esc(roster[k].name) + '（' + esc(roster[k].grade) + '）' + (used[normN(roster[k].name)] ? '　出場中' : '') + '</option>';
+  }
+  h += '<option value="manual">登録名簿にない選手（手入力・要確認）</option></select>' +
+    '<div class="grid-2 pre-man" id="preMan_' + i + '" hidden><div class="form-row"><input type="text" id="preName_' + i + '" placeholder="氏名"></div>' +
+    '<div class="form-row"><select id="preGrade_' + i + '"><option value="">学年</option><option>1年</option><option>2年</option><option>3年</option></select></div></div></div>';
+  return h;
+}
+function onPre(i) {
+  document.getElementById('preMan_' + i).hidden = document.getElementById('pre_' + i).value !== 'manual';
+}
+/* 送信済みの変更後の選手を、選択欄に戻す */
+function fillPre() {
+  var i, p, f, roster, k, sel;
+  for (i = 0; i < E.pairs.length; i++) {
+    p = E.pairs[i];
+    if (!p.preChange || !p.change) continue;
+    f = preInfo(p);
+    roster = (E.preRosters || {})[f.team] || [];
+    sel = document.getElementById('pre_' + i);
+    for (k = 0; k < roster.length; k++) if (normN(roster[k].name) === normN(f.current)) sel.value = String(k);
+    if (!sel.value) {
+      sel.value = 'manual';
+      document.getElementById('preName_' + i).value = f.current;
+      document.getElementById('preGrade_' + i).value = p.preChange.side === 'B' ? p.bGrade : p.aGrade;
+      onPre(i);
+    }
+  }
+}
+function preValue(i) {
+  var p = E.pairs[i];
+  var v = document.getElementById('pre_' + i).value;
+  if (v === 'manual') return { name: document.getElementById('preName_' + i).value.trim(), grade: document.getElementById('preGrade_' + i).value };
+  if (v === '') return { name: '', grade: '' };
+  var r = ((E.preRosters || {})[preInfo(p).team] || [])[+v];
+  return r ? { name: r.name, grade: r.grade } : { name: '', grade: '' };
 }
 
 function onSame(i) {
@@ -275,6 +338,13 @@ function validate() {
   var abbrVal = document.getElementById('teamAbbr').value.replace(/[\s　]/g, '');
   if (!abbrVal) { alert('組合せ表記（略称）を入力してください。'); return null; }
   if (abbrVal.length > E.abbrMax) { alert('組合せ表記（略称）は' + E.abbrMax + '文字以内で入力してください。'); return null; }
+  var pre = {};
+  for (i = 0; i < E.pairs.length; i++) {
+    if (!E.pairs[i].preChange) continue;
+    var pv = preValue(i);
+    if (!pv.name || !pv.grade) { alert('ペア' + (i + 1) + '：' + preInfo(E.pairs[i]).origin + 'さんに代わる選手（氏名・学年）を選んでください。'); return null; }
+    pre[E.pairs[i].pairId] = pv;
+  }
   if (!document.getElementById('consent').checked) {
     alert('「個人情報の取扱い」をお読みいただき、同意のチェックを入れてください。');
     document.getElementById('consentCard').scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -282,6 +352,7 @@ function validate() {
   }
   return {
     consent: true,
+    preChanges: pre,
     pairCoaches: coaches,
     teamAbbr: document.getElementById('teamAbbr').value.replace(/[\s　]/g, ''),
     applicantName: document.getElementById('applicantName').value.trim(),
@@ -303,7 +374,7 @@ function showConfirm() {
   for (i = 0; i < E.pairs.length; i++) {
     p = E.pairs[i];
     c = d.pairCoaches[p.pairId];
-    html += '<tr><th>ペア' + (i + 1) + '</th><td>' + esc(p.label) + '<br><span style="font-size:.75rem;color:#666">監督：' + esc(c.name) + '（' + esc(c.title) + '）</span></td></tr>';
+    html += '<tr><th>ペア' + (i + 1) + '</th><td>' + esc(p.label) + (p.preChange && d.preChanges[p.pairId] ? '<br><span style="font-size:.78rem;color:#b33030;font-weight:700">選手変更（競技委員会承認）：' + esc(preInfo(p).origin) + ' → ' + esc(d.preChanges[p.pairId].name) + '（' + esc(d.preChanges[p.pairId].grade) + '）</span>' : '') + '<br><span style="font-size:.75rem;color:#666">監督：' + esc(c.name) + '（' + esc(c.title) + '）</span></td></tr>';
   }
   html += '</table><table class="modal-table">';
   html += '<tr><th>申込責任者</th><td>' + esc(d.applicantName) + '（' + esc(d.applicantTitle) + '）</td></tr>';
@@ -417,6 +488,7 @@ function render() {
   document.getElementById('feeDetail').textContent = E.pairs.length + 'ペア × ' + E.feePerPair.toLocaleString() + '円　大会当日の受付で現金にて納入してください（領収書をお渡しします）';
   document.getElementById('applicantTitle').innerHTML = titleOptions();
   buildPairs();
+  fillPre();
 
   var i, p;
   for (i = 0; i < E.pairs.length; i++) {

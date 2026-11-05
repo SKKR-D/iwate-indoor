@@ -391,7 +391,7 @@ function changesPage() {
     var i, c;
     for (i = 0; i < rows.length; i++) {
       c = rows[i];
-      h += '<tr><td class="n">' + esc(String(c.at).replace('-', '/')) + '</td><td class="n">' + esc(c.div) + '</td><td>' + esc(c.team) + '</td><td>' + esc(c.target) + '</td>' +
+      h += '<tr><td class="n">' + esc(String(c.at).replace('-', '/')) + '</td><td class="n">' + esc(c.div) + '</td><td>' + esc(c.team) + '</td><td>' + esc(c.target) + (c.note ? '<br><span class="sub" style="color:#7a4b00;font-weight:700">' + esc(c.note) + '</span>' : '') + '</td>' +
         (c.coach ? '<td colspan="2">' + esc(c.to) + '</td>' : '<td style="color:#666">' + esc(c.from) + '</td><td style="color:var(--red);font-weight:900">' + esc(c.to) + '</td>') + '</tr>';
     }
     h += '</tbody></table></div>';
