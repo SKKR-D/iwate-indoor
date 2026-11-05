@@ -143,6 +143,8 @@ tr.locked td{background:#f4f4f4;color:#777}
 .req-card .act input{flex:1;min-width:200px}
 .req-none{font-size:.85rem;color:#777;padding:6px 2px 12px}
 .st-ok{color:#1a7f37;font-weight:700}.st-ng{color:var(--red);font-weight:700}
+.pv-row{background:#fbf3f3;border:1.5px dashed #7a1f1f;border-radius:8px;padding:8px 10px;align-items:center}
+.pv-lbl{font-weight:700;color:#7a1f1f;font-size:.82rem;margin-right:4px}
 </style>
 </head>
 <body>
@@ -234,6 +236,7 @@ tr.locked td{background:#f4f4f4;color:#777}
         <span class="counter" id="drawCounter"></span>
       </div>
       <div class="row admin-only" id="drawLinks"></div>
+      <div class="row pv-row" id="pvLinks"></div>
       <div id="drawGrid"></div>
       <h3>Excelから貼り付け</h3>
       <div class="muted" style="margin-bottom:6px" id="pasteHint"></div>
@@ -391,7 +394,7 @@ function login() {
 }
 
 function logout() {
-  try { sessionStorage.removeItem(PW_KEY); } catch (e) {}
+  try { sessionStorage.removeItem(PW_KEY); localStorage.removeItem('iwateIndoorPreviewPw'); } catch (e) {}
   location.reload();
 }
 
@@ -849,6 +852,11 @@ function loadDraw() {
   document.getElementById('pasteHint').innerHTML = D.divisions[drawDiv].type === 'team'
     ? '1行に「枠番号　チーム名（または略称）」。例：<code>1　水沢南中</code>（枠番号がない場合は上から1,2,3…）'
     : 'ブロック見出し（Aブロック 等）の下に「番号　選手A・選手B　所属」の行。添付いただいた組合せ表の範囲をそのままコピーして貼り付けられます。';
+  document.getElementById('pvLinks').innerHTML = '<span class="pv-lbl">👁 プレビュー（非公開・保存した内容で表示）</span>' +
+    '<button class="btn btn-out btn-sm" onclick="openPreview(\'bracket.html?div=' + drawDiv + '\')">組合せ表</button>' +
+    '<button class="btn btn-out btn-sm" onclick="openPreview(\'bracket.html?div=' + drawDiv + '&mode=blank\')">組合せ表（白紙）</button>' +
+    '<button class="btn btn-out btn-sm" onclick="openPreview(\'progress.html?div=' + drawDiv + '\')">進行表</button>' +
+    '<button class="btn btn-out btn-sm" onclick="openPreview(\'program.html?mode=blank\')">プログラム</button>';
   document.getElementById('drawGrid').innerHTML = '<div class="loading">読み込み中...</div>';
   api({ action: 'adminDrawLoad', div: drawDiv }).then(function (d) {
     DRAW = d;
@@ -991,6 +999,12 @@ function importPaste() {
   }
   renderDraw();
   document.getElementById('pasteResult').innerHTML = ok + '件を枠に反映しました。' + (ng.length ? '<br><span class="flag">照合できなかった行：' + esc(ng.join(' ／ ')) + '</span>' : '') + '<br>内容を確認して「組合せを保存」を押してください。';
+}
+
+/* プレビュー：パスワードをこの端末に預けてから、非公開の表示で開く（保存した組合せ案が出る） */
+function openPreview(path) {
+  try { localStorage.setItem('iwateIndoorPreviewPw', pw); } catch (e) {}
+  window.open(path + (path.indexOf('?') >= 0 ? '&' : '?') + 'preview=1', '_blank');
 }
 
 function saveDraw(generate) {

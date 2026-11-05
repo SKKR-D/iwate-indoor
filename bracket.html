@@ -44,6 +44,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
   <div class="note" id="noteText"></div>
 </div>
 
+<script src="preview.js"></script>
 <script src="bracket-core.js"></script>
 <script>
 /* ★ GASのウェブアプリURL */
@@ -55,16 +56,12 @@ if (['MT', 'WT', 'MI', 'WI', 'ALL'].indexOf(div) < 0) div = 'MT';
 /* mode=blank：結果を入れない白紙の組合せ（記入用）。省略時は結果入り（随時更新） */
 var BLANK = params.get('mode') === 'blank';
 function get(code) {
-  return fetch(GAS_URL + '?action=progress&div=' + code).then(function (r) { return r.text(); }).then(function (t) {
-    var d;
-    try { d = JSON.parse(t); } catch (e) { throw new Error('サーバーの応答を読み取れません'); }
-    if (d.status !== 'ok') throw new Error(d.message);
+  return pvFetch('action=progress&div=' + code, { action: 'adminPreview', div: code }).then(function (d) {
     d.division.code = code;
     return d;
   });
 }
 
-/* ============================================================ */
 var LIST = [['MT', '男子団体戦'], ['WT', '女子団体戦'], ['MI', '男子個人戦'], ['WI', '女子個人戦']];
 
 function renderTabs() {

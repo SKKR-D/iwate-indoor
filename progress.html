@@ -108,6 +108,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 </main>
 <div class="footer">予定時刻は目安です。進行状況により変わります。30秒ごとに自動更新します。</div>
 
+<script src="preview.js"></script>
 <script>
 /* ★ GASのウェブアプリURL */
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
@@ -267,12 +268,8 @@ function renderBlocks() {
 }
 
 function load() {
-  fetch(GAS_URL + '?action=progress&div=' + encodeURIComponent(divCode))
-    .then(function (res) { return res.text(); })
-    .then(function (text) {
-      var d;
-      try { d = JSON.parse(text); } catch (e) { throw new Error('サーバーの応答を読み取れません'); }
-      if (d.status !== 'ok') throw new Error(d.message);
+  pvFetch('action=progress&div=' + encodeURIComponent(divCode), { action: 'adminPreview', div: divCode })
+    .then(function (d) {
       DATA = d;
       document.getElementById('hdTour').textContent = d.tournament;
       document.getElementById('hdTitle').textContent = d.division.name + '　進行表';
