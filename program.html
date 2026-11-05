@@ -327,6 +327,10 @@ function progressPage(code) {
   return pg('pr-' + code, '進行表　' + NAME[code], h, BLANK_MODE ? '' : '終了 ' + d.matches.filter(function (x) { return x.state === '終了' && x.note !== '不戦勝'; }).length + '試合');
 }
 
+/* 中体連の地区順（組合せ前のチーム名簿の並び） */
+var DORDER = ['久慈', '二戸', '岩手', '盛岡', '紫波', '花巻', '和賀', '胆江', '一関', '気仙', '遠野', '釜石・大槌', '宮古'];
+function dOrd(d) { var i = DORDER.indexOf(d); return i < 0 ? 99 : i; }
+
 function slotKey(s) {
   if (!s) return 'Z99';
   return /^\d+$/.test(s) ? ('0' + s).slice(-2) : s;
@@ -357,7 +361,7 @@ function pairCell(p, k) {
 }
 
 function teamsPage(code) {
-  var list = (P.teams[code] || []).slice().sort(function (a, b) { return slotKey(a.slot) < slotKey(b.slot) ? -1 : slotKey(a.slot) > slotKey(b.slot) ? 1 : (a.district + a.name).localeCompare(b.district + b.name, 'ja'); });
+  var list = (P.teams[code] || []).slice().sort(function (a, b) { return slotKey(a.slot) < slotKey(b.slot) ? -1 : slotKey(a.slot) > slotKey(b.slot) ? 1 : (dOrd(a.district) - dOrd(b.district) || String(a.name).localeCompare(String(b.name), 'ja')); });
   if (!list.length) return pg('tm-' + code, NAME[code] + ' 出場チーム名簿', '<div class="wait">出場チームは後日掲載します。</div>');
   var h = '<div class="teams">';
   var i, j, t, p;

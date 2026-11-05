@@ -456,7 +456,7 @@ function teamsForGender(g) {
     c = String(D.teams[i].category || '');
     if (c.indexOf('男女') >= 0 || c.indexOf(g === '男' ? '男' : '女') >= 0 || c === '') out.push(D.teams[i]);
   }
-  out.sort(function (a, b) { return (a.district + a.name).localeCompare(b.district + b.name, 'ja'); });
+  out.sort(function (a, b) { return districtCompare(a.district, b.district) || String(a.name).localeCompare(String(b.name), 'ja'); });
   return out;
 }
 /* 同じ名前で男女別に登録しているチームは、gender（'男'／'女'）に合う種別の登録を優先する */
@@ -522,7 +522,7 @@ function renderStatus() {
   var fState = document.getElementById('statusFilter').value;
   var rows = D.entries.slice().sort(function (a, b) {
     var d = D.divOrder.indexOf(a.div) - D.divOrder.indexOf(b.div);
-    return d !== 0 ? d : (a.district + a.teamName).localeCompare(b.district + b.teamName, 'ja');
+    return d !== 0 ? d : (districtCompare(a.district, b.district) || String(a.teamName).localeCompare(String(b.teamName), 'ja'));
   });
   var html = '';
   var e, content;
