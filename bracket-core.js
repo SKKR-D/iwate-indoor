@@ -34,6 +34,14 @@ function scorePair(m) {
 }
 
 function won(m, side) { return !!(m && m.state === '終了' && m.winner === side); }
+function decided(m) { return !!(m && m.state === '終了' && m.winner); }
+
+/* 2回戦以降の線：入口の横線（前の試合の勝者が来た＝赤）＋縦線（この試合に勝った＝赤）
+   勝ち上がりは「横・縦・横」になる（3本目の横は、次の試合の入口の横線） */
+function stepLine(g, xa, y, xb, yJ, inRed, vRed) {
+  g.line('M' + xa + ' ' + y + ' H' + xb, inRed);
+  g.line('M' + xb + ' ' + y + ' V' + yJ, vRed);
+}
 
 /* ============================================================
    SVG 部品
@@ -147,25 +155,26 @@ function teamPage(d) {
     yB = r1J[i * 2 + 1];
     yJ = mid(yA, yB);
     qJ.push(yJ);
+    var fA = M[code + '-R1-' + (i * 2 + 1)], fB = M[code + '-R1-' + (i * 2 + 2)];
     if (i < 2) {
-      g.line('M' + x1 + ' ' + yA + ' H' + x2 + ' V' + yJ, won(m, 'L'));
-      g.line('M' + x1 + ' ' + yB + ' H' + x2 + ' V' + yJ, won(m, 'R'));
+      stepLine(g, x1, yA, x2, yJ, decided(fA), won(m, 'L'));
+      stepLine(g, x1, yB, x2, yJ, decided(fB), won(m, 'R'));
       counts(m, x2, yA, yB, false);
     } else {
-      g.line('M' + x1r + ' ' + yA + ' H' + x2r + ' V' + yJ, won(m, 'L'));
-      g.line('M' + x1r + ' ' + yB + ' H' + x2r + ' V' + yJ, won(m, 'R'));
+      stepLine(g, x1r, yA, x2r, yJ, decided(fA), won(m, 'L'));
+      stepLine(g, x1r, yB, x2r, yJ, decided(fB), won(m, 'R'));
       counts(m, x2r, yA, yB, true);
     }
   }
   var sf1 = M[code + '-SF-1'], sf2 = M[code + '-SF-2'], fm = M[code + '-F'];
   var ySF = mid(qJ[0], qJ[1]);
-  g.line('M' + x2 + ' ' + qJ[0] + ' H' + x3 + ' V' + ySF, won(sf1, 'L'));
-  g.line('M' + x2 + ' ' + qJ[1] + ' H' + x3 + ' V' + ySF, won(sf1, 'R'));
+  stepLine(g, x2, qJ[0], x3, ySF, decided(M[code + '-QF-1']), won(sf1, 'L'));
+  stepLine(g, x2, qJ[1], x3, ySF, decided(M[code + '-QF-2']), won(sf1, 'R'));
   counts(sf1, x3, qJ[0], qJ[1], false);
-  g.line('M' + x2r + ' ' + qJ[2] + ' H' + x3r + ' V' + ySF, won(sf2, 'L'));
-  g.line('M' + x2r + ' ' + qJ[3] + ' H' + x3r + ' V' + ySF, won(sf2, 'R'));
+  stepLine(g, x2r, qJ[2], x3r, ySF, decided(M[code + '-QF-3']), won(sf2, 'L'));
+  stepLine(g, x2r, qJ[3], x3r, ySF, decided(M[code + '-QF-4']), won(sf2, 'R'));
   counts(sf2, x3r, qJ[2], qJ[3], true);
-  /* 決勝：中央 */
+  /* 決勝：中央。優勝した側だけ横線を中央まで伸ばして上へ。負けた側は準決勝の縦線まで */
   g.line('M' + x3 + ' ' + ySF + ' H' + cx, won(fm, 'L'));
   g.line('M' + x3r + ' ' + ySF + ' H' + cx, won(fm, 'R'));
   g.line('M' + cx + ' ' + ySF + ' V' + (y0 - 22), !!(fm && fm.state === '終了' && fm.winner));
@@ -414,8 +423,8 @@ function indivPage(d) {
   var kcounts = function (mm, xJ, yA, yB) {
     var sc = scorePair(mm);
     if (!sc) return;
-    g.text(xJ + 4, yA + 14, sc[0], { size: 12.5, color: RED });
-    g.text(xJ + 4, yB + 2, sc[1], { size: 12.5, color: RED });
+    g.num(xJ + 11, yA + 16, sc[0], mm.winner === 'L', 12.5);
+    g.num(xJ + 11, yB + 2, sc[1], mm.winner === 'R', 12.5);
   };
   var j, yA, yB, yJ;
   var qJ = [];
@@ -432,14 +441,14 @@ function indivPage(d) {
     m = M[code + '-SF-' + (j + 1)];
     yA = qJ[j * 2]; yB = qJ[j * 2 + 1]; yJ = (yA + yB) / 2;
     sJ.push(yJ);
-    g.line('M' + x1 + ' ' + yA + ' H' + x2 + ' V' + yJ, won(m, 'L'));
-    g.line('M' + x1 + ' ' + yB + ' H' + x2 + ' V' + yJ, won(m, 'R'));
+    stepLine(g, x1, yA, x2, yJ, decided(M[code + '-QF-' + (j * 2 + 1)]), won(m, 'L'));
+    stepLine(g, x1, yB, x2, yJ, decided(M[code + '-QF-' + (j * 2 + 2)]), won(m, 'R'));
     kcounts(m, x2, yA, yB);
   }
   var fm = M[code + '-F'];
   yJ = (sJ[0] + sJ[1]) / 2;
-  g.line('M' + x2 + ' ' + sJ[0] + ' H' + x3 + ' V' + yJ, won(fm, 'L'));
-  g.line('M' + x2 + ' ' + sJ[1] + ' H' + x3 + ' V' + yJ, won(fm, 'R'));
+  stepLine(g, x2, sJ[0], x3, yJ, decided(M[code + '-SF-1']), won(fm, 'L'));
+  stepLine(g, x2, sJ[1], x3, yJ, decided(M[code + '-SF-2']), won(fm, 'R'));
   g.line('M' + x3 + ' ' + yJ + ' H' + xEnd, !!(fm && fm.state === '終了' && fm.winner));
   kcounts(fm, x3, sJ[0], sJ[1]);
 
