@@ -313,7 +313,14 @@ function leagueTable(g, d, blk, y) {
   g.text((X.nm + X.c) / 2, y + 17, ZEN[blk] + 'ブロック', { size: 11, anchor: 'middle' });
   for (j = 0; j < 4; j++) g.text(X.c + X.cw * j + X.cw / 2, y + 17, j + 1, { size: 12, anchor: 'middle' });
   g.text((X.pt + X.df) / 2, y + 17, '勝点', { size: 11, anchor: 'middle' });
-  g.text((X.df + X.rk) / 2, y + 17, '得失', { size: 11, anchor: 'middle' });
+  /* 得失の欄：本部が表示を選んだブロックだけ「得失ゲーム」などに変わり、入力した組だけに値が出る */
+  var DF = d.diff && d.diff[blk] ? d.diff[blk] : null;
+  if (DF) {
+    g.text((X.df + X.rk) / 2, y + 11, '得失', { size: 9.5, anchor: 'middle' });
+    g.text((X.df + X.rk) / 2, y + 21.5, DF.kind, { size: DF.kind.length > 3 ? 7.5 : 8.5, anchor: 'middle' });
+  } else {
+    g.text((X.df + X.rk) / 2, y + 17, '得失', { size: 11, anchor: 'middle' });
+  }
   g.text((X.rk + X.end) / 2, y + 17, '順位', { size: 11, anchor: 'middle' });
   for (i = 0; i < 4; i++) {
     var p = L.byPos[i + 1];
@@ -343,9 +350,8 @@ function leagueTable(g, d, blk, y) {
     var s = p ? L.st[p.id] : null;
     if (s && s.n) {
       g.text((X.pt + X.df) / 2, ty, s.w, { size: 13.5, anchor: 'middle', color: RED });
-      var df = s.gf - s.ga;
-      g.text((X.df + X.rk) / 2, ty, (df > 0 ? '+' : '') + df, { size: 12.5, anchor: 'middle', color: RED });
     }
+    if (p && DF && DF.vals[p.id]) g.text((X.df + X.rk) / 2, ty, DF.vals[p.id], { size: 12.5, anchor: 'middle', color: RED });
     if (p && L.rank[p.id]) g.text((X.rk + X.end) / 2, ty, L.rank[p.id], { size: 13.5, anchor: 'middle', color: RED, bold: L.rank[p.id] <= 2 });
   }
   return y + hh + rowH * 4;
@@ -466,6 +472,8 @@ function indivPage(d) {
 /* 白紙用：組合せ（団体戦1回戦・個人戦予選リーグの顔ぶれ）だけ残し、結果と勝ち上がりを消す */
 function blankOut(d) {
   d.ranks = {};
+  var k;
+  for (k in d.diff || {}) if (d.diff.hasOwnProperty(k)) d.diff[k].vals = {};
   var i, m;
   for (i = 0; i < d.matches.length; i++) {
     m = d.matches[i];

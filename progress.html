@@ -250,17 +250,19 @@ function renderBlocks() {
   if (!DATA.blocks) { box.innerHTML = ''; return; }
   var html = '<div class="section-title">予選リーグ</div><div class="blocks">';
   var bl = ['A', 'B', 'C', 'D'];
-  var i, j, p, rk, t, rows;
+  var i, j, p, rk, t, rows, df;
   for (i = 0; i < bl.length; i++) {
     if (!DATA.blocks[bl[i]]) continue;
     rows = leagueTable(bl[i]);
-    html += '<div class="blk"><h3>' + bl[i] + 'ブロック</h3><table><tr><th></th><th>ペア</th><th class="n">勝敗</th><th class="n">得失</th><th class="n">順位</th></tr>';
+    /* 得失の欄は、本部が表示を選んだブロックだけ（値は入力した組だけ） */
+    df = DATA.diff && DATA.diff[bl[i]] ? DATA.diff[bl[i]] : null;
+    html += '<div class="blk"><h3>' + bl[i] + 'ブロック</h3><table><tr><th></th><th>ペア</th><th class="n">勝敗</th>' + (df ? '<th class="n" style="white-space:nowrap">得失<br>' + esc(df.kind) + '</th>' : '') + '<th class="n">順位</th></tr>';
     for (j = 0; j < DATA.blocks[bl[i]].length; j++) {
       p = DATA.blocks[bl[i]][j];
       t = rows[p.id];
       rk = DATA.ranks[bl[i] + '1'] === p.id ? 1 : DATA.ranks[bl[i] + '2'] === p.id ? 2 : '';
       html += '<tr><td class="n">' + p.pos + '</td><td><strong>' + esc(p.label) + '</strong><br><span class="sb" style="font-size:.68rem;color:#666">' + esc(p.sub) + '</span></td>';
-      html += '<td class="n">' + t.w + '-' + t.l + '</td><td class="n">' + (t.gf - t.ga > 0 ? '+' : '') + (t.gf - t.ga) + '</td><td class="n ' + (rk === 1 ? 'rank1' : '') + '">' + (rk ? rk + '位' : '') + '</td></tr>';
+      html += '<td class="n">' + t.w + '-' + t.l + '</td>' + (df ? '<td class="n">' + esc(df.vals[p.id] || '') + '</td>' : '') + '<td class="n ' + (rk === 1 ? 'rank1' : '') + '">' + (rk ? rk + '位' : '') + '</td></tr>';
     }
     html += '</table></div>';
   }

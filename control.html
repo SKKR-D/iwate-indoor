@@ -80,6 +80,14 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .rk table{width:100%;border-collapse:collapse;font-size:.76rem;margin-bottom:6px}
 .rk td{padding:3px 4px;border-bottom:1px solid #eee}
 .rk select{width:100%;padding:6px;border:2px solid #ddd;border-radius:6px;font-family:inherit;font-size:.82rem;margin-bottom:4px}
+.dfbox{margin-top:8px;padding:8px;border:1.5px dashed #c9b27a;border-radius:8px;background:#fffbef}
+.dfbox .dt{font-size:.76rem;font-weight:900;color:#7a5d00;margin-bottom:4px}
+.dfbox .dn{font-size:.68rem;color:var(--text-light);margin-bottom:6px;line-height:1.5}
+.dfbox table td{border-bottom:1px solid #f0e6c8}
+.dfbox input{width:5.2em;padding:5px;border:2px solid #ddd;border-radius:6px;font-family:inherit;font-size:.86rem;text-align:center}
+.dfbox .row2{display:flex;gap:6px;margin-top:6px}
+.dfbox .row2 button{flex:1}
+.btn-sm{padding:6px 8px;font-size:.74rem}
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:100;padding:16px;overflow-y:auto}
 .overlay.show{display:block}
 .modal{max-width:480px;margin:30px auto;background:#fff;border-radius:14px;padding:16px}
@@ -254,7 +262,9 @@ function apply(d) {
     (d.pendingChanges ? '　<span class="reqwait">📝 変更申請 ' + d.pendingChanges + '件（競技委員長が確認中）</span>' : '') +
     '　<a class="chglink" href="changes.html?div=' + divCode + '" target="_blank">選手変更一覧</a>';
   render();
-  renderRanks();
+  /* 順位・得失を入力中（入力欄や選択にカーソルがある）ときは、自動更新で作り直さない */
+  var ae = document.activeElement;
+  if (!(ae && ae.tagName !== 'BUTTON' && document.getElementById('ranks').contains(ae))) renderRanks();
 }
 
 /* ========== 表示 ========== */
@@ -608,7 +618,7 @@ function renderRanks() {
   panel.style.display = 'block';
   var bl = ['A', 'B', 'C', 'D'];
   var html = '';
-  var i, j, p, rows, t, opts1, opts2, opts3;
+  var i, j, p, rows, t, opts1, opts2, opts3, rs;
   for (i = 0; i < bl.length; i++) {
     if (!DATA.blocks[bl[i]]) continue;
     rows = leagueTable(bl[i]);
@@ -619,15 +629,114 @@ function renderRanks() {
     for (j = 0; j < DATA.blocks[bl[i]].length; j++) {
       p = DATA.blocks[bl[i]][j];
       t = rows[p.id];
-      html += '<tr><td>' + p.pos + '</td><td><strong>' + esc(p.label) + '</strong> <span class="muted">' + esc(p.sub) + '</span></td><td>' + t.w + '勝' + t.l + '敗</td><td>得失' + (t.gf - t.ga > 0 ? '+' : '') + (t.gf - t.ga) + '</td></tr>';
-      opts1 += '<option value="' + esc(p.id) + '"' + (DATA.ranks[bl[i] + '1'] === p.id ? ' selected' : '') + '>' + esc(p.label) + '</option>';
-      opts2 += '<option value="' + esc(p.id) + '"' + (DATA.ranks[bl[i] + '2'] === p.id ? ' selected' : '') + '>' + esc(p.label) + '</option>';
-      opts3 += '<option value="' + esc(p.id) + '"' + (DATA.ranks[bl[i] + '3'] === p.id ? ' selected' : '') + '>' + esc(p.label) + '</option>';
+      html += '<tr><td>' + p.pos + '</td><td><strong>' + esc(p.label) + '</strong> <span class="muted">' + esc(p.sub) + '</span></td><td>' + t.w + '勝' + t.l + '敗</td><td class="muted" title="本部の参考（公開画面には出ません）">G差' + (t.gf - t.ga > 0 ? '+' : '') + (t.gf - t.ga) + '</td></tr>';
+      rs = rankSel(bl[i]);
+      opts1 += '<option value="' + esc(p.id) + '"' + (rs[0] === p.id ? ' selected' : '') + '>' + esc(p.label) + '</option>';
+      opts2 += '<option value="' + esc(p.id) + '"' + (rs[1] === p.id ? ' selected' : '') + '>' + esc(p.label) + '</option>';
+      opts3 += '<option value="' + esc(p.id) + '"' + (rs[2] === p.id ? ' selected' : '') + '>' + esc(p.label) + '</option>';
     }
-    html += '</table><select id="r1_' + bl[i] + '">' + opts1 + '</select><select id="r2_' + bl[i] + '">' + opts2 + '</select>' + (bl[i] === 'A' || bl[i] === 'B' ? '<select id="r3_' + bl[i] + '">' + opts3 + '</select>' : '');
-    html += '<button class="btn" style="width:100%" onclick="saveRank(\'' + bl[i] + '\')">' + bl[i] + 'ブロックの順位を確定</button></div>';
+    html += '</table><select id="r1_' + bl[i] + '" onchange="rankDraftSet(\'' + bl[i] + '\')">' + opts1 + '</select><select id="r2_' + bl[i] + '" onchange="rankDraftSet(\'' + bl[i] + '\')">' + opts2 + '</select>' + (bl[i] === 'A' || bl[i] === 'B' ? '<select id="r3_' + bl[i] + '" onchange="rankDraftSet(\'' + bl[i] + '\')">' + opts3 + '</select>' : '');
+    html += '<button class="btn" style="width:100%" onclick="saveRank(\'' + bl[i] + '\')">' + bl[i] + 'ブロックの順位を確定</button>';
+    html += diffBox(bl[i], rows) + '</div>';
   }
   document.getElementById('ranks').innerHTML = html;
+}
+
+/* 自動更新（30秒）で、選びかけ・入力しかけの内容が消えないように下書きを持つ */
+var rankDraft = {};
+var diffDraft = {};
+
+function rankSel(blk) {
+  if (rankDraft[blk]) return rankDraft[blk];
+  return [DATA.ranks[blk + '1'] || '', DATA.ranks[blk + '2'] || '', DATA.ranks[blk + '3'] || ''];
+}
+
+function rankDraftSet(blk) {
+  var el3 = document.getElementById('r3_' + blk);
+  rankDraft[blk] = [document.getElementById('r1_' + blk).value, document.getElementById('r2_' + blk).value, el3 ? el3.value : ''];
+}
+
+/* ========== 得失の欄（公開の進行表・組合せ表） ========== */
+function diffCur(blk) {
+  if (diffDraft[blk]) return diffDraft[blk];
+  var s = DATA.diff && DATA.diff[blk] ? DATA.diff[blk] : null;
+  var vals = {};
+  var k;
+  if (s) for (k in s.vals) if (s.vals.hasOwnProperty(k)) vals[k] = s.vals[k];
+  return { kind: s ? s.kind : '', vals: vals };
+}
+
+function diffBox(blk, rows) {
+  var cur = diffCur(blk);
+  var kinds = DATA.diffKinds || ['ゲーム', 'ポイント'];
+  var saved = DATA.diff && DATA.diff[blk] ? DATA.diff[blk].label : '';
+  var h = '<div class="dfbox"><div class="dt">得失の欄（公開の進行表・組合せ表）</div>';
+  h += '<div class="dn">ふだんは出しません。同率の判定などで必要なときだけ、種類を選び、該当する組だけ値を入れて保存します（空欄の組は出ません）。<br>いま公開中：<b>' + (saved ? esc(saved) : '表示しない') + '</b>' + (diffDraft[blk] ? '　<span style="color:#b33030">（未保存の変更あり）</span>' : '') + '</div>';
+  h += '<select id="dk_' + blk + '" onchange="diffKindChange(\'' + blk + '\')"><option value="">表示しない</option>';
+  var i, p;
+  for (i = 0; i < kinds.length; i++) h += '<option value="' + kinds[i] + '"' + (cur.kind === kinds[i] ? ' selected' : '') + '>得失' + kinds[i] + '</option>';
+  h += '</select>';
+  if (cur.kind) {
+    h += '<table>';
+    for (i = 0; i < DATA.blocks[blk].length; i++) {
+      p = DATA.blocks[blk][i];
+      h += '<tr><td>' + p.pos + '</td><td>' + esc(p.label) + '</td><td style="text-align:right"><input id="dv_' + blk + '_' + i + '" data-id="' + esc(p.id) + '" value="' + esc(cur.vals[p.id] || '') + '" placeholder="空欄" inputmode="text" oninput="diffInput(\'' + blk + '\')"></td></tr>';
+    }
+    h += '</table>';
+  }
+  h += '<div class="row2">' + (cur.kind === 'ゲーム' ? '<button class="btn btn-out btn-sm" onclick="diffFillGames(\'' + blk + '\')">ブロック全体のG差を入れる</button>' : '') +
+    '<button class="btn btn-sm" onclick="saveDiff(\'' + blk + '\')">得失の欄を保存</button></div></div>';
+  return h;
+}
+
+function diffRead(blk) {
+  var kind = document.getElementById('dk_' + blk).value;
+  var vals = {};
+  var i, el;
+  for (i = 0; i < DATA.blocks[blk].length; i++) {
+    el = document.getElementById('dv_' + blk + '_' + i);
+    if (el) vals[el.getAttribute('data-id')] = el.value.trim();
+  }
+  if (!document.getElementById('dv_' + blk + '_0')) vals = diffCur(blk).vals;
+  return { kind: kind, vals: vals };
+}
+
+function diffKindChange(blk) {
+  diffDraft[blk] = diffRead(blk);
+  renderRanks();
+}
+
+function diffInput(blk) {
+  diffDraft[blk] = diffRead(blk);
+}
+
+/* 参考：ブロックの全試合から計算した得失ゲーム差。同率の組だけ残すなど、必要に応じて消して使う */
+function diffFillGames(blk) {
+  var rows = leagueTable(blk);
+  var cur = diffRead(blk);
+  var i, p, t, v;
+  for (i = 0; i < DATA.blocks[blk].length; i++) {
+    p = DATA.blocks[blk][i];
+    t = rows[p.id];
+    v = t.gf - t.ga;
+    cur.vals[p.id] = (v > 0 ? '+' : '') + v;
+  }
+  diffDraft[blk] = cur;
+  renderRanks();
+}
+
+function saveDiff(blk) {
+  var cur = diffRead(blk);
+  busy = true;
+  api({ action: 'ctlDiff', block: blk, kind: cur.kind, vals: cur.vals }).then(function (d) {
+    busy = false;
+    delete diffDraft[blk];
+    apply(d);
+    toast(blk + 'ブロック：' + (cur.kind ? '得失' + cur.kind + 'を表示します' : '得失の欄を出さないようにしました'));
+  }).catch(function (err) {
+    busy = false;
+    toast(err.message, true);
+  });
 }
 
 function leagueTable(blk) {
@@ -657,6 +766,7 @@ function saveRank(blk) {
   busy = true;
   api({ action: 'ctlRanks', block: blk, first: first, second: second, third: third }).then(function (d) {
     busy = false;
+    delete rankDraft[blk];
     apply(d);
     toast(blk + 'ブロックの順位を確定しました');
   }).catch(function (err) {
