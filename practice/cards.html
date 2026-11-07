@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>練習カード｜県インドア大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* 係ごとの練習カード。画面では縦に並べ、印刷すると1枚＝A4 1ページ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--main:#1a4a2e;--main-l:#e8f2ec;--red:#b3261e;--line:#d9e0da;--muted:#5f6b63;--bg:#f5f5f0;--gold:#8a6400}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:#172019;font-size:15px;line-height:1.65}
+.top{background:linear-gradient(135deg,#123522,var(--main));color:#fff;padding:14px 16px;position:sticky;top:0;z-index:5}
+.top .in{max-width:860px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center}
+.top h1{font-size:1.05rem;font-weight:900;flex:1 1 auto}
+.top a,.top button{color:#fff;background:rgba(255,255,255,.16);border:none;border-radius:14px;padding:5px 12px;font-family:inherit;font-size:.8rem;font-weight:700;text-decoration:none;cursor:pointer}
+main{max-width:860px;margin:0 auto;padding:14px 16px 40px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;margin-bottom:16px}
+.card .tag{display:inline-block;font-size:.74rem;font-weight:900;color:#fff;background:var(--main);border-radius:10px;padding:1px 10px;margin-right:6px}
+.card .tag.t{background:#1f5f99}
+.card h2{font-size:1.15rem;font-weight:900;margin:4px 0 8px;color:var(--main)}
+.meta{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:.86rem;background:var(--main-l);border-radius:8px;padding:8px 12px;margin-bottom:10px}
+.meta dt{font-weight:700;color:var(--main);white-space:nowrap}
+ol{padding-left:1.6em}
+ol li{margin:5px 0;padding-left:2px}
+ol li::marker{font-weight:900;color:var(--main)}
+.b{display:inline-block;border:1.5px solid var(--main);border-radius:6px;padding:0 6px;font-size:.84em;font-weight:700;color:var(--main);background:#fff;white-space:nowrap;line-height:1.5}
+.who{display:inline-block;font-size:.72rem;font-weight:900;border-radius:4px;padding:0 5px;margin-right:4px;vertical-align:1px;color:#fff;background:var(--gold)}
+.chk{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px;font-size:.86rem}
+.chk b{color:var(--main)}
+.chk li{list-style:none;padding-left:1.4em;position:relative;margin:2px 0}
+.chk li::before{content:'□';position:absolute;left:0;color:var(--main)}
+.tip{font-size:.8rem;color:var(--muted);margin-top:6px}
+@media print{
+  @page{size:A4 portrait;margin:12mm}
+  body{background:#fff;font-size:10.5pt}
+  .top{display:none}
+  main{padding:0;max-width:none}
+  .card{border:none;padding:0;margin:0;break-after:page}
+  .card:last-child{break-after:auto}
+}
+</style>
+</head>
+<body>
+<div class="top"><div class="in">
+  <h1>練習カード（受付・本部・記録 × 個人戦・団体戦）</h1>
+  <a href="#r-i">受付・個人</a><a href="#r-t">受付・団体</a><a href="#h-i">本部・個人</a><a href="#h-t">本部・団体</a><a href="#k-i">記録・個人</a><a href="#k-t">記録・団体</a>
+  <button onclick="window.print()">🖨 印刷（1枚1ページ）</button>
+  <a href="index.html">練習の入口へ</a>
+</div></div>
+<main>
+
+<!-- ===== 受付・個人戦 ===== -->
+<section class="card" id="r-i">
+  <span class="tag">受付係</span><span class="tag">個人戦の日（11/28）</span>
+  <h2>受付を1チームずつ進める</h2>
+  <dl class="meta"><dt>場面</dt><dd>入口①で「個人戦の日・受付前」</dd><dt>開く画面</dt><dd>入口②「当日受付」／相手役は入口③の「受付票を開く」（監督役）</dd><dt>パスワード</dt><dd>renshu（担当者名は自分の名前）</dd></dl>
+  <ol>
+    <li>「当日受付」でログインし、<span class="b">受付する区分</span>で<b>男子個人戦</b>（女子会場は<b>女子個人戦</b>）を選ぶ。</li>
+    <li><span class="who">監督役</span>入口③で1チームの<span class="b">受付票を開く</span>。受付コードと二次元コードが出る。</li>
+    <li>受付票を読む：<span class="b">📷 読み取りを開始</span>で二次元コードを読む（別の端末に受付票を出す）。読めないときは<span class="b">チーム名で探す（受付票がない場合）</span>で探して選ぶ。</li>
+    <li>チーム名・区分・参加料（<b>1ペア 3,000円 × ペア数</b>）を声に出して確認し、<span class="b">💴 現金受領・受付完了</span>。</li>
+    <li><span class="b">次の受付へ</span>。2ペア出ているチーム（参加料 6,000円）も受け付けてみる。男子はさくら中・けやき中・すずかけ中・もみじ中、女子はあおば中・ひばり中・さつき中・ききょう中。</li>
+    <li>受付が済んだチームをもう一度読む →「すでに受付済みです」と出る（お金は受け取らない）。</li>
+    <li>わざと違うチームで受付し、<span class="b">受付を取り消す</span>で元に戻す（本番では現金を返して本部へ報告）。</li>
+    <li>選手を変えたいと言われた想定：<span class="who">監督役</span>受付票の<span class="b">✏️ 選手・監督の変更申請</span>から申請 → <span class="who">委員長役</span>入口③の管理画面「選手変更」タブで<span class="b">許可して反映</span>。受付係は申請の案内をするだけ。</li>
+    <li>一覧の「未受付」で、まだ来ていないチームを確認する（本番は 8:00 に本部へ報告）。</li>
+  </ol>
+  <div class="chk"><b>できたらチェック</b><ul><li>上の「受付済 / 申込済」の数が増えた</li><li>入口④に「受付完了・領収書」のメール（練習）が出た</li><li>選手変更一覧（入口②の記録・掲示係）に、許可した変更が出た</li></ul></div>
+  <div class="tip">変更申請は当日 8:00 で締め切られます。時間切れになったら、入口①で時刻を 7:35 に戻してください。</div>
+</section>
+
+<!-- ===== 受付・団体戦 ===== -->
+<section class="card" id="r-t">
+  <span class="tag">受付係</span><span class="tag t">団体戦の日（11/29）</span>
+  <h2>受付と、1回戦のオーダーの案内</h2>
+  <dl class="meta"><dt>場面</dt><dd>入口①で「団体戦の日・受付前」</dd><dt>開く画面</dt><dd>入口②「当日受付」と「本部 進行管理」／相手役は入口③の「受付票を開く」（監督役）</dd><dt>パスワード</dt><dd>renshu</dd></dl>
+  <ol>
+    <li>「当日受付」でログインし、<span class="b">受付する区分</span>で<b>男子団体戦</b>（女子会場は<b>女子団体戦</b>）を選ぶ。</li>
+    <li><span class="who">監督役</span>入口③で1チームの<span class="b">受付票を開く</span>。受付前は「受付が済むと、ここに『オーダー提出（監督用）』ボタンが表示されます」と出ていることを確かめる。</li>
+    <li>受付票を読み（または<span class="b">チーム名で探す</span>）、チーム名と参加料（<b>1チーム 10,000円</b>）を確認して<span class="b">💴 現金受領・受付完了</span>。</li>
+    <li>監督に「受付票の<b>オーダー提出（監督用）</b>から、1回戦のオーダーを <b>8:40まで</b> に出してください」と伝える（声に出して練習）。</li>
+    <li><span class="who">監督役</span>受付票を開き直すと<span class="b">📝 オーダー提出（監督用）</span>が出ている。1〜3番手を選んで提出する。</li>
+    <li>本部 進行管理を開き、その試合のカードでオーダーが「提出済」になったことを確かめる。</li>
+    <li>同じチームをもう一度読む →「すでに受付済みです」。違うチームで受付してしまったら<span class="b">受付を取り消す</span>。</li>
+    <li>選手変更の申請 → 許可の流れは、個人戦のカード 8 と同じ。団体戦は何人でも（1人ずつ申請）変えられる。</li>
+  </ol>
+  <div class="chk"><b>できたらチェック</b><ul><li>受付前はオーダー提出のボタンが出ず、受付後に出た</li><li>本部の画面で、オーダーの提出が確認できた</li><li>入口④に受付完了のメール（練習）が出た</li></ul></div>
+  <div class="tip">オーダーの締切（8:40）を過ぎると、本部の画面で赤く表示されます。時刻を変えて確かめることもできます。</div>
+</section>
+
+<!-- ===== 本部・個人戦 ===== -->
+<section class="card" id="h-i">
+  <span class="tag">本部・進行係</span><span class="tag">個人戦の日（11/28）</span>
+  <h2>結果を入れて、予選の順位を確定する</h2>
+  <dl class="meta"><dt>場面</dt><dd>入口①で「個人戦の日・予選リーグの途中」（20試合が終了、第21・22試合が試合中）</dd><dt>開く画面</dt><dd>入口②「本部 進行管理」と「進行表」（結果の反映を確かめる）</dd><dt>パスワード</dt><dd>renshu</dd></dl>
+  <ol>
+    <li>本部 進行管理でログイン。Aコート・Bコートの列、枠の色（黄＝コール、赤＝試合中、灰＝終了）を確かめる。</li>
+    <li>試合中の試合で<span class="b">結果入力</span> → 勝者を選ぶ → ゲーム数（例 <b>4-2</b>）→ <span class="b">結果を確定</span>。</li>
+    <li>進行表のタブに切り替え、勝者の「○」と <b>④-2</b> の表示、予選リーグ表の勝敗が変わったことを確かめる。</li>
+    <li>次の試合：<span class="b">コール</span>（放送で選手と審判を呼ぶ想定）→ <span class="b">開始</span> → <span class="b">結果入力</span>。残りの予選の試合を全部終える。</li>
+    <li>画面下の「予選リーグの順位」で、各ブロックの1位・2位（A・Bブロックは審判をする3位も）を選び<span class="b">○ブロックの順位を確定</span>。</li>
+    <li>決勝トーナメントの対戦と、審判（A・Bブロックの3位、そのあと敗者）が入ったことを確かめる。</li>
+    <li>間違えたとき：終了した試合の<span class="b">結果修正</span>で勝者・ゲーム数を直す。始めた試合を待機に戻すときは<span class="b">戻す</span>。</li>
+    <li>進行の調整：<span class="b">▲</span><span class="b">▼</span>で順番の入れ替え、<span class="b">⇄</span>でコートの移動（試したら元に戻す）。</li>
+    <li><span class="b">🖨 シート</span>で、その試合のスコアシートを1枚出す（印刷プレビューまで）。</li>
+    <li>「目安時間」の7ゲームを 25 にして<span class="b">保存して再計算</span> → 終了見込みが変わるのを見る（30 に戻す）。</li>
+  </ol>
+  <div class="chk"><b>できたらチェック</b><ul><li>結果が進行表・組合せ（結果入り）にすぐ出た</li><li>順位の確定で、決勝トーナメントの対戦が自動で決まった</li><li>結果の修正と、状態の戻し方がわかった</li></ul></div>
+  <div class="tip">「変更」の札が付いたペアは、選手変更があったペアです（この場面では1件許可済み）。</div>
+</section>
+
+<!-- ===== 本部・団体戦 ===== -->
+<section class="card" id="h-t">
+  <span class="tag">本部・進行係</span><span class="tag t">団体戦の日（11/29）</span>
+  <h2>番手結果と、2回戦のオーダー</h2>
+  <dl class="meta"><dt>場面</dt><dd>入口①で「団体戦の日・1回戦の途中」（1回戦6試合が終了、残り2試合が試合中）</dd><dt>開く画面</dt><dd>入口②「本部 進行管理」と「進行表」／相手役は入口③の受付票（監督役のオーダー提出）</dd><dt>パスワード</dt><dd>renshu</dd></dl>
+  <ol>
+    <li>試合中の1回戦で<span class="b">番手結果</span> → 1〜3番手それぞれの勝者とゲーム数（例 <b>3-1</b>）を入れて保存。1回戦は3番手まで全部行う。</li>
+    <li>進行表で、チームの勝敗（例 <b>②-1</b>）と番手ごとの結果が出たことを確かめる。</li>
+    <li>2回戦（準々決勝）のカードを見る。オーダーの締切（前の試合の終了から10分）が出る。</li>
+    <li><span class="who">監督役</span>片方のチームは受付票の<span class="b">オーダー提出</span>から出す。もう片方は、紙のオーダー票を受け取った想定で、本部が<span class="b">オーダー</span>から代理入力する。</li>
+    <li>試合開始のあいさつの想定で<span class="b">📣 オーダー公開</span>。進行表にオーダーが出たことを確かめる（公開前は相手にも観客にも見えない）。</li>
+    <li><span class="b">開始</span> → <span class="b">番手結果</span>。2回戦以降は<b>2勝した時点で決着</b>（残りは打ち切り）。</li>
+    <li>間違えたとき：<span class="b">結果修正</span>。公開を取り消すとき（試合開始前）は<span class="b">非公開に戻す</span>。</li>
+    <li><span class="b">2面展開</span>の切り替え（準決勝・決勝の想定）と、<span class="b">🖨 シート</span>（オーダー入りのスコアシート）を試す。</li>
+  </ol>
+  <div class="chk"><b>できたらチェック</b><ul><li>番手結果から、勝敗と勝ち上がりが自動で決まった</li><li>代理入力と、オーダー公開の流れがわかった</li><li>2勝で決着して、3番手が打ち切りになった</li></ul></div>
+  <div class="tip">勝ち数が同じときは、画面の案内に従って 得失ゲーム差（自動）→ 得失ポイント差 → 代表戦 の順に入力します。</div>
+</section>
+
+<!-- ===== 記録・個人戦 ===== -->
+<section class="card" id="k-i">
+  <span class="tag">記録・掲示係</span><span class="tag">個人戦の日（11/28）</span>
+  <h2>スコアシートと掲示物を用意する</h2>
+  <dl class="meta"><dt>場面</dt><dd>入口①で「個人戦の日・受付前」（結果の掲示は「予選リーグの途中」がわかりやすい）</dd><dt>開く画面</dt><dd>入口②「スコアシート印刷」「組合せ（白紙）」「組合せ（結果入り）」「選手変更一覧」、入口②の「運営ポータル」</dd></dl>
+  <ol>
+    <li>スコアシート印刷：<span class="b">コート</span>と<span class="b">範囲</span>を選び、<span class="b">🖨 印刷</span>で印刷プレビューを確かめる（A4縦・1試合1枚。予選リーグは名前入り）。</li>
+    <li><span class="b">白紙</span>の枚数を入れて、予備のスコアシートも出せることを確かめる。</li>
+    <li>組合せ（白紙）：掲示して手書きする用。印刷プレビューで1区分＝A4縦1枚を確かめる。</li>
+    <li>組合せ（結果入り）：本部役が結果を入れると、30秒以内に表が更新されることを確かめる（区切りのよいところで印刷して貼り替える）。</li>
+    <li>運営ポータル（練習用）の<span class="b">🔳 進行表の二次元コード</span>を開く（会場の入口・観覧席に掲示する紙）。</li>
+    <li>選手変更一覧：委員長役が変更を許可したら出る。印刷プレビューで掲示用の形を確かめる。</li>
+    <li>スコアシートの流れを口で確認：試合順にコートへ渡す → 終わったらすぐ回収 → 本部へ。</li>
+  </ol>
+  <div class="chk"><b>できたらチェック</b><ul><li>コート・範囲を指定してスコアシートを出せた</li><li>白紙と結果入りの組合せの違いがわかった</li><li>選手変更一覧の出し方がわかった</li></ul></div>
+  <div class="tip">練習で印刷した紙は、本番では使わないでください（架空のチーム名が入っています）。</div>
+</section>
+
+<!-- ===== 記録・団体戦 ===== -->
+<section class="card" id="k-t">
+  <span class="tag">記録・掲示係</span><span class="tag t">団体戦の日（11/29）</span>
+  <h2>オーダー入りのスコアシートと掲示物</h2>
+  <dl class="meta"><dt>場面</dt><dd>入口①で「団体戦の日・受付前」または「1回戦の途中」</dd><dt>開く画面</dt><dd>入口②「スコアシート印刷」「組合せ（白紙・結果入り）」「本部 進行管理」</dd></dl>
+  <ol>
+    <li>スコアシート印刷で、1回戦（8試合）のスコアシートを<span class="b">コート</span>・<span class="b">範囲</span>を指定して出す（チーム名入り）。</li>
+    <li>「1回戦の途中」の場面で、2回戦以降のスコアシートは対戦が決まってから出すことを確かめる：本部の<span class="b">🖨 シート</span>でオーダー入りの1枚を出す。</li>
+    <li>組合せ（白紙）と組合せ（結果入り）を印刷プレビューで確かめる。結果入りは、勝ち上がりが赤線、勝ち数が丸数字で入る。</li>
+    <li>選手変更一覧：委員長役が許可した変更（変更前 → 変更後）を確かめる。</li>
+    <li>運営ポータル（練習用）の<span class="b">🔳 進行表の二次元コード</span>を確かめる。</li>
+  </ol>
+  <div class="chk"><b>できたらチェック</b><ul><li>1回戦のスコアシートを出せた</li><li>2回戦以降は本部の「🖨 シート」で出すとわかった</li><li>組合せ（結果入り）の見方がわかった</li></ul></div>
+  <div class="tip">決勝が終わると、組合せ（結果入り）の下の欄に優勝〜第3位が自動で入ります。表彰の読み上げはこの欄で確認します。</div>
+</section>
+
+</main>
+</body>
+</html>

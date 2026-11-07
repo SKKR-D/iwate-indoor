@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>操作練習｜県インドア大会</title>
+<script>window.IWP_HUB = true;</script>
+<script src="gas-src.js"></script>
+<script src="scenarios.js"></script>
+<script src="engine.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* 練習の入口：場面を選ぶ → 係の画面を開く → 相手役（監督・委員長）になる。規約：ES5 */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--main:#1a4a2e;--main-l:#e8f2ec;--red:#b3261e;--line:#d9e0da;--muted:#5f6b63;--bg:#f5f5f0}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:#172019;font-size:15px;line-height:1.6}
+header{background:linear-gradient(135deg,#123522,var(--main));color:#fff;padding:18px 16px 16px}
+header .in{max-width:980px;margin:0 auto}
+header small{display:block;font-size:.76rem;opacity:.85}
+header h1{font-size:1.35rem;font-weight:900;letter-spacing:.02em}
+header p{font-size:.84rem;opacity:.92;margin-top:4px}
+main{max-width:980px;margin:0 auto;padding:14px 16px 40px}
+section{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-bottom:14px}
+h2{font-size:1.02rem;font-weight:900;color:var(--main);display:flex;gap:8px;align-items:center;margin-bottom:8px}
+h2 .no{display:inline-grid;place-items:center;width:26px;height:26px;border-radius:50%;background:var(--main);color:#fff;font-size:.85rem}
+.lead{font-size:.84rem;color:var(--muted);margin-bottom:10px}
+.scen{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:8px}
+.scen button{text-align:left;border:2px solid var(--line);background:#fff;border-radius:10px;padding:10px 12px;font-family:inherit;cursor:pointer;color:inherit}
+.scen button b{display:block;font-size:.95rem}
+.scen button span{display:block;font-size:.76rem;color:var(--muted);margin-top:2px}
+.scen button.on{border-color:var(--main);background:var(--main-l);box-shadow:inset 0 0 0 1px var(--main)}
+.now{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:12px;padding-top:12px;border-top:1px dashed var(--line);font-size:.88rem}
+.now .clock{font-size:1.5rem;font-weight:900;color:var(--main);font-variant-numeric:tabular-nums}
+.now input{width:6.5em;padding:7px 8px;border:2px solid var(--line);border-radius:8px;font-family:inherit;font-size:.95rem}
+.btn{display:inline-block;padding:8px 14px;border-radius:8px;border:2px solid var(--main);background:var(--main);color:#fff;font-family:inherit;font-weight:700;font-size:.86rem;cursor:pointer;text-decoration:none}
+.btn.out{background:#fff;color:var(--main)}
+.btn.red{background:#fff;color:var(--red);border-color:var(--red)}
+.venue{display:inline-flex;border:2px solid var(--main);border-radius:20px;overflow:hidden;margin-bottom:10px}
+.venue button{border:none;background:#fff;color:var(--main);padding:6px 16px;font-family:inherit;font-weight:700;cursor:pointer}
+.venue button.on{background:var(--main);color:#fff}
+.roles{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:10px}
+.role{border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+.role h3{font-size:.92rem;font-weight:900;margin-bottom:6px}
+.role a{display:block;padding:7px 10px;margin-top:6px;border-radius:8px;background:var(--main-l);color:var(--main);text-decoration:none;font-weight:700;font-size:.88rem}
+.role a:hover{background:#d6e8dc}
+.role a small{font-weight:500;color:var(--muted)}
+.pw{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.88rem;background:#fff8e6;border:1px solid #ecd9a6;border-radius:8px;padding:8px 12px;margin-top:10px}
+.pw b{font-size:1rem;letter-spacing:.06em}
+table{width:100%;border-collapse:collapse;font-size:.84rem}
+th{background:var(--main-l);color:var(--main);font-size:.76rem;text-align:left;padding:6px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:6px;border-bottom:1px solid #eef1ee;vertical-align:middle}
+td.code{font-family:ui-monospace,monospace;letter-spacing:.04em}
+.st-ok{color:var(--main);font-weight:700}
+.st-no{color:#9a6b00;font-weight:700}
+td a{color:var(--main);font-weight:700;white-space:nowrap}
+.mail{border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-top:8px;font-size:.82rem}
+.mail .h{font-weight:700}
+.mail pre{white-space:pre-wrap;font-family:inherit;color:var(--muted);margin-top:4px}
+.note{font-size:.8rem;color:var(--muted);line-height:1.7}
+.note li{margin-left:1.2em}
+.tblwrap{overflow-x:auto}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <small>第40回岩手県中学校インドアソフトテニス大会</small>
+  <h1>当日の操作練習（練習用）</h1>
+  <p>本番と同じ画面で、受付・本部（進行）・記録の操作を試せます。架空のチームと選手で動いていて、本番のデータには一切触れません。メールも送られません。</p>
+</div></header>
+<main>
+
+<section>
+  <h2><span class="no">1</span>場面を選ぶ</h2>
+  <div class="lead">選ぶと、その場面の最初の状態から始まります（それまでの練習の内容は消えます）。</div>
+  <div class="scen" id="scen"></div>
+  <div class="now">
+    <span>練習の時刻</span><span class="clock" id="clock">--:--</span>
+    <span class="lead" style="margin:0" id="scenName"></span>
+    <span style="flex:1"></span>
+    <input id="setT" placeholder="例 7:35" inputmode="numeric"><button class="btn out" onclick="setTime()">この時刻にする</button>
+    <button class="btn red" onclick="resetNow()">この場面を最初からやり直す</button>
+  </div>
+  <div class="lead" style="margin-top:8px">練習の時刻は、実際の時間と同じ速さで進みます。変更申請は当日 8:00 まで、団体戦1回戦のオーダーは 8:40 までなので、時間切れになったら時刻を戻してください。</div>
+</section>
+
+<section>
+  <h2><span class="no">2</span>係の画面を開く</h2>
+  <div class="venue" id="venue"><button data-v="M" onclick="setVenue('M')">男子会場（雫石）</button><button data-v="W" onclick="setVenue('W')">女子会場（紫波）</button></div>
+  <div class="roles" id="roles"></div>
+  <div class="pw"><span>練習用のパスワード（受付・本部・管理すべて）：<b>renshu</b></span><span>受付の担当者名：自分の名前など何でもよい</span></div>
+  <div class="lead" style="margin-top:8px">画面は新しいタブで開きます。同じブラウザのタブどうしは、データがつながっています（例：受付したら本部の画面に反映）。本番の当日は、この入口ではなく「運営ポータル」から各係の画面を開きます。</div>
+</section>
+
+<section>
+  <h2><span class="no">3</span>相手の役になる（監督・競技委員長）</h2>
+  <div class="lead">受付係の練習では、ここで監督役として受付票を開き、その受付コード（または二次元コード）を受付の画面で読み取ります。団体戦の日は、受付が済んだチームの受付票から「オーダー提出」もできます。</div>
+  <div class="roles" style="margin-bottom:10px">
+    <div class="role"><h3>競技委員長の役</h3><a href="admin.html" target="_blank">管理画面 → 「選手変更」タブで許可・却下 <small>（パスワード renshu）</small></a></div>
+    <div class="role"><h3>練習カード（手順）</h3><a href="cards.html" target="_blank">係ごとの練習カードを開く <small>（印刷して手元に置けます）</small></a></div>
+  </div>
+  <div class="tblwrap" id="teams"></div>
+</section>
+
+<section>
+  <h2><span class="no">4</span>送ったことになっているメール</h2>
+  <div class="lead">本番ならメールが届く操作（受付完了・変更申請の結果など）をすると、ここに記録が出ます。実際には送っていません。</div>
+  <div id="mails"></div>
+</section>
+
+<section class="note">
+  <ul>
+    <li>練習のデータは、この端末のこのブラウザの中だけにあります。別の端末とはつながりません（同じ場面を選べば、チームや受付コードは同じです。別の端末に表示した受付票の二次元コードを、受付の画面で読み取ることもできます）。</li>
+    <li>印刷すると、画面上の赤い「練習用」の帯は出ません。練習で印刷した紙は、本番で使わないようにしてください。</li>
+    <li>名簿のPDF・領収書のPDFなど、ファイルを作る機能は練習版では使えません。</li>
+  </ul>
+</section>
+</main>
+
+<script>
+var SC_LIST = ['indiv-pre', 'indiv-mid', 'team-pre', 'team-mid'];
+var SC_NOTE = {
+  'indiv-pre': '受付の練習。申請中の選手変更が1件あります',
+  'indiv-mid': '予選リーグ20試合が終了。結果入力・順位確定の練習',
+  'team-pre': '受付とオーダー提出の練習。申請中の選手変更が1件あります',
+  'team-mid': '1回戦6試合が終了。番手結果・2回戦のオーダーの練習'
+};
+var VKEY = 'iwpVenue';
+var venue = 'M';
+try { venue = localStorage.getItem(VKEY) || 'M'; } catch (e) { venue = 'M'; }
+
+function esc(s) {
+  if (s === undefined || s === null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function divsOf(st) {
+  var day = IWP.scenarios[st.scen].day;
+  return day === 'team' ? { M: 'MT', W: 'WT' } : { M: 'MI', W: 'WI' };
+}
+
+function renderScen() {
+  var st = IWP.state();
+  var h = '';
+  var i, id, s;
+  for (i = 0; i < SC_LIST.length; i++) {
+    id = SC_LIST[i];
+    s = IWP.scenarios[id];
+    h += '<button class="' + (st.scen === id ? 'on' : '') + '" onclick="pick(\'' + id + '\')"><b>' + esc(s.label) + '</b><span>' + esc(SC_NOTE[id]) + '</span></button>';
+  }
+  document.getElementById('scen').innerHTML = h;
+  document.getElementById('scenName').textContent = '（' + IWP.scenarios[st.scen].label + '）';
+}
+
+function hmOf(ms) { var d = new Date(ms + 9 * 3600e3); return d.getUTCHours() + ':' + ('0' + d.getUTCMinutes()).slice(-2); }
+
+function renderClock() { document.getElementById('clock').textContent = IWP.clock(); }
+
+function renderRoles() {
+  var st = IWP.state();
+  var d = divsOf(st)[venue];
+  var name = { MI: '男子個人戦', WI: '女子個人戦', MT: '男子団体戦', WT: '女子団体戦' }[d];
+  var vb = document.querySelectorAll('#venue button');
+  var i;
+  for (i = 0; i < vb.length; i++) vb[i].className = vb[i].getAttribute('data-v') === venue ? 'on' : '';
+  var h = '';
+  h += '<div class="role"><h3>受付係</h3><a href="reception.html" target="_blank">当日受付 <small>（区分は「' + name + '」を選ぶ）</small></a></div>';
+  h += '<div class="role"><h3>本部・進行係</h3><a href="control.html?div=' + d + '" target="_blank">本部 進行管理（' + name + '）</a><a href="progress.html?div=' + d + '" target="_blank">進行表（観客・監督が見る画面） <small>結果の反映を確かめる</small></a></div>';
+  h += '<div class="role"><h3>記録・掲示係</h3><a href="scoresheet.html?div=' + d + '" target="_blank">スコアシート印刷</a><a href="bracket.html?div=' + d + '" target="_blank">組合せ（結果入り）</a><a href="bracket.html?div=' + d + '&amp;mode=blank" target="_blank">組合せ（白紙・記入用）</a><a href="changes.html?div=' + d + '" target="_blank">選手変更一覧（掲示用）</a></div>';
+  h += '<div class="role"><h3>本番と同じ入口</h3><a href="staff.html" target="_blank">運営ポータル（練習用） <small>当日はここから各係の画面を開く</small></a></div>';
+  document.getElementById('roles').innerHTML = h;
+}
+
+function renderTeams() {
+  var st = IWP.state();
+  var d = divsOf(st)[venue];
+  var rows = st.sheets['出場枠'] || [];
+  var head = rows[0] || [];
+  var col = function (n) { return head.indexOf(n); };
+  var cD = col('区分'), cT = col('チーム名'), cTok = col('トークン'), cC = col('受付コード'), cR = col('受付状態'), cS = col('状態'), cDist = col('地区');
+  var list = [];
+  var i;
+  for (i = 1; i < rows.length; i++) if (rows[i][cD] === d && rows[i][cS] === '申込済') list.push(rows[i]);
+  var h = '<table><thead><tr><th>チーム（監督役）</th><th>地区</th><th>受付コード</th><th>受付</th><th></th></tr></thead><tbody>';
+  for (i = 0; i < list.length; i++) {
+    h += '<tr><td>' + esc(list[i][cT]) + '</td><td>' + esc(String(list[i][cDist]).replace(/^\d+_/, '')) + '</td><td class="code">' + esc(list[i][cC]) + '</td>' +
+      '<td>' + (list[i][cR] === '受付済' ? '<span class="st-ok">受付済</span>' : '<span class="st-no">未受付</span>') + '</td>' +
+      '<td><a href="ticket.html?t=' + encodeURIComponent(list[i][cTok]) + '" target="_blank">受付票を開く</a></td></tr>';
+  }
+  document.getElementById('teams').innerHTML = h + '</tbody></table>';
+}
+
+function renderMails() {
+  var st = IWP.state();
+  if (!st.mails || !st.mails.length) { document.getElementById('mails').innerHTML = '<div class="lead">まだありません。</div>'; return; }
+  var h = '';
+  var i, m;
+  for (i = 0; i < st.mails.length && i < 12; i++) {
+    m = st.mails[i];
+    h += '<details class="mail"><summary><span class="h">' + esc(m.at) + '　' + esc(m.subject) + '</span>　<span class="lead">宛先 ' + esc(m.to) + '</span></summary><pre>' + esc(m.body) + '</pre></details>';
+  }
+  document.getElementById('mails').innerHTML = h;
+}
+
+function renderAll() { renderScen(); renderClock(); renderRoles(); renderTeams(); renderMails(); }
+
+function pick(id) {
+  var st = IWP.state();
+  var msg = st.scen === id ? '「' + IWP.scenarios[id].label + '」を最初の状態からやり直します。' : '「' + IWP.scenarios[id].label + '」に切り替えます。';
+  if (!confirm(msg + 'いままでの練習の内容は消えます。よろしいですか？')) return;
+  IWP.reset(id);
+  renderAll();
+}
+
+function resetNow() {
+  var st = IWP.state();
+  if (!confirm('この場面を最初の状態に戻します。よろしいですか？')) return;
+  IWP.reset(st.scen);
+  renderAll();
+}
+
+function setTime() {
+  var v = document.getElementById('setT').value.replace(/[０-９：]/g, function (c) { return c === '：' ? ':' : String.fromCharCode(c.charCodeAt(0) - 0xFEE0); });
+  var m = v.match(/^(\d{1,2}):?(\d{2})$/);
+  if (!m || +m[1] > 23 || +m[2] > 59) { alert('「7:35」のように入力してください。'); return; }
+  IWP.setClock(+m[1], +m[2]);
+  renderAll();
+}
+
+function setVenue(v) {
+  venue = v;
+  try { localStorage.setItem(VKEY, v); } catch (e) {}
+  renderRoles();
+  renderTeams();
+}
+
+renderAll();
+setInterval(renderClock, 15000);
+/* ほかのタブでの操作（受付・メール）を反映 */
+window.addEventListener('focus', function () { renderTeams(); renderMails(); renderClock(); });
+setInterval(function () { renderTeams(); renderMails(); }, 10000);
+</script>
+</body>
+</html>

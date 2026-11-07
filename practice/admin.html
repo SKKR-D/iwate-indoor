@@ -1,0 +1,1604 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex">
+<script src="gas-src.js"></script>
+<script src="scenarios.js"></script>
+<script src="engine.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>管理画面｜県インドア大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --main:#1a4a2e;--main-mid:#2d6a45;--main-light:#e8f1eb;
+  --team:#28a745;--indiv:#0056b3;--gold:#c8a020;--red:#b33030;
+  --white:#fff;--gray:#f5f5f0;--line:#dcdcd4;--text:#222;--text-light:#666;--radius:10px
+}
+html{font-size:15px}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,#123522,var(--main));color:var(--white);padding:14px 20px;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.3)}
+.header-inner{max-width:1100px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.header h1{font-size:1rem;font-weight:700}
+.header h1 small{display:block;font-size:.7rem;font-weight:500;opacity:.8}
+.header-btns{display:flex;gap:8px}
+.hbtn{background:rgba(255,255,255,.15);color:var(--white);border:none;padding:8px 12px;border-radius:6px;font-size:.78rem;cursor:pointer;font-family:inherit}
+.tabs{max-width:1100px;margin:16px auto 0;padding:0 20px;display:flex;gap:6px;flex-wrap:wrap}
+.tab{padding:10px 16px;border-radius:8px 8px 0 0;background:#e3e3dc;border:none;font-family:inherit;font-size:.85rem;font-weight:700;color:var(--text-light);cursor:pointer}
+.tab.active{background:var(--white);color:var(--main)}
+.main{max-width:1100px;margin:0 auto;padding:0 20px 40px}
+.panel{display:none;background:var(--white);border-radius:0 var(--radius) var(--radius) var(--radius);padding:20px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.panel.active{display:block}
+h2{font-size:.95rem;font-weight:900;color:var(--main);margin-bottom:12px;padding-bottom:8px;border-bottom:2px solid var(--main)}
+h3{font-size:.85rem;font-weight:700;margin:18px 0 8px}
+.lead{font-size:.82rem;color:var(--text-light);margin-bottom:14px;line-height:1.7}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:9px 16px;border-radius:8px;font-size:.84rem;font-weight:700;border:none;cursor:pointer;font-family:inherit}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn-main{background:var(--main);color:var(--white)}
+.btn-out{background:var(--white);color:var(--main);border:2px solid var(--main)}
+.btn-red{background:var(--white);color:var(--red);border:1.5px solid var(--red);padding:5px 10px;font-size:.75rem}
+.btn-sm{padding:5px 10px;font-size:.75rem}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+select,input[type=text],input[type=password]{padding:9px 10px;border:2px solid #ddd;border-radius:8px;font-size:.86rem;font-family:inherit;outline:none}
+select:focus,input:focus{border-color:var(--main)}
+.seg{display:inline-flex;border:2px solid var(--main);border-radius:8px;overflow:hidden}
+.seg button{border:none;background:var(--white);color:var(--main);padding:8px 16px;font-family:inherit;font-weight:700;font-size:.84rem;cursor:pointer}
+.seg button.on{background:var(--main);color:var(--white)}
+.counter{font-size:1.1rem;font-weight:900;color:var(--main)}
+.counter.over{color:var(--red)}
+.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:16px}
+.sum{background:var(--main-light);border-radius:8px;padding:12px;text-align:center}
+.sum .num{font-size:1.4rem;font-weight:900;color:var(--main)}
+.sum .lbl{font-size:.72rem;color:var(--text-light)}
+.sum .sub{font-size:.72rem;color:var(--text-light);margin-top:2px}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{background:var(--main);color:var(--white);padding:8px 6px;text-align:left;font-weight:700;white-space:nowrap}
+td{padding:8px 6px;border-bottom:1px solid #eee;vertical-align:top}
+tr.on td{background:#f0f8f2}
+tr.locked td{background:#f4f4f4;color:#777}
+.badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:.7rem;font-weight:700;white-space:nowrap}
+.b-ok{background:#d4edda;color:#155724}
+.b-wait{background:#fff3cd;color:#856404}
+.b-ng{background:#f8d7da;color:#721c24}
+.b-info{background:#e2e6ea;color:#444}
+.b-joint{background:#e6f0fb;color:var(--indiv)}
+.team-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:8px}
+.team-item{display:flex;align-items:flex-start;gap:8px;padding:9px 10px;border:1.5px solid var(--line);border-radius:8px;cursor:pointer;font-size:.82rem}
+.team-item input{margin-top:3px;width:auto;accent-color:var(--main)}
+.team-item.on{border-color:var(--main);background:var(--main-light)}
+.team-item.locked{cursor:not-allowed;opacity:.8}
+.team-item .meta{font-size:.7rem;color:var(--text-light)}
+.pair-form{border:2px solid var(--indiv);border-radius:var(--radius);padding:14px;margin-bottom:16px;background:#f6f9fd}
+.pair-form h3{margin-top:0;color:var(--indiv)}
+.pf-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:700px){.pf-grid{grid-template-columns:1fr}}
+.pf-col{background:var(--white);border-radius:8px;padding:10px;border:1px solid #d6e2f0}
+.pf-col .lbl{font-size:.78rem;font-weight:900;color:var(--indiv);margin-bottom:6px}
+.pf-col select,.pf-col input{width:100%;margin-bottom:6px}
+.payer{margin-top:10px;font-size:.82rem;display:none}
+.payer label{margin-right:14px}
+.link-cell{font-size:.7rem;color:var(--text-light);word-break:break-all;max-width:260px}
+.flag{color:var(--red);font-size:.72rem;font-weight:700}
+.muted{color:var(--text-light);font-size:.75rem}
+.login{max-width:360px;margin:60px auto;background:var(--white);border-radius:var(--radius);padding:24px;box-shadow:0 1px 6px rgba(0,0,0,.08)}
+.login h2{text-align:center}
+.login input{width:100%;margin:10px 0}
+.login .btn{width:100%}
+.err{color:var(--red);font-size:.8rem;margin-top:8px;white-space:pre-wrap}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 20px;border-radius:8px;font-size:.84rem;z-index:300;opacity:0;transition:opacity .3s;pointer-events:none;max-width:90vw}
+.toast.show{opacity:1}
+.toast.error{background:var(--red)}
+.loading{text-align:center;padding:30px;color:var(--text-light)}
+.scroll{overflow-x:auto}
+.detail{font-size:.75rem;line-height:1.6}
+.draw-team{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:8px;margin-bottom:12px}
+.draw-match{border:1.5px solid var(--line);border-radius:8px;padding:8px;background:#fff}
+.draw-match .t{font-size:.72rem;font-weight:900;color:var(--main);margin-bottom:4px}
+.draw-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.draw-row .sl{width:34px;font-weight:900;font-size:.8rem;color:var(--text-light);text-align:right}
+.draw-row select{flex:1;padding:6px;font-size:.82rem}
+.draw-row select.dup{border-color:var(--red);background:#fff5f5}
+.draw-blocks{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:10px;margin-bottom:12px}
+.draw-blk{border:2px solid var(--main);border-radius:8px;padding:8px;background:#fff}
+.draw-blk h4{font-size:.85rem;color:var(--main);margin-bottom:6px}
+.ko-note{font-size:.75rem;color:var(--text-light);margin-bottom:12px}
+.chg-box{border:2px solid var(--main);border-radius:var(--radius);padding:14px;margin-bottom:16px;background:#f7faf8}
+.chg-slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;margin-bottom:12px}
+.chg-slot{border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff;cursor:pointer;font-size:.82rem}
+.chg-slot.on{border-color:var(--main);box-shadow:0 0 0 2px var(--main) inset}
+.chg-slot .no{font-weight:900;color:var(--main);font-size:.75rem}
+.chg-slot .nm{font-weight:700}
+.chg-slot .was{font-size:.68rem;color:var(--red)}
+.chg-fields{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chg-fields select,.chg-fields input{min-width:160px}
+.pdf-bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px;margin-bottom:16px}
+.pdf-bar .btn{width:100%}
+.list-title{font-weight:900;color:var(--main);margin:6px 0 8px}
+.list-table td{font-size:.76rem}
+.list-table td.pl{min-width:72px}
+.list-table .g{display:block;font-size:.68rem;color:var(--text-light)}
+.list-table .vac{color:#aaa}
+.list-table .off{color:var(--red);font-weight:700}
+.list-table tr.unapplied td{background:#fafaf6;color:#999}
+@media print{
+  .header,.tabs,.lead,.pdf-bar,.row,.toast,#panel-status,#panel-team,#panel-indiv,#panel-master{display:none!important}
+  body{background:#fff}
+  .main{padding:0;max-width:none}
+  #panel-list{display:block!important;box-shadow:none;padding:0}
+  #panel-list h2{display:none}
+  .list-table th{background:#1a4a2e!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .list-table .no-print{display:none}
+  @page{size:A4 landscape;margin:10mm}
+}
+.draw-only{display:none}
+.role-draw .tabs .tab:not([data-tab="draw"]){display:none}
+.role-draw .admin-only{display:none !important}
+.role-draw .draw-only{display:block}
+.draw-only.note{background:#fff8e1;border:2px solid #c8a020;border-radius:8px;padding:10px 14px;font-size:.84rem;line-height:1.7;margin-bottom:12px;color:#5a4500}
+.req-card{border:2px solid #e08a00;background:#fffaf0;border-radius:10px;padding:12px 14px;margin-bottom:10px}
+.req-card .h{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between}
+.req-card .k{font-weight:900;color:#8a4b00}
+.req-card .ft{font-size:.95rem;margin:6px 0}
+.req-card .ft b{color:var(--red)}
+.req-card .rs{font-size:.8rem;color:#555}
+.req-card .act{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.req-card .act input{flex:1;min-width:200px}
+.req-none{font-size:.85rem;color:#777;padding:6px 2px 12px}
+.st-ok{color:#1a7f37;font-weight:700}.st-ng{color:var(--red);font-weight:700}
+.pv-row{background:#fbf3f3;border:1.5px dashed #7a1f1f;border-radius:8px;padding:8px 10px;align-items:center}
+.pv-lbl{font-weight:700;color:#7a1f1f;font-size:.82rem;margin-right:4px}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-inner">
+    <h1><small>岩手県中学生ソフトテニス連盟</small><span id="hdTitle">県インドア大会</span>　管理画面</h1>
+    <div class="header-btns" id="hdBtns" style="display:none">
+      <button class="hbtn" onclick="reload()">↻ 再読み込み</button>
+      <button class="hbtn" onclick="logout()">ログアウト</button>
+    </div>
+  </div>
+</header>
+
+<div id="loginView" class="login">
+  <h2>🔒 管理者ログイン</h2>
+  <input type="password" id="pwInput" placeholder="パスワード" onkeydown="if(event.key==='Enter')login()">
+  <button class="btn btn-main" onclick="login()">ログイン</button>
+  <div class="err" id="loginErr"></div>
+</div>
+
+<div id="appView" style="display:none">
+  <nav class="tabs">
+    <button class="tab active" data-tab="status" onclick="showTab('status')">申込状況・リンク</button>
+    <button class="tab" data-tab="list" onclick="showTab('list')">申込一覧・PDF</button>
+    <button class="tab" data-tab="draw" onclick="showTab('draw')">組合せ・進行表</button>
+    <button class="tab" data-tab="change" onclick="showTab('change')">選手変更</button>
+    <button class="tab" data-tab="team" onclick="showTab('team')">団体戦 出場指定</button>
+    <button class="tab" data-tab="indiv" onclick="showTab('indiv')">個人戦 ペア登録</button>
+    <button class="tab" data-tab="master" onclick="showTab('master')">加盟チーム名簿</button>
+  </nav>
+  <main class="main">
+
+    <!-- ===== 申込状況 ===== -->
+    <section class="panel active" id="panel-status">
+      <h2>申込状況・申込リンク</h2>
+      <div class="lead" id="periodLead"></div>
+      <div class="summary" id="statusSummary"></div>
+      <div class="row">
+        <button class="btn btn-main" onclick="sendLinks(true)">✉ 未送信のチームにリンクを送信</button>
+        <button class="btn btn-out" onclick="sendLinks(false)">✉ チェックしたチームに送信（再送）</button>
+        <button class="btn btn-out" onclick="sendReminders(true)">⏰ 未申込のチームに督促メール</button>
+        <button class="btn btn-out" onclick="sendReminders(false)">⏰ チェックしたチームに督促</button>
+      </div>
+      <div class="row">
+        <button class="btn btn-main" id="receiptBatchBtn" onclick="receiptBatch()">🧾 領収書PDFを事前作成（申込済み全件）</button>
+        <a class="btn btn-out" href="reception.html" target="_blank">📱 当日受付サイトを開く</a>
+        <span class="muted" id="receiptInfo"></span>
+      </div>
+      <div class="muted" style="margin:-4px 0 12px">メールはすべて代表者メール宛てです。同じチームの複数区分は1通にまとめます。督促メールは未申込の区分だけが対象です。「未開封」は申込リンクがまだ一度も開かれていないチームです（管理者がリンクを開いて試した場合も「開封」になります）。</div>
+      <div class="row">
+        <select id="statusDiv" onchange="renderStatus()"></select>
+        <select id="statusFilter" onchange="renderStatus()">
+          <option value="">すべて</option>
+          <option value="未申込">未申込のみ</option>
+          <option value="申込済">申込済のみ</option>
+          <option value="unopened">未開封のみ</option>
+          <option value="unreceived">未受付のみ（申込済）</option>
+          <option value="received">受付済のみ</option>
+          <option value="flag">要確認のみ</option>
+        </select>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th><input type="checkbox" onchange="checkAllStatus(this.checked)"></th><th>区分</th><th>チーム</th><th>状態</th><th>申込内容</th><th>リンク</th><th>送信・開封</th></tr></thead>
+        <tbody id="statusBody"></tbody>
+      </table></div>
+    </section>
+
+    <!-- ===== 申込一覧・PDF ===== -->
+    <section class="panel" id="panel-list">
+      <h2>申込一覧・PDF</h2>
+      <div class="lead">「領収書（印刷用）」は当日の紙の領収書用です（A5横で1チーム1ページ。A4用紙に「2ページ/枚」で印刷すると1枚に2チーム分）。区分ごとの申込内容の一覧です。「一覧PDF」は区分ごとにA4横1枚で作成します（未申込のチーム・ペアも「未申込」として載ります）。各チームの申込書PDFは表の右端から取得できます。</div>
+      <div class="pdf-bar" id="listPdfBar"></div>
+      <div class="row">
+        <div class="seg" id="listSeg"></div>
+        <button class="btn btn-out btn-sm" onclick="window.print()">🖨 この一覧を印刷</button>
+      </div>
+      <div class="list-title" id="listTitle"></div>
+      <div class="scroll"><table class="list-table" id="listTable"></table></div>
+    </section>
+
+    <!-- ===== 組合せ・進行表 ===== -->
+    <section class="panel" id="panel-draw">
+      <h2>組合せ・進行表</h2>
+      <div class="draw-only note"><b>組合せ係の画面です。</b>枠ごとに選ぶか、Excelの組合せ表を貼り付けて「取り込む」を押し、最後に<b>「組合せを保存」</b>を押してください。保存しても公開されません。何度でも保存し直せます。公開（進行表の作成）は競技委員長が行います。</div>
+      <div class="lead admin-only">枠ごとにチーム（ペア）を選ぶか、Excelの組合せ表を下の欄に貼り付けて「取り込む」を押します。保存後「進行表を作成」で、会場別の進行表（Aコート・Bコート、予定時刻つき）ができます。当日の操作は「本部 進行管理」で行います。</div>
+      <div class="row">
+        <div class="seg" id="drawSeg"></div>
+        <span class="counter" id="drawCounter"></span>
+      </div>
+      <div class="row admin-only" id="drawLinks"></div>
+      <div class="row pv-row" id="pvLinks"></div>
+      <div id="drawGrid"></div>
+      <h3>Excelから貼り付け</h3>
+      <div class="muted" style="margin-bottom:6px" id="pasteHint"></div>
+      <textarea id="pasteBox" rows="6" style="width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-family:inherit;font-size:.85rem"></textarea>
+      <div class="row" style="margin-top:8px">
+        <button class="btn btn-out" onclick="importPaste()">取り込む（枠に反映）</button>
+        <span class="muted" id="pasteResult"></span>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <button class="btn btn-main" onclick="saveDraw(false)">組合せを保存</button>
+        <button class="btn btn-main admin-only" onclick="saveDraw(true)">保存して進行表を作成</button>
+        <span class="muted" id="drawStatus"></span>
+      </div>
+    </section>
+
+    <!-- ===== 選手変更 ===== -->
+    <section class="panel" id="panel-change">
+      <h2>選手・監督の変更</h2>
+      <div class="lead">監督がスマートフォンから申請した変更は、下の「変更申請」で許可・却下します。許可すると自動で反映され、申請した監督にメールで結果が届きます。紙の選手変更届を受け取ったときは、その下の欄で直接入力します（要項11(3)：個人戦は1ペア1名のみ、団体戦はやむを得ない場合）。変更は申込一覧・PDF・オーダー画面・スコアシート・進行表・選手変更一覧（公開）に反映されます。</div>
+      <h3>変更申請（監督から）</h3>
+      <div id="reqList"></div>
+      <h3>直接入力（紙の届・本部で受けたもの）</h3>
+      <div class="row">
+        <div class="seg" id="chgSeg"></div>
+        <select id="chgTarget" onchange="renderChangeForm()" style="min-width:260px"></select>
+      </div>
+      <div id="chgForm"></div>
+      <h3>変更履歴</h3>
+      <div class="scroll"><table>
+        <thead><tr><th>日時</th><th>区分</th><th>チーム</th><th>対象</th><th>変更前</th><th>変更後</th><th>理由</th></tr></thead>
+        <tbody id="chgLog"></tbody>
+      </table></div>
+    </section>
+
+    <!-- ===== 団体戦 出場指定 ===== -->
+    <section class="panel" id="panel-team">
+      <h2>団体戦 出場チームの指定</h2>
+      <div class="lead">強化スタッフが選考したチームにチェックを入れて保存します。保存したチームに申込リンクが発行されます。申込済みのチームは外せません。</div>
+      <div class="row">
+        <div class="seg"><button id="segMT" class="on" onclick="setTeamDiv('MT')">男子団体戦</button><button id="segWT" onclick="setTeamDiv('WT')">女子団体戦</button></div>
+        <input type="text" id="teamSearch" placeholder="チーム名・地区で絞り込み" oninput="renderTeamPick()">
+        <span class="counter" id="teamCounter"></span>
+        <button class="btn btn-main" id="saveTeamsBtn" onclick="saveTeams()">この内容で保存</button>
+      </div>
+      <div class="muted" style="margin-bottom:8px">登録種別が「男子／男女」（女子団体戦は「女子／男女」）のチームを表示しています。</div>
+      <div class="team-grid" id="teamPick"></div>
+    </section>
+
+    <!-- ===== 個人戦 ペア登録 ===== -->
+    <section class="panel" id="panel-indiv">
+      <h2>個人戦 選考ペアの登録</h2>
+      <div class="lead">選考されたペアを登録します。選手A・Bの所属が違う合同ペアは、参加料を払う「支払チーム」を選んでください。申込リンクは支払チームに発行され、そのチームの申込・領収書にまとめられます。</div>
+      <div class="row">
+        <div class="seg"><button id="segMI" class="on" onclick="setIndivDiv('MI')">男子個人戦</button><button id="segWI" onclick="setIndivDiv('WI')">女子個人戦</button></div>
+        <span class="counter" id="pairCounter"></span>
+      </div>
+      <div class="pair-form">
+        <h3 id="pairFormTitle">ペアを追加</h3>
+        <div class="pf-grid">
+          <div class="pf-col">
+            <div class="lbl">選手A</div>
+            <select id="aTeam" onchange="onPairTeam('a')"></select>
+            <select id="aPlayer" onchange="onPairPlayer('a')"></select>
+            <input type="text" id="aName" placeholder="氏名（名簿にない場合は手入力）" style="display:none">
+            <select id="aGrade"><option value="">学年</option><option>1年</option><option>2年</option><option>3年</option></select>
+          </div>
+          <div class="pf-col">
+            <div class="lbl">選手B</div>
+            <select id="bTeam" onchange="onPairTeam('b')"></select>
+            <select id="bPlayer" onchange="onPairPlayer('b')"></select>
+            <input type="text" id="bName" placeholder="氏名（名簿にない場合は手入力）" style="display:none">
+            <select id="bGrade"><option value="">学年</option><option>1年</option><option>2年</option><option>3年</option></select>
+          </div>
+        </div>
+        <div class="payer" id="payerRow">
+          <strong>支払チーム：</strong>
+          <label><input type="radio" name="payer" value="a" checked> <span id="payerA"></span></label>
+          <label><input type="radio" name="payer" value="b"> <span id="payerB"></span></label>
+        </div>
+        <div class="row" style="margin-top:12px;margin-bottom:0">
+          <button class="btn btn-main" id="savePairBtn" onclick="savePair()">ペアを登録</button>
+          <button class="btn btn-out" id="cancelPairBtn" onclick="resetPairForm()" style="display:none">編集をやめる</button>
+        </div>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th>#</th><th>選手A</th><th>選手B</th><th>支払チーム</th><th>申込</th><th></th></tr></thead>
+        <tbody id="pairBody"></tbody>
+      </table></div>
+      <div id="preCfg"></div>
+    </section>
+
+    <!-- ===== 加盟チーム名簿 ===== -->
+    <section class="panel" id="panel-master">
+      <h2>加盟チーム名簿（登録システムから取り込み）</h2>
+      <div class="lead">団体登録システムの登録データを読み取り専用で取り込みます。登録システム側を変更しても自動では反映されないので、選考前と申込開始前に「名簿を更新」を押してください。</div>
+      <div class="row">
+        <button class="btn btn-main" id="refreshBtn" onclick="refreshMaster()">↻ 名簿を更新</button>
+        <span class="muted" id="masterInfo"></span>
+      </div>
+      <div class="scroll"><table>
+        <thead><tr><th>チーム名</th><th>種別</th><th>地区</th><th>代表者</th><th>メール</th><th>登録料</th><th>選手（男/女）</th></tr></thead>
+        <tbody id="masterBody"></tbody>
+      </table></div>
+    </section>
+
+  </main>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ★ GASをデプロイしたらURLを貼り付ける */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
+
+var PW_KEY = 'iwateIndoorAdminPw';
+var pw = '';
+var D = null; /* adminLoadの結果 */
+var teamDiv = 'MT';
+var indivDiv = 'MI';
+var teamSelection = {};
+var editingPairId = '';
+
+/* ========== 通信 ========== */
+function api(body) {
+  if (GAS_URL.indexOf('http') !== 0) return Promise.reject(new Error('GAS_URLが未設定です（admin.html の先頭で設定）'));
+  body.pw = pw;
+  return fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) })
+    .then(function (res) { return res.text(); })
+    .then(function (text) {
+      var data;
+      try { data = JSON.parse(text); } catch (e) { throw new Error('GASの応答を読み取れません: ' + text.substring(0, 120)); }
+      if (data.status !== 'ok') { var err = new Error(data.message || 'エラー'); err.code = data.code; throw err; }
+      return data;
+    });
+}
+
+function toast(msg, isErr) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' error' : '');
+  setTimeout(function () { t.className = 'toast'; }, isErr ? 6000 : 3000);
+}
+
+function esc(s) {
+  if (s === undefined || s === null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+/* ========== ログイン ========== */
+function login() {
+  pw = document.getElementById('pwInput').value;
+  document.getElementById('loginErr').textContent = '';
+  reload().then(function () {
+    try { sessionStorage.setItem(PW_KEY, pw); } catch (e) {}
+  }).catch(function () { /* エラーは reload 内で表示済み */ });
+}
+
+function logout() {
+  try { sessionStorage.removeItem(PW_KEY); localStorage.removeItem('iwateIndoorPreviewPw'); } catch (e) {}
+  location.reload();
+}
+
+function reload() {
+  return api({ action: 'adminLoad' }).then(function (data) {
+    D = data;
+    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('appView').style.display = 'block';
+    document.getElementById('hdBtns').style.display = 'flex';
+    document.getElementById('hdTitle').textContent = D.config['大会名'] || '県インドア大会';
+    if (D.role === 'draw') {
+      document.body.classList.add('role-draw');
+      document.getElementById('hdTitle').textContent += '（組合せ係）';
+      showTab('draw');
+      return;
+    }
+    loadTeamSelection();
+    renderAll();
+  }).catch(function (err) {
+    if (document.getElementById('appView').style.display === 'block') {
+      toast('読み込みに失敗しました：' + err.message, true);
+    } else {
+      document.getElementById('loginErr').textContent = err.message;
+    }
+    throw err;
+  });
+}
+
+function renderAll() {
+  renderStatus();
+  renderList();
+  renderChange();
+  renderTeamPick();
+  renderPairs();
+  renderMaster();
+}
+
+function showTab(name) {
+  if (name === 'draw' && D) loadDraw();
+  var tabs = document.querySelectorAll('.tab');
+  var i;
+  for (i = 0; i < tabs.length; i++) tabs[i].className = 'tab' + (tabs[i].getAttribute('data-tab') === name ? ' active' : '');
+  var panels = document.querySelectorAll('.panel');
+  for (i = 0; i < panels.length; i++) panels[i].className = 'panel' + (panels[i].id === 'panel-' + name ? ' active' : '');
+}
+
+/* ========== 共通ヘルパー ========== */
+function divName(code) { return D.divisions[code] ? D.divisions[code].name : code; }
+function entriesOf(code) {
+  var out = [];
+  var i;
+  for (i = 0; i < D.entries.length; i++) if (D.entries[i].div === code) out.push(D.entries[i]);
+  return out;
+}
+function teamsForGender(g) {
+  var out = [];
+  var i, c;
+  for (i = 0; i < D.teams.length; i++) {
+    c = String(D.teams[i].category || '');
+    if (c.indexOf('男女') >= 0 || c.indexOf(g === '男' ? '男' : '女') >= 0 || c === '') out.push(D.teams[i]);
+  }
+  out.sort(function (a, b) { return districtCompare(a.district, b.district) || String(a.name).localeCompare(String(b.name), 'ja'); });
+  return out;
+}
+/* 同じ名前で男女別に登録しているチームは、gender（'男'／'女'）に合う種別の登録を優先する */
+function findTeam(name, gender) {
+  var best = null, bestScore = -1;
+  var i, c, sc;
+  for (i = 0; i < D.teams.length; i++) {
+    if (D.teams[i].name !== name) continue;
+    c = String(D.teams[i].category || '');
+    sc = !gender ? 0 : c.indexOf('男女') >= 0 ? 1 : c.indexOf(gender) >= 0 ? 2 : (c ? 0 : 1);
+    if (sc > bestScore) { best = D.teams[i]; bestScore = sc; }
+  }
+  return best;
+}
+function entryLink(e) {
+  var site = String(D.config['サイトURL'] || '');
+  if (site.charAt(site.length - 1) !== '/') site += '/';
+  var div = D.divisions[e.div];
+  return site + (div.type === 'team' ? 'entry-team.html' : 'entry-individual.html') + '?t=' + e.token;
+}
+function copyText(text) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(function () { toast('リンクをコピーしました'); }, function () { prompt('コピーしてください', text); });
+  } else {
+    prompt('コピーしてください', text);
+  }
+}
+
+/* ========== 申込状況 ========== */
+function renderStatus() {
+  var p = D.period;
+  var stateText = p.state === 'before' ? '受付開始前' : (p.state === 'after' ? '受付終了' : '受付中');
+  document.getElementById('periodLead').innerHTML = '申込期間：<strong>' + esc(p.start) + ' 〜 ' + esc(p.end) + '</strong>　<span class="badge ' + (p.state === 'open' ? 'b-ok' : 'b-info') + '">' + stateText + '</span>';
+
+  var sumHtml = '';
+  var i, code, list, done, j, feeTotal;
+  for (i = 0; i < D.divOrder.length; i++) {
+    code = D.divOrder[i];
+    list = entriesOf(code);
+    done = 0; feeTotal = 0;
+    var unopened = 0;
+    var received = 0;
+    for (j = 0; j < list.length; j++) {
+      if (list[j].state === '申込済') { done++; feeTotal += parseInt(list[j].fee, 10) || 0; }
+      if (list[j].linkSentAt && !list[j].firstAccessAt) unopened++;
+      if (list[j].reception === '受付済') received++;
+    }
+    var unit = D.divisions[code].type === 'team' ? 'チーム' : 'チーム（' + pairsOf(code).length + 'ペア）';
+    sumHtml += '<div class="sum"><div class="lbl">' + esc(divName(code)) + '</div><div class="num">' + done + ' / ' + list.length + '</div><div class="sub">申込済 / 出場' + unit + '</div><div class="sub">参加料 ' + feeTotal.toLocaleString() + '円</div>' + (unopened ? '<div class="sub" style="color:#b33030;font-weight:700">未開封 ' + unopened + '</div>' : '') + (received ? '<div class="sub" style="font-weight:700">当日受付 ' + received + ' / ' + done + '</div>' : '') + '</div>';
+  }
+  document.getElementById('statusSummary').innerHTML = sumHtml;
+  var applied = 0, ready = 0, k2;
+  for (k2 = 0; k2 < D.entries.length; k2++) if (D.entries[k2].state === '申込済') { applied++; if (D.entries[k2].receiptReady) ready++; }
+  document.getElementById('receiptInfo').textContent = '領収書PDF：作成済 ' + ready + ' / 申込済 ' + applied + '（申込締切後、大会前日までに作成しておくと受付が速くなります）';
+
+  var divSel = document.getElementById('statusDiv');
+  if (!divSel.options.length) {
+    var opts = '<option value="">全区分</option>';
+    for (i = 0; i < D.divOrder.length; i++) opts += '<option value="' + D.divOrder[i] + '">' + esc(divName(D.divOrder[i])) + '</option>';
+    divSel.innerHTML = opts;
+  }
+  var fDiv = divSel.value;
+  var fState = document.getElementById('statusFilter').value;
+  var rows = D.entries.slice().sort(function (a, b) {
+    var d = D.divOrder.indexOf(a.div) - D.divOrder.indexOf(b.div);
+    return d !== 0 ? d : (districtCompare(a.district, b.district) || String(a.teamName).localeCompare(String(b.teamName), 'ja'));
+  });
+  var html = '';
+  var e, content;
+  for (i = 0; i < rows.length; i++) {
+    e = rows[i];
+    if (fDiv && e.div !== fDiv) continue;
+    if (fState === 'flag' && !e.flag) continue;
+    if (fState === 'unopened' && (e.firstAccessAt || e.state === '申込済')) continue;
+    if ((fState === '未申込' || fState === '申込済') && e.state !== fState) continue;
+    if (fState === 'unreceived' && (e.state !== '申込済' || e.reception === '受付済')) continue;
+    if (fState === 'received' && e.reception !== '受付済') continue;
+    content = '';
+    if (e.state === '申込済') {
+      content = '<div class="detail">' + esc(e.applicantName) + '　' + esc(e.applicantPhone) + '<br>';
+      if (D.divisions[e.div].type === 'team') {
+        var names = [];
+        for (j = 0; j < e.players.length; j++) if (!e.players[j].vacant) names.push(e.players[j].no + '.' + e.players[j].name);
+        content += '監督：' + esc(e.coachName) + '<br>' + esc(names.join('　'));
+      } else {
+        content += e.pairCount + 'ペア';
+      }
+      content += '<br><span class="muted">' + esc(e.updatedAt || e.appliedAt) + '</span></div>';
+      content += '<button class="btn btn-out btn-sm" style="margin-top:4px" onclick="adminPdf(\'' + esc(e.entryId) + '\', this)">📄 申込書PDF</button> ';
+      content += '<button class="btn btn-out btn-sm" style="margin-top:4px" onclick="receiptPdf(\'' + esc(e.entryId) + '\', this)">🧾 領収書' + (e.receiptNo ? ' ' + esc(e.receiptNo) : '') + '</button>';
+      if (e.reception === '受付済') content += ' <button class="btn btn-out btn-sm" style="margin-top:4px" onclick="resendReceipt(\'' + esc(e.entryId) + '\', this)">✉ 受付メール再送</button>';
+      if (e.flag) content += '<div class="flag">⚠ ' + esc(e.flag) + '</div>';
+    }
+    html += '<tr>';
+    html += '<td><input type="checkbox" class="st-check" value="' + esc(e.entryId) + '"></td>';
+    html += '<td>' + esc(divName(e.div)) + '</td>';
+    html += '<td><strong>' + esc(e.teamName) + '</strong>' + (e.abbr ? '<br><span class="badge b-info">組合せ：' + esc(e.abbr) + '</span>' : '') + '<br><span class="muted">' + esc(e.district) + '</span>' + (e.repEmail ? '' : '<br><span class="flag">代表者メール未登録</span>') + '</td>';
+    html += '<td><span class="badge ' + (e.state === '申込済' ? 'b-ok' : 'b-wait') + '">' + esc(e.state) + '</span>' +
+      (e.reception === '受付済' ? '<br><span class="badge b-ok" style="margin-top:4px">受付済</span><br><span class="muted">' + esc(String(e.receptionAt).slice(5, 16)) + '<br>' + esc(e.receptionStaff) + '</span>' + (e.receptionMailAt ? '' : '<br><span class="flag">領収書メール未送信</span>') : (e.state === '申込済' ? '<br><span class="badge b-info" style="margin-top:4px">未受付</span>' : '')) + '</td>';
+    html += '<td>' + content + '</td>';
+    html += '<td><button class="btn btn-out btn-sm" onclick="copyText(\'' + esc(entryLink(e)) + '\')">📋 コピー</button><div class="link-cell">' + esc(entryLink(e)) + '</div></td>';
+    var sent = e.linkSentAt ? '<span class="badge b-ok">送信済</span><br><span class="muted">' + esc(e.linkSentAt) + '</span>' : '<span class="badge b-info">未送信</span>';
+    var opened = e.firstAccessAt ? '<br><span class="badge b-ok">開封</span><br><span class="muted">' + esc(e.firstAccessAt) + '</span>' : (e.linkSentAt ? '<br><span class="badge b-ng">未開封</span>' : '');
+    var reminded = e.remindedAt ? '<br><span class="muted">督促 ' + esc(e.remindedAt) + '</span>' : '';
+    html += '<td>' + sent + opened + reminded + '</td>';
+    html += '</tr>';
+  }
+  document.getElementById('statusBody').innerHTML = html || '<tr><td colspan="7" class="loading">対象のチームがありません。先に「団体戦 出場指定」「個人戦 ペア登録」を行ってください。</td></tr>';
+}
+
+function checkAllStatus(on) {
+  var cs = document.querySelectorAll('.st-check');
+  var i;
+  for (i = 0; i < cs.length; i++) cs[i].checked = on;
+}
+
+function sendLinks(onlyUnsent) {
+  var ids = [];
+  var msg;
+  if (onlyUnsent) {
+    var n = 0;
+    var i;
+    for (i = 0; i < D.entries.length; i++) if (!D.entries[i].linkSentAt) n++;
+    if (n === 0) { toast('未送信のチームはありません'); return; }
+    msg = '未送信の ' + n + ' 件に申込リンクを送信します。\n（同じチームの複数区分は1通にまとめます）\nよろしいですか？';
+  } else {
+    var cs = document.querySelectorAll('.st-check');
+    var k;
+    for (k = 0; k < cs.length; k++) if (cs[k].checked) ids.push(cs[k].value);
+    if (ids.length === 0) { toast('送信するチームにチェックを入れてください', true); return; }
+    msg = 'チェックした ' + ids.length + ' 件に申込リンクを送信（再送）します。よろしいですか？';
+  }
+  if (!confirm(msg)) return;
+  toast('送信中...');
+  api({ action: 'adminSendLinks', onlyUnsent: onlyUnsent, entryIds: ids }).then(function (r) {
+    toast('✉ ' + r.sent + '通送信しました' + (r.skipped.length ? '（メール未登録：' + r.skipped.join('、') + '）' : ''), r.skipped.length > 0);
+    return reload();
+  }).catch(function (err) { toast('送信に失敗しました：' + err.message, true); });
+}
+
+function sendReminders(allUnapplied) {
+  var ids = [];
+  var targets = [];
+  var i, e;
+  if (allUnapplied) {
+    for (i = 0; i < D.entries.length; i++) if (D.entries[i].state !== '申込済') targets.push(D.entries[i]);
+  } else {
+    var cs = document.querySelectorAll('.st-check');
+    var k;
+    for (k = 0; k < cs.length; k++) if (cs[k].checked) ids.push(cs[k].value);
+    if (ids.length === 0) { toast('督促するチームにチェックを入れてください', true); return; }
+    for (i = 0; i < D.entries.length; i++) if (ids.indexOf(D.entries[i].entryId) >= 0 && D.entries[i].state !== '申込済') targets.push(D.entries[i]);
+  }
+  if (targets.length === 0) { toast('未申込の対象はありません'); return; }
+  var teams = {};
+  var n = 0;
+  for (i = 0; i < targets.length; i++) {
+    e = targets[i];
+    if (!teams[e.teamName]) { teams[e.teamName] = true; n++; }
+  }
+  if (!confirm('未申込の ' + targets.length + ' 件（' + n + ' チーム）に督促メールを送ります。\nよろしいですか？')) return;
+  toast('送信中...');
+  api({ action: 'adminSendReminders', entryIds: allUnapplied ? [] : ids }).then(function (r) {
+    toast('⏰ ' + r.sent + '通送信しました' + (r.skipped.length ? '（メール未登録：' + r.skipped.join('、') + '）' : ''), r.skipped.length > 0);
+    return reload();
+  }).catch(function (err) { toast('送信に失敗しました：' + err.message, true); });
+}
+
+function withBusy(btn, label, promise) {
+  btn.disabled = true;
+  btn.textContent = label;
+  return promise;
+}
+
+function receiptPdf(entryId, btn) {
+  var label = btn.textContent;
+  withBusy(btn, '作成中...', api({ action: 'adminReceiptPdf', entryId: entryId })).then(function (d) {
+    saveBase64(d.base64, d.name);
+    btn.disabled = false;
+    btn.textContent = label;
+    return reload();
+  }).catch(function (err) {
+    btn.disabled = false;
+    btn.textContent = label;
+    toast('領収書の作成に失敗しました：' + err.message, true);
+  });
+}
+
+function receiptPrint(code, btn) {
+  var label = btn.textContent;
+  withBusy(btn, '作成中...（件数が多いと1分ほど）', api({ action: 'adminReceiptPrint', div: code })).then(function (d) {
+    saveBase64(d.base64, d.name);
+    btn.disabled = false;
+    btn.textContent = label;
+    toast(d.count + '件の領収書を作成しました');
+  }).catch(function (err) {
+    btn.disabled = false;
+    btn.textContent = label;
+    toast('領収書の作成に失敗しました：' + err.message, true);
+  });
+}
+
+function receiptBatch() {
+  var btn = document.getElementById('receiptBatchBtn');
+  var label = btn.textContent;
+  var total = 0;
+  function step() {
+    return api({ action: 'adminReceiptBatch' }).then(function (d) {
+      total += d.done;
+      if (d.remaining > 0) {
+        btn.textContent = '作成中...（' + total + '件完了・残り' + d.remaining + '件）';
+        return step();
+      }
+      return total;
+    });
+  }
+  btn.disabled = true;
+  btn.textContent = '作成中...';
+  step().then(function (n) {
+    btn.disabled = false;
+    btn.textContent = label;
+    toast(n > 0 ? '領収書PDFを' + n + '件作成しました' : '作成が必要な領収書はありません（すべて最新）');
+    return reload();
+  }).catch(function (err) {
+    btn.disabled = false;
+    btn.textContent = label;
+    toast('作成に失敗しました：' + err.message, true);
+  });
+}
+
+function resendReceipt(entryId, btn) {
+  if (!confirm('申込責任者に受付完了メール（領収書PDF付き）を再送します。よろしいですか？')) return;
+  var label = btn.textContent;
+  withBusy(btn, '送信中...', api({ action: 'adminResendReceipt', entryId: entryId })).then(function () {
+    toast('受付完了メールを再送しました');
+    btn.disabled = false;
+    btn.textContent = label;
+    return reload();
+  }).catch(function (err) {
+    btn.disabled = false;
+    btn.textContent = label;
+    toast('再送に失敗しました：' + err.message, true);
+  });
+}
+
+function adminPdf(entryId, btn) {
+  var label = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '作成中...';
+  api({ action: 'adminPdf', entryId: entryId }).then(function (d) {
+    saveBase64(d.base64, d.name);
+    btn.disabled = false;
+    btn.textContent = label;
+  }).catch(function (err) {
+    btn.disabled = false;
+    btn.textContent = label;
+    toast('PDFの作成に失敗しました：' + err.message, true);
+  });
+}
+
+/* ========== 申込一覧・PDF ========== */
+var DISTRICT_ORDER = ['久慈', '二戸', '岩手', '盛岡', '紫波', '花巻', '和賀', '胆江', '一関', '気仙', '遠野', '釜石・大槌', '宮古'];
+function districtCompare(a, b) {
+  var ia = DISTRICT_ORDER.indexOf(a), ib = DISTRICT_ORDER.indexOf(b);
+  if (ia < 0) ia = 99;
+  if (ib < 0) ib = 99;
+  return ia - ib;
+}
+
+var listDiv = 'MT';
+
+function setListDiv(code) {
+  listDiv = code;
+  renderList();
+}
+
+function renderList() {
+  var i, code;
+  var segHtml = '';
+  var barHtml = '';
+  var barHtml2 = '';
+  for (i = 0; i < D.divOrder.length; i++) {
+    code = D.divOrder[i];
+    segHtml += '<button class="' + (code === listDiv ? 'on' : '') + '" onclick="setListDiv(\'' + code + '\')">' + esc(divName(code)) + '</button>';
+    barHtml += '<button class="btn btn-main" onclick="listPdf(\'' + code + '\', this)">📄 ' + esc(divName(code)) + ' 一覧PDF</button>';
+    barHtml2 += '<button class="btn btn-out" onclick="receiptPrint(\'' + code + '\', this)">🧾 ' + esc(divName(code)) + ' 領収書（印刷用）</button>';
+  }
+  document.getElementById('listSeg').innerHTML = segHtml;
+  document.getElementById('listPdfBar').innerHTML = barHtml + barHtml2;
+
+  var div = D.divisions[listDiv];
+  var entries = entriesOf(listDiv).sort(function (a, b) { return districtCompare(a.district, b.district) || a.teamName.localeCompare(b.teamName, 'ja'); });
+  var applied = 0;
+  var fee = 0;
+  for (i = 0; i < entries.length; i++) if (entries[i].state === '申込済') { applied++; fee += parseInt(entries[i].fee, 10) || 0; }
+  var title = (D.config['大会名'] || '') + '　' + div.name + '　申込一覧（申込済 ' + applied + ' / 出場 ' + entries.length + ' チーム';
+  var html = '';
+  var e, j, p, k;
+  if (div.type === 'team') {
+    html += '<thead><tr><th>No.</th><th>地区</th><th>チーム名（略称）</th><th>監督</th>';
+    for (k = 1; k <= 8; k++) html += '<th>' + k + '</th>';
+    html += '<th>状態</th><th class="no-print">申込書</th></tr></thead><tbody>';
+    for (i = 0; i < entries.length; i++) {
+      e = entries[i];
+      html += '<tr class="' + (e.state === '申込済' ? '' : 'unapplied') + '"><td>' + (i + 1) + '</td><td>' + esc(e.district) + '</td>';
+      html += '<td><strong>' + esc(e.teamName) + '</strong>' + (e.abbr ? '<span class="g">（' + esc(e.abbr) + '）</span>' : '') + '</td>';
+      html += '<td>' + esc(e.coachName) + (e.coachTitle ? '<span class="g">' + esc(e.coachTitle) + '</span>' : '') + '</td>';
+      for (k = 0; k < 8; k++) {
+        p = e.state === '申込済' ? e.players[k] : null;
+        if (!p) html += '<td class="pl"></td>';
+        else if (p.vacant) html += '<td class="pl vac">欠員</td>';
+        else html += '<td class="pl' + (p.offRoster ? ' off' : '') + '">' + esc(p.name) + (p.offRoster ? '※' : '') + '<span class="g">' + esc(p.grade) + (p.changedFrom ? '　変更' : '') + '</span></td>';
+      }
+      html += '<td>' + esc(e.state) + '</td>';
+      html += '<td class="no-print">' + (e.state === '申込済' ? '<button class="btn btn-out btn-sm" onclick="adminPdf(\'' + esc(e.entryId) + '\', this)">📄</button>' : '') + '</td></tr>';
+    }
+  } else {
+    var pairs = pairsOf(listDiv);
+    title += '・' + pairs.length + 'ペア';
+    var byTeam = {};
+    for (i = 0; i < entries.length; i++) byTeam[entries[i].teamName] = entries[i];
+    html += '<thead><tr><th>No.</th><th>選手A</th><th>所属</th><th>選手B</th><th>所属</th><th>監督</th><th>申込チーム（略称）</th><th>状態</th><th class="no-print">申込書</th></tr></thead><tbody>';
+    for (j = 0; j < pairs.length; j++) {
+      p = pairs[j];
+      e = byTeam[p.payer] || {};
+      html += '<tr class="' + (e.state === '申込済' ? '' : 'unapplied') + '"><td>' + (j + 1) + '</td>';
+      html += '<td><strong>' + esc(p.aName) + '</strong><span class="g">' + esc(p.aGrade) + '</span></td><td>' + esc(p.aTeam) + '</td>';
+      html += '<td><strong>' + esc(p.bName) + '</strong><span class="g">' + esc(p.bGrade) + '</span></td><td>' + esc(p.bTeam) + '</td>';
+      html += '<td>' + esc(p.coachName) + (p.coachTitle ? '<span class="g">' + esc(p.coachTitle) + '</span>' : '') + '</td>';
+      html += '<td>' + esc(p.payer) + (e.abbr ? '<span class="g">（' + esc(e.abbr) + '）</span>' : '') + (p.joint ? ' <span class="badge b-joint">合同</span>' : '') + '</td>';
+      html += '<td>' + esc(e.state || '未申込') + '</td>';
+      html += '<td class="no-print">' + (e.state === '申込済' ? '<button class="btn btn-out btn-sm" onclick="adminPdf(\'' + esc(e.entryId) + '\', this)">📄</button>' : '') + '</td></tr>';
+    }
+  }
+  html += '</tbody>';
+  title += '　参加料 ' + fee.toLocaleString() + '円）';
+  document.getElementById('listTitle').textContent = title;
+  document.getElementById('listTable').innerHTML = html;
+}
+
+function listPdf(code, btn) {
+  var label = btn.textContent;
+  btn.disabled = true;
+  btn.textContent = '作成中...';
+  api({ action: 'adminListPdf', div: code }).then(function (d) {
+    saveBase64(d.base64, d.name);
+    btn.disabled = false;
+    btn.textContent = label;
+  }).catch(function (err) {
+    btn.disabled = false;
+    btn.textContent = label;
+    toast('一覧PDFの作成に失敗しました：' + err.message, true);
+  });
+}
+
+function saveBase64(b64, name) {
+  var bin = atob(b64);
+  var arr = new Uint8Array(bin.length);
+  var i;
+  for (i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([arr], { type: 'application/pdf' }));
+  a.download = name;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () { URL.revokeObjectURL(a.href); a.parentNode.removeChild(a); }, 1000);
+}
+
+/* ========== 組合せ ========== */
+var drawDiv = 'MT';
+var DRAW = null;
+
+function setDrawDiv(code) {
+  drawDiv = code;
+  document.getElementById('pasteBox').value = '';
+  document.getElementById('pasteResult').textContent = '';
+  loadDraw();
+}
+
+function loadDraw() {
+  var i, code, html = '';
+  for (i = 0; i < D.divOrder.length; i++) {
+    code = D.divOrder[i];
+    html += '<button class="' + (code === drawDiv ? 'on' : '') + '" onclick="setDrawDiv(\'' + code + '\')">' + esc(divName(code)) + '</button>';
+  }
+  document.getElementById('drawSeg').innerHTML = html;
+  var site = String(D.config['サイトURL'] || '');
+  if (site.charAt(site.length - 1) !== '/') site += '/';
+  var pub = site + 'progress.html?div=' + drawDiv;
+  document.getElementById('drawLinks').innerHTML = '<a class="btn btn-out btn-sm" href="control.html?div=' + drawDiv + '" target="_blank">🛠 本部 進行管理を開く</a>' +
+    '<a class="btn btn-out btn-sm" href="progress.html?div=' + drawDiv + '" target="_blank">📺 公開進行表を開く</a>' +
+    '<button class="btn btn-out btn-sm" onclick="copyText(\'' + esc(pub) + '\')">📋 公開URLをコピー</button>';
+  document.getElementById('pasteHint').innerHTML = D.divisions[drawDiv].type === 'team'
+    ? '1行に「枠番号　チーム名（または略称）」。例：<code>1　水沢南中</code>（枠番号がない場合は上から1,2,3…）'
+    : 'ブロック見出し（Aブロック 等）の下に「番号　選手A・選手B　所属」の行。添付いただいた組合せ表の範囲をそのままコピーして貼り付けられます。';
+  document.getElementById('pvLinks').innerHTML = '<span class="pv-lbl">👁 プレビュー（非公開・保存した内容で表示）</span>' +
+    '<button class="btn btn-out btn-sm" onclick="openPreview(\'bracket.html?div=' + drawDiv + '\')">組合せ表</button>' +
+    '<button class="btn btn-out btn-sm" onclick="openPreview(\'bracket.html?div=' + drawDiv + '&mode=blank\')">組合せ表（白紙）</button>' +
+    '<button class="btn btn-out btn-sm" onclick="openPreview(\'progress.html?div=' + drawDiv + '\')">進行表</button>' +
+    '<button class="btn btn-out btn-sm" onclick="openPreview(\'program.html?mode=blank\')">プログラム</button>';
+  document.getElementById('drawGrid').innerHTML = '<div class="loading">読み込み中...</div>';
+  api({ action: 'adminDrawLoad', div: drawDiv }).then(function (d) {
+    DRAW = d;
+    renderDraw();
+  }).catch(function (err) { document.getElementById('drawGrid').innerHTML = '<div class="flag">' + esc(err.message) + '</div>'; });
+}
+
+function drawOptions(slot) {
+  var cur = DRAW.draw[slot] || '';
+  var used = {};
+  var k;
+  for (k in DRAW.draw) if (DRAW.draw.hasOwnProperty(k) && k !== slot && DRAW.draw[k]) used[DRAW.draw[k]] = k;
+  var h = '<option value="">（空き）</option>';
+  var i, c;
+  for (i = 0; i < DRAW.candidates.length; i++) {
+    c = DRAW.candidates[i];
+    h += '<option value="' + esc(c.id) + '"' + (c.id === cur ? ' selected' : '') + (used[c.id] ? ' style="color:#bbb"' : '') + '>' +
+      esc((c.labelG || c.label) + '（' + c.sub + '）') + (c.state && c.state !== '申込済' ? '　※' + esc(c.state) : '') + (used[c.id] ? '　→枠' + used[c.id] : '') + '</option>';
+  }
+  return h;
+}
+
+function slotRow(slot, label) {
+  return '<div class="draw-row"><span class="sl">' + esc(label) + '</span><select data-slot="' + esc(slot) + '" onchange="onDrawChange(this)">' + drawOptions(slot) + '</select></div>';
+}
+
+function renderDraw() {
+  var html = '';
+  var i, j;
+  if (D.divisions[drawDiv].type === 'team') {
+    html += '<div class="draw-team">';
+    for (i = 0; i < 8; i++) {
+      html += '<div class="draw-match"><div class="t">1回戦 第' + (i + 1) + '試合（' + (i < 4 ? 'Aコート' : 'Bコート') + '）</div>' + slotRow(String(i * 2 + 1), String(i * 2 + 1)) + slotRow(String(i * 2 + 2), String(i * 2 + 2)) + '</div>';
+    }
+    html += '</div>';
+  } else {
+    var bl = ['A', 'B', 'C', 'D'];
+    html += '<div class="draw-blocks">';
+    for (i = 0; i < 4; i++) {
+      html += '<div class="draw-blk"><h4>' + bl[i] + 'ブロック（' + (i < 2 ? 'Aコート' : 'Bコート') + '）</h4>';
+      for (j = 1; j <= 4; j++) html += slotRow(bl[i] + j, String(j));
+      html += '</div>';
+    }
+    html += '</div><div class="ko-note">決勝トーナメント：A1位-C2位、D2位-B1位、C1位-A2位、B2位-D1位（準決勝は上2試合・下2試合の勝者同士）</div>';
+  }
+  document.getElementById('drawGrid').innerHTML = html;
+  markDup();
+  var filled = 0;
+  var k;
+  for (k in DRAW.draw) if (DRAW.draw.hasOwnProperty(k) && DRAW.draw[k]) filled++;
+  document.getElementById('drawCounter').textContent = '入力 ' + filled + ' / ' + DRAW.slots.length;
+  document.getElementById('drawStatus').textContent = D.role === 'draw'
+    ? (DRAW.matchCount ? 'この区分は公開済みのため、組合せ係では変更できません' : '未公開（保存しても公開されません）')
+    : (DRAW.matchCount ? '進行表：作成済（' + DRAW.matchCount + '試合' + (DRAW.progressed ? '・進行中' + DRAW.progressed + '試合' : '') + '）' : '進行表：未作成');
+}
+
+function onDrawChange(sel) {
+  DRAW.draw[sel.getAttribute('data-slot')] = sel.value;
+  renderDraw();
+}
+
+function markDup() {
+  var sels = document.querySelectorAll('#drawGrid select');
+  var count = {};
+  var i;
+  for (i = 0; i < sels.length; i++) if (sels[i].value) count[sels[i].value] = (count[sels[i].value] || 0) + 1;
+  for (i = 0; i < sels.length; i++) sels[i].className = sels[i].value && count[sels[i].value] > 1 ? 'dup' : '';
+}
+
+/* ---- 貼り付け取り込み ---- */
+function normText(s) {
+  return String(s || '').replace(/[\s　・･,，、()（）]/g, '').replace(/[①②③④⑤⑥⑦⑧⑨]/g, '')
+    .replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 65248); })
+    .replace(/[Ａ-Ｚ]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 65248); });
+}
+
+function matchTeam(text) {
+  var t = normText(text);
+  var best = null, bestLen = 0;
+  var i, c, keys, k, n;
+  for (i = 0; i < DRAW.candidates.length; i++) {
+    c = DRAW.candidates[i];
+    keys = [c.full, c.label, String(c.full).replace(/中学校$/, '中'), String(c.full).replace(/中学校$/, '')];
+    for (k = 0; k < keys.length; k++) {
+      n = normText(keys[k]);
+      if (n && t.indexOf(n) >= 0 && n.length > bestLen) { best = c; bestLen = n.length; }
+    }
+  }
+  return best;
+}
+
+function matchPair(text) {
+  var t = normText(text);
+  var hits = [];
+  var i, c, a, b, sa, sb;
+  for (i = 0; i < DRAW.candidates.length; i++) {
+    c = DRAW.candidates[i];
+    if (!c.names) continue;
+    a = normText(c.names[0]);
+    b = normText(c.names[1]);
+    if (t.indexOf(a) >= 0 && t.indexOf(b) >= 0) return c;
+    sa = normText(String(c.names[0]).split(/[\s　]+/)[0]);
+    sb = normText(String(c.names[1]).split(/[\s　]+/)[0]);
+    if (sa && sb && t.indexOf(sa) >= 0 && t.indexOf(sb) >= 0) hits.push(c);
+  }
+  return hits.length === 1 ? hits[0] : null;
+}
+
+function importPaste() {
+  var lines = document.getElementById('pasteBox').value.split(/\r?\n/);
+  var isTeam = D.divisions[drawDiv].type === 'team';
+  var ok = 0, ng = [];
+  var seq = 0, block = '', posInBlock = 0;
+  var i, line, n, slot, c, mm, bm;
+  for (i = 0; i < lines.length; i++) {
+    line = lines[i];
+    n = normText(line);
+    if (!n) continue;
+    if (isTeam) {
+      mm = String(line).replace(/[０-９]/g, function (x) { return String.fromCharCode(x.charCodeAt(0) - 65248); }).match(/^\s*(\d{1,2})[\s\t.．:：、]/);
+      seq++;
+      slot = mm ? String(parseInt(mm[1], 10)) : String(seq);
+      c = matchTeam(mm ? line.slice(mm[0].length) : line);
+      if (!c) { ng.push(line.trim()); continue; }
+      if (parseInt(slot, 10) < 1 || parseInt(slot, 10) > 16) { ng.push(line.trim() + '（枠番号）'); continue; }
+      DRAW.draw[slot] = c.id;
+      ok++;
+    } else {
+      bm = n.match(/^([ABCD])ブロック/);
+      if (bm) { block = bm[1]; posInBlock = 0; continue; }
+      mm = n.match(/^([ABCD])?([1-4])(?!\d)/);
+      c = matchPair(line);
+      if (!c) { if (/[ぁ-んァ-ヶ一-龠]/.test(line) && !/勝点|得失|順位|予選|決勝|ブロック|個人戦|団体戦/.test(line)) ng.push(line.trim()); continue; }
+      if (mm && mm[1]) block = mm[1];
+      if (!block) { ng.push(line.trim() + '（ブロック不明）'); continue; }
+      posInBlock = mm ? parseInt(mm[2], 10) : posInBlock + 1;
+      DRAW.draw[block + posInBlock] = c.id;
+      ok++;
+    }
+  }
+  renderDraw();
+  document.getElementById('pasteResult').innerHTML = ok + '件を枠に反映しました。' + (ng.length ? '<br><span class="flag">照合できなかった行：' + esc(ng.join(' ／ ')) + '</span>' : '') + '<br>内容を確認して「組合せを保存」を押してください。';
+}
+
+/* プレビュー：パスワードをこの端末に預けてから、非公開の表示で開く（保存した組合せ案が出る） */
+function openPreview(path) {
+  try { localStorage.setItem('iwateIndoorPreviewPw', pw); } catch (e) {}
+  window.open(path + (path.indexOf('?') >= 0 ? '&' : '?') + 'preview=1', '_blank');
+}
+
+function saveDraw(generate) {
+  var assign = {};
+  var k;
+  for (k in DRAW.draw) if (DRAW.draw.hasOwnProperty(k) && DRAW.draw[k]) assign[k] = DRAW.draw[k];
+  if (generate && DRAW.progressed && !confirm('この区分はすでに試合が進んでいます。進行表を作り直すと、結果がすべて消えます。本当に作り直しますか？')) return;
+  if (generate && DRAW.matchCount && !DRAW.progressed && !confirm('進行表を作り直します（コート・順番の変更は元に戻ります）。よろしいですか？')) return;
+  api({ action: 'adminDrawSave', div: drawDiv, assign: assign }).then(function (r) {
+    if (!generate) { toast('組合せを保存しました（' + r.filled + ' / ' + r.total + '）'); return loadDraw(); }
+    return api({ action: 'adminGenerate', div: drawDiv, force: !!DRAW.progressed }).then(function (g) {
+      toast('進行表を作成しました（' + g.count + '試合）');
+      return loadDraw();
+    });
+  }).catch(function (err) { toast('保存できません：' + err.message, true); });
+}
+
+/* ========== 選手変更 ========== */
+var chgDiv = 'MT';
+var chgSlot = '';
+
+function setChgDiv(code) {
+  chgDiv = code;
+  chgSlot = '';
+  renderChange();
+}
+
+function renderRequests() {
+  var rs = D.requests || [];
+  var pend = rs.filter(function (r) { return r.state === '申請中'; }).reverse(); /* 古い申請から */
+  var done = rs.filter(function (r) { return r.state !== '申請中'; });
+  var h = '';
+  var i, r;
+  if (!pend.length) h += '<div class="req-none">確認待ちの申請はありません。</div>';
+  for (i = 0; i < pend.length; i++) {
+    r = pend[i];
+    h += '<div class="req-card"><div class="h"><span class="k">' + esc(r.kind) + '　' + esc(r.divName) + '　' + esc(r.team) + '</span><span class="muted">' + esc(String(r.at).slice(5, 16)) + ' 申請</span></div>' +
+      '<div class="ft">' + esc(r.target) + '：' + esc(r.from) + ' → <b>' + esc(r.to) + '</b>' + (r.offRoster ? ' <span class="flag">登録名簿にない選手</span>' : '') + '</div>' +
+      '<div class="rs">理由：' + esc(r.reason) + (r.by ? '　申請者：' + esc(r.by) : '') + '</div>' +
+      '<div class="act"><input type="text" id="cm_' + esc(r.id) + '" placeholder="監督への連絡（却下のときは必須）">' +
+      '<button class="btn btn-main" onclick="decideReq(\'' + esc(r.id) + '\', \'approve\')">許可して反映</button>' +
+      '<button class="btn btn-red" onclick="decideReq(\'' + esc(r.id) + '\', \'reject\')">却下</button></div></div>';
+  }
+  if (done.length) {
+    h += '<details><summary class="muted" style="cursor:pointer;margin:4px 0 10px">処理済みの申請（' + done.length + '件）</summary><div class="scroll"><table><thead><tr><th>申請</th><th>区分</th><th>チーム</th><th>内容</th><th>結果</th></tr></thead><tbody>';
+    for (i = 0; i < done.length; i++) {
+      r = done[i];
+      h += '<tr><td style="white-space:nowrap">' + esc(String(r.at).slice(5, 16)) + '</td><td>' + esc(r.divName) + '</td><td>' + esc(r.team) + '</td><td>' + esc(r.target) + '：' + esc(r.from) + ' → ' + esc(r.to) + '</td><td><span class="' + (r.state === '許可' ? 'st-ok' : 'st-ng') + '">' + esc(r.state) + '</span>' + (r.comment ? '<br><span class="muted">' + esc(r.comment) + '</span>' : '') + '</td></tr>';
+    }
+    h += '</tbody></table></div></details>';
+  }
+  document.getElementById('reqList').innerHTML = h;
+  var tab = document.querySelector('.tab[data-tab="change"]');
+  if (tab) tab.innerHTML = '選手変更' + (pend.length ? ' <span style="background:#e08a00;color:#fff;border-radius:9px;padding:0 7px;font-size:.72rem">' + pend.length + '</span>' : '');
+}
+
+function decideReq(id, decision) {
+  var cm = document.getElementById('cm_' + id).value.trim();
+  if (decision === 'reject' && !cm) { toast('却下の理由（監督への連絡）を入力してください', true); return; }
+  if (!confirm(decision === 'approve' ? 'この申請を許可して反映します。よろしいですか？' : 'この申請を却下します。よろしいですか？')) return;
+  api({ action: 'adminChangeDecide', id: id, decision: decision, comment: cm }).then(function (r) {
+    toast(decision === 'approve' ? '許可して反映しました' : '却下しました');
+    if (r.orderNote && r.orderNote.length) alert(r.orderNote.join('\n'));
+    return reload();
+  }).catch(function (err) { toast('処理できません：' + err.message, true); });
+}
+
+function renderChange() {
+  renderRequests();
+  var i, code, html = '';
+  for (i = 0; i < D.divOrder.length; i++) {
+    code = D.divOrder[i];
+    html += '<button class="' + (code === chgDiv ? 'on' : '') + '" onclick="setChgDiv(\'' + code + '\')">' + esc(divName(code)) + '</button>';
+  }
+  document.getElementById('chgSeg').innerHTML = html;
+  var sel = document.getElementById('chgTarget');
+  var keep = sel.value;
+  var opts = '<option value="">' + (D.divisions[chgDiv].type === 'team' ? 'チームを選択' : 'ペアを選択') + '</option>';
+  if (D.divisions[chgDiv].type === 'team') {
+    var es = entriesOf(chgDiv).filter(function (e) { return e.state === '申込済'; })
+      .sort(function (a, b) { return districtCompare(a.district, b.district) || a.teamName.localeCompare(b.teamName, 'ja'); });
+    for (i = 0; i < es.length; i++) opts += '<option value="' + esc(es[i].entryId) + '">' + esc(es[i].district + '｜' + es[i].teamName) + '</option>';
+  } else {
+    var ps = pairsOf(chgDiv);
+    for (i = 0; i < ps.length; i++) opts += '<option value="' + esc(ps[i].pairId) + '">' + esc((i + 1) + '｜' + ps[i].label) + (ps[i].change ? '（変更済）' : '') + '</option>';
+  }
+  sel.innerHTML = opts;
+  sel.value = keep;
+  if (sel.value !== keep) sel.value = '';
+  renderChangeForm();
+  var log = '';
+  for (i = 0; i < D.changes.length; i++) {
+    var c = D.changes[i];
+    log += '<tr><td style="white-space:nowrap">' + esc(String(c.at).slice(5, 16)) + '</td><td>' + esc(c.div) + '</td><td>' + esc(c.team) + '</td><td>' + esc(c.target) + '</td><td>' + esc(c.from) + '</td><td>' + esc(c.to) + (c.offRoster ? ' <span class="flag">名簿外</span>' : '') + '</td><td>' + esc(c.reason) + '</td></tr>';
+  }
+  document.getElementById('chgLog').innerHTML = log || '<tr><td colspan="7" class="loading">選手変更はまだありません</td></tr>';
+}
+
+function rosterOptions(teamName, exclude) {
+  var gender = D.divisions[chgDiv].gender;
+  var team = findTeam(teamName, gender);
+  var html = '<option value="">交代する選手を選択</option>';
+  var i, p;
+  if (team) {
+    for (i = 0; i < team.players.length; i++) {
+      p = team.players[i];
+      if (p.gender && p.gender !== gender) continue;
+      var used = exclude.indexOf(p.name.replace(/[\s　]/g, '')) >= 0;
+      html += '<option value="' + esc(p.name) + '" data-grade="' + esc(p.grade) + '"' + (used ? ' disabled' : '') + '>' + esc(p.name) + '（' + esc(p.grade) + '）' + (used ? '　出場中' : '') + '</option>';
+    }
+  }
+  html += '<option value="__manual">（名簿にない選手を手入力・要確認）</option>';
+  return html;
+}
+
+function renderChangeForm() {
+  var id = document.getElementById('chgTarget').value;
+  var box = document.getElementById('chgForm');
+  if (!id) { box.innerHTML = ''; return; }
+  var html = '<div class="chg-box">';
+  var i, ex = [];
+  if (D.divisions[chgDiv].type === 'team') {
+    var e = null;
+    for (i = 0; i < D.entries.length; i++) if (D.entries[i].entryId === id) e = D.entries[i];
+    if (!e) { box.innerHTML = ''; return; }
+    var count = 0;
+    html += '<div class="muted" style="margin-bottom:8px">変更する番号を選んでください。</div><div class="chg-slots">';
+    for (i = 0; i < 8; i++) {
+      var p = e.players[i] || { vacant: true };
+      if (!p.vacant) { count++; ex.push(String(p.name).replace(/[\s　]/g, '')); }
+      html += '<div class="chg-slot' + (String(i + 1) === chgSlot ? ' on' : '') + '" onclick="pickSlot(\'' + (i + 1) + '\')"><div class="no">No.' + (i + 1) + '</div><div class="nm">' + (p.vacant ? '<span style="color:#aaa">欠員</span>' : esc(p.name) + '（' + esc(p.grade) + '）' + (p.offRoster ? '<span class="flag">※</span>' : '')) + '</div>' + (p.changedFrom ? '<div class="was">変更前：' + esc(p.changedFrom) + '</div>' : '') + '</div>';
+    }
+    html += '<div class="chg-slot' + (chgSlot === 'coach' ? ' on' : '') + '" onclick="pickSlot(\'coach\')"><div class="no">監督</div><div class="nm">' + esc(e.coachName || '（未登録）') + '</div><div class="muted">' + esc(e.coachTitle || '') + '</div></div>';
+    html += '</div><div class="muted" style="margin-bottom:8px">現在 ' + count + '名' + (count < 6 ? '（6名未満のため3ペア目は不戦敗）' : '') + '</div>';
+    if (chgSlot === 'coach') {
+      html += coachFields('entryId', e.entryId);
+    } else if (chgSlot) {
+      html += '<div class="chg-fields"><strong>No.' + chgSlot + ' を</strong>';
+      html += '<select id="chgName" onchange="onChgName()">' + rosterOptions(e.teamName, ex) + '</select>';
+      html += '<input type="text" id="chgManual" placeholder="氏名" style="display:none">';
+      html += '<select id="chgGrade"><option value="">学年</option><option>1年</option><option>2年</option><option>3年</option></select>';
+      html += '<input type="text" id="chgReason" placeholder="理由（例：けが）">';
+      html += '<button class="btn btn-main" onclick="doTeamChange(\'' + esc(e.entryId) + '\', false)">この選手に変更</button>';
+      html += '<button class="btn btn-red" onclick="doTeamChange(\'' + esc(e.entryId) + '\', true)">欠員にする</button></div>';
+    }
+  } else {
+    var pr = null;
+    for (i = 0; i < D.pairs.length; i++) if (D.pairs[i].pairId === id) pr = D.pairs[i];
+    if (!pr) { box.innerHTML = ''; return; }
+    for (i = 0; i < D.pairs.length; i++) {
+      if (D.pairs[i].div !== chgDiv) continue;
+      ex.push(String(D.pairs[i].aName).replace(/[\s　]/g, ''));
+      ex.push(String(D.pairs[i].bName).replace(/[\s　]/g, ''));
+    }
+    var locked = pr.change ? pr.change.side : '';
+    html += '<div class="muted" style="margin-bottom:8px">交代する選手（A・B）を選んでください。交代は抜ける選手と同じチームの選手から選びます（1ペア1名まで）。</div><div class="chg-slots">';
+    var sides = ['A', 'B'];
+    for (i = 0; i < 2; i++) {
+      var sd = sides[i];
+      var nm = sd === 'A' ? pr.aName : pr.bName, gr = sd === 'A' ? pr.aGrade : pr.bGrade, tm = sd === 'A' ? pr.aTeam : pr.bTeam;
+      var dis = locked && locked !== sd;
+      html += '<div class="chg-slot' + (chgSlot === sd ? ' on' : '') + '" style="' + (dis ? 'opacity:.45;cursor:not-allowed' : '') + '" onclick="' + (dis ? '' : 'pickSlot(\'' + sd + '\')') + '"><div class="no">選手' + sd + '</div><div class="nm">' + esc(nm) + '（' + esc(gr) + '）</div><div class="muted">' + esc(tm) + '</div>' + (locked === sd ? '<div class="was">変更前：' + esc(pr.change.from) + '</div>' : '') + (dis ? '<div class="was">変更不可（1名のみ）</div>' : '') + '</div>';
+    }
+    html += '<div class="chg-slot' + (chgSlot === 'coach' ? ' on' : '') + '" onclick="pickSlot(\'coach\')"><div class="no">監督</div><div class="nm">' + esc(pr.coachName || '（未登録）') + '</div><div class="muted">' + esc(pr.coachTitle || '') + '</div></div>';
+    html += '</div>';
+    if (chgSlot === 'coach') html += coachFields('pairId', pr.pairId);
+    if (chgSlot === 'A' || chgSlot === 'B') {
+      var team = chgSlot === 'A' ? pr.aTeam : pr.bTeam;
+      html += '<div class="chg-fields"><strong>選手' + chgSlot + '（' + esc(team) + '）を</strong>';
+      html += '<select id="chgName" onchange="onChgName()">' + rosterOptions(team, ex) + '</select>';
+      html += '<input type="text" id="chgManual" placeholder="氏名" style="display:none">';
+      html += '<select id="chgGrade"><option value="">学年</option><option>1年</option><option>2年</option><option>3年</option></select>';
+      html += '<input type="text" id="chgReason" placeholder="理由（例：体調不良）">';
+      html += '<button class="btn btn-main" onclick="doPairChange(\'' + esc(pr.pairId) + '\')">この選手に変更</button></div>';
+    }
+  }
+  html += '</div>';
+  box.innerHTML = html;
+}
+
+function pickSlot(v) {
+  chgSlot = v;
+  renderChangeForm();
+}
+
+function onChgName() {
+  var sel = document.getElementById('chgName');
+  var manual = sel.value === '__manual';
+  document.getElementById('chgManual').style.display = manual ? 'inline-block' : 'none';
+  var opt = sel.options[sel.selectedIndex];
+  document.getElementById('chgGrade').value = (!manual && opt) ? (opt.getAttribute('data-grade') || '') : '';
+}
+
+function chgValues() {
+  var sel = document.getElementById('chgName').value;
+  return {
+    name: sel === '__manual' ? document.getElementById('chgManual').value.trim() : sel,
+    grade: document.getElementById('chgGrade').value,
+    reason: document.getElementById('chgReason').value.trim()
+  };
+}
+
+function doTeamChange(entryId, vacant) {
+  var v = vacant ? { reason: document.getElementById('chgReason').value.trim() } : chgValues();
+  if (!vacant && (!v.name || !v.grade)) { toast('交代する選手と学年を選んでください', true); return; }
+  if (!confirm('No.' + chgSlot + ' を' + (vacant ? '欠員に' : '「' + v.name + '」に') + '変更します。よろしいですか？')) return;
+  api({ action: 'adminChangeTeamPlayer', entryId: entryId, slot: chgSlot, mode: vacant ? 'vacant' : 'replace', name: v.name, grade: v.grade, reason: v.reason }).then(function (r) {
+    toast('変更しました（現在' + r.count + '名）' + (r.count < 6 ? '：3ペア目は不戦敗になります' : ''), r.count < 4);
+    if (r.orderNote && r.orderNote.length) alert(r.orderNote.join('\n'));
+    chgSlot = '';
+    return reload();
+  }).catch(function (err) { toast('変更できません：' + err.message, true); });
+}
+
+var COACH_TITLES = ['教職員', '部活動指導員', '外部コーチ', '校外コーチ', 'クラブ指導者'];
+function coachFields(key, id) {
+  var h = '<div class="chg-fields"><strong>監督を</strong><input type="text" id="coachName" placeholder="新しい監督の氏名"><select id="coachTitle"><option value="">役職</option>';
+  var i;
+  for (i = 0; i < COACH_TITLES.length; i++) h += '<option>' + COACH_TITLES[i] + '</option>';
+  h += '</select><input type="text" id="chgReason" placeholder="理由（例：出張のため）">';
+  h += '<button class="btn btn-main" onclick="doCoachChange(\'' + key + '\', \'' + esc(id) + '\')">この監督に変更</button></div>';
+  return h;
+}
+
+function doCoachChange(key, id) {
+  var name = document.getElementById('coachName').value.trim();
+  var title = document.getElementById('coachTitle').value;
+  if (!name || !title) { toast('新しい監督の氏名と役職を入れてください', true); return; }
+  if (!confirm('監督を「' + name + '（' + title + '）」に変更します。よろしいですか？')) return;
+  var body = { action: 'adminChangeCoach', name: name, title: title, reason: document.getElementById('chgReason').value.trim() };
+  body[key] = id;
+  api(body).then(function () {
+    toast('監督を変更しました');
+    chgSlot = '';
+    return reload();
+  }).catch(function (err) { toast('変更できません：' + err.message, true); });
+}
+
+function doPairChange(pairId) {
+  var v = chgValues();
+  if (!v.name || !v.grade) { toast('交代する選手と学年を選んでください', true); return; }
+  if (!confirm('選手' + chgSlot + ' を「' + v.name + '」に変更します。\n（個人戦の選手変更は1ペア1名のみ）\nよろしいですか？')) return;
+  api({ action: 'adminChangePairPlayer', pairId: pairId, side: chgSlot, name: v.name, grade: v.grade, reason: v.reason }).then(function () {
+    toast('変更しました');
+    chgSlot = '';
+    return reload();
+  }).catch(function (err) { toast('変更できません：' + err.message, true); });
+}
+
+/* ========== 団体戦 出場指定 ========== */
+function loadTeamSelection() {
+  teamSelection = { MT: {}, WT: {} };
+  var i, e;
+  for (i = 0; i < D.entries.length; i++) {
+    e = D.entries[i];
+    if (teamSelection[e.div]) teamSelection[e.div][e.teamName] = true;
+  }
+}
+
+function setTeamDiv(code) {
+  teamDiv = code;
+  document.getElementById('segMT').className = code === 'MT' ? 'on' : '';
+  document.getElementById('segWT').className = code === 'WT' ? 'on' : '';
+  renderTeamPick();
+}
+
+function appliedTeam(code, name) {
+  var i;
+  for (i = 0; i < D.entries.length; i++) {
+    if (D.entries[i].div === code && D.entries[i].teamName === name && D.entries[i].state === '申込済') return true;
+  }
+  return false;
+}
+
+function renderTeamPick() {
+  var gender = D.divisions[teamDiv].gender;
+  var teams = teamsForGender(gender);
+  var q = document.getElementById('teamSearch').value.replace(/\s/g, '');
+  var sel = teamSelection[teamDiv];
+  var max = parseInt(D.config['団体戦上限'], 10) || 16;
+  var count = 0;
+  var k;
+  for (k in sel) if (sel.hasOwnProperty(k) && sel[k]) count++;
+  var counter = document.getElementById('teamCounter');
+  counter.textContent = '選択 ' + count + ' / ' + max;
+  counter.className = 'counter' + (count > max ? ' over' : '');
+  var html = '';
+  var i, t, on, locked, males, females, j;
+  for (i = 0; i < teams.length; i++) {
+    t = teams[i];
+    if (q && (t.name + t.district).indexOf(q) < 0) continue;
+    on = !!sel[t.name];
+    locked = on && appliedTeam(teamDiv, t.name);
+    males = 0; females = 0;
+    for (j = 0; j < t.players.length; j++) { if (t.players[j].gender === '女') females++; else if (t.players[j].gender === '男') males++; }
+    html += '<label class="team-item' + (on ? ' on' : '') + (locked ? ' locked' : '') + '">';
+    html += '<input type="checkbox" ' + (on ? 'checked ' : '') + (locked ? 'disabled ' : '') + 'onchange="toggleTeam(\'' + esc(t.name).replace(/'/g, "\\'") + '\', this.checked)">';
+    html += '<span><strong>' + esc(t.name) + '</strong><br><span class="meta">' + esc(t.district) + '／' + esc(t.category) + '／' + (gender === '男' ? '男子' + males : '女子' + females) + '名' + (t.paid ? '' : '／<span class="flag">登録料未入金</span>') + (locked ? '／申込済' : '') + '</span></span>';
+    html += '</label>';
+  }
+  document.getElementById('teamPick').innerHTML = html || '<div class="loading">該当するチームがありません。「加盟チーム名簿」で名簿を更新してください。</div>';
+}
+
+function toggleTeam(name, on) {
+  teamSelection[teamDiv][name] = on;
+  renderTeamPick();
+}
+
+function saveTeams() {
+  var sel = teamSelection[teamDiv];
+  var names = [];
+  var k;
+  for (k in sel) if (sel.hasOwnProperty(k) && sel[k]) names.push(k);
+  var max = parseInt(D.config['団体戦上限'], 10) || 16;
+  if (names.length > max) { toast(divName(teamDiv) + 'は最大' + max + 'チームです', true); return; }
+  if (!confirm(divName(teamDiv) + 'の出場チームを ' + names.length + ' チームで保存します。よろしいですか？')) return;
+  var btn = document.getElementById('saveTeamsBtn');
+  btn.disabled = true;
+  api({ action: 'adminSetTeams', div: teamDiv, teams: names }).then(function (r) {
+    toast('保存しました（追加' + r.added + '・削除' + r.removed + '）');
+    btn.disabled = false;
+    return reload();
+  }).catch(function (err) {
+    btn.disabled = false;
+    toast('保存に失敗しました：' + err.message, true);
+  });
+}
+
+/* ========== 個人戦 ペア登録 ========== */
+function pairsOf(code) {
+  var out = [];
+  var i;
+  for (i = 0; i < D.pairs.length; i++) if (D.pairs[i].div === code) out.push(D.pairs[i]);
+  return out;
+}
+
+function setIndivDiv(code) {
+  indivDiv = code;
+  document.getElementById('segMI').className = code === 'MI' ? 'on' : '';
+  document.getElementById('segWI').className = code === 'WI' ? 'on' : '';
+  resetPairForm();
+  renderPairs();
+}
+
+function fillTeamSelect(side) {
+  var teams = teamsForGender(D.divisions[indivDiv].gender);
+  var html = '<option value="">所属チームを選択</option>';
+  var i;
+  for (i = 0; i < teams.length; i++) html += '<option value="' + esc(teams[i].name) + '">' + esc(teams[i].district + '｜' + teams[i].name) + '</option>';
+  document.getElementById(side + 'Team').innerHTML = html;
+  onPairTeam(side);
+}
+
+function onPairTeam(side) {
+  var gender = D.divisions[indivDiv].gender;
+  var team = findTeam(document.getElementById(side + 'Team').value, gender);
+  var html = '<option value="">選手を選択</option>';
+  var i, p;
+  if (team) {
+    for (i = 0; i < team.players.length; i++) {
+      p = team.players[i];
+      if (p.gender && p.gender !== gender) continue;
+      html += '<option value="' + esc(p.name) + '" data-grade="' + esc(p.grade) + '">' + esc(p.name) + '（' + esc(p.grade) + '）</option>';
+    }
+  }
+  html += '<option value="__manual">（名簿にない選手を手入力）</option>';
+  document.getElementById(side + 'Player').innerHTML = html;
+  document.getElementById(side + 'Name').style.display = 'none';
+  document.getElementById(side + 'Name').value = '';
+  document.getElementById(side + 'Grade').value = '';
+  updatePayer();
+}
+
+function onPairPlayer(side) {
+  var sel = document.getElementById(side + 'Player');
+  var manual = sel.value === '__manual';
+  document.getElementById(side + 'Name').style.display = manual ? 'block' : 'none';
+  var opt = sel.options[sel.selectedIndex];
+  if (!manual && opt) document.getElementById(side + 'Grade').value = opt.getAttribute('data-grade') || '';
+}
+
+function updatePayer() {
+  var a = document.getElementById('aTeam').value;
+  var b = document.getElementById('bTeam').value;
+  var row = document.getElementById('payerRow');
+  if (a && b && a !== b) {
+    row.style.display = 'block';
+    document.getElementById('payerA').textContent = a;
+    document.getElementById('payerB').textContent = b;
+  } else {
+    row.style.display = 'none';
+  }
+}
+
+function sideValue(side) {
+  var sel = document.getElementById(side + 'Player').value;
+  return {
+    team: document.getElementById(side + 'Team').value,
+    name: sel === '__manual' ? document.getElementById(side + 'Name').value.trim() : sel,
+    grade: document.getElementById(side + 'Grade').value
+  };
+}
+
+function savePair() {
+  var a = sideValue('a');
+  var b = sideValue('b');
+  if (!a.team || !a.name || !b.team || !b.name) { toast('選手A・Bの所属と氏名を選んでください', true); return; }
+  if (a.team === b.team && a.name === b.name) { toast('同じ選手が選ばれています', true); return; }
+  var payerSide = document.querySelector('input[name="payer"]:checked').value;
+  var payer = a.team === b.team ? a.team : (payerSide === 'b' ? b.team : a.team);
+  var btn = document.getElementById('savePairBtn');
+  btn.disabled = true;
+  api({ action: 'adminSavePair', pair: {
+    pairId: editingPairId, div: indivDiv,
+    aName: a.name, aGrade: a.grade, aTeam: a.team,
+    bName: b.name, bGrade: b.grade, bTeam: b.team, payer: payer
+  } }).then(function () {
+    toast('ペアを' + (editingPairId ? '更新' : '登録') + 'しました');
+    btn.disabled = false;
+    resetPairForm();
+    return reload();
+  }).catch(function (err) {
+    btn.disabled = false;
+    toast('登録に失敗しました：' + err.message, true);
+  });
+}
+
+function setSide(side, team, name, grade) {
+  document.getElementById(side + 'Team').value = team;
+  onPairTeam(side);
+  var sel = document.getElementById(side + 'Player');
+  sel.value = name;
+  if (sel.value !== name) {
+    sel.value = '__manual';
+    document.getElementById(side + 'Name').style.display = 'block';
+    document.getElementById(side + 'Name').value = name;
+  }
+  document.getElementById(side + 'Grade').value = grade || '';
+}
+
+function editPair(id) {
+  var i, p = null;
+  for (i = 0; i < D.pairs.length; i++) if (D.pairs[i].pairId === id) p = D.pairs[i];
+  if (!p) return;
+  editingPairId = id;
+  setSide('a', p.aTeam, p.aName, p.aGrade);
+  setSide('b', p.bTeam, p.bName, p.bGrade);
+  updatePayer();
+  var radios = document.getElementsByName('payer');
+  radios[0].checked = p.payer === p.aTeam;
+  radios[1].checked = p.payer !== p.aTeam;
+  document.getElementById('pairFormTitle').textContent = 'ペアを編集';
+  document.getElementById('savePairBtn').textContent = '変更を保存';
+  document.getElementById('cancelPairBtn').style.display = 'inline-flex';
+  window.scrollTo(0, 0);
+}
+
+function deletePair(id, label) {
+  if (!confirm('「' + label + '」を削除します。よろしいですか？')) return;
+  api({ action: 'adminDeletePair', pairId: id }).then(function () {
+    toast('削除しました');
+    return reload();
+  }).catch(function (err) { toast('削除できません：' + err.message, true); });
+}
+
+function resetPairForm() {
+  editingPairId = '';
+  if (!D) return;
+  fillTeamSelect('a');
+  fillTeamSelect('b');
+  document.getElementsByName('payer')[0].checked = true;
+  document.getElementById('pairFormTitle').textContent = 'ペアを追加';
+  document.getElementById('savePairBtn').textContent = 'ペアを登録';
+  document.getElementById('cancelPairBtn').style.display = 'none';
+}
+
+function renderPairs() {
+  if (!editingPairId) resetPairForm();
+  var list = pairsOf(indivDiv);
+  var max = parseInt(D.config['個人戦上限'], 10) || 16;
+  var counter = document.getElementById('pairCounter');
+  counter.textContent = '登録 ' + list.length + ' / ' + max + ' ペア';
+  counter.className = 'counter' + (list.length > max ? ' over' : '');
+  var html = '';
+  var i, p, st;
+  for (i = 0; i < list.length; i++) {
+    p = list[i];
+    st = '未申込';
+    var j;
+    for (j = 0; j < D.entries.length; j++) if (D.entries[j].div === p.div && D.entries[j].teamName === p.payer) st = D.entries[j].state;
+    html += '<tr>';
+    html += '<td>' + (i + 1) + '</td>';
+    html += '<td><strong>' + esc(p.aName) + '</strong>（' + esc(p.aGrade) + '）<br><span class="muted">' + esc(p.aTeam) + '</span></td>';
+    html += '<td><strong>' + esc(p.bName) + '</strong>（' + esc(p.bGrade) + '）<br><span class="muted">' + esc(p.bTeam) + '</span></td>';
+    html += '<td>' + esc(p.payer) + (p.joint ? ' <span class="badge b-joint">合同</span>' : '') + '</td>';
+    html += '<td><span class="badge ' + (st === '申込済' ? 'b-ok' : 'b-wait') + '">' + esc(st) + '</span>' + (p.coachName ? '<br><span class="muted">監督：' + esc(p.coachName) + '</span>' : '') +
+      (p.preChange ? '<br><span class="badge b-ng">申込時変更：' + esc(p.change ? p.change.from + '→' + (p.change.side === 'A' ? p.aName : p.bName) : '選手' + p.preChange.side + '（' + (p.preChange.side === 'A' ? p.aName : p.bName) + '）') + '</span>' : '') + '</td>';
+    html += '<td style="white-space:nowrap"><button class="btn btn-out btn-sm" onclick="editPair(\'' + esc(p.pairId) + '\')">編集</button> <button class="btn btn-out btn-sm" onclick="openPreCfg(\'' + esc(p.pairId) + '\')">申込時変更</button> <button class="btn btn-red" onclick="deletePair(\'' + esc(p.pairId) + '\', \'' + esc(p.aName + '・' + p.bName).replace(/'/g, "\\'") + '\')">削除</button></td>';
+    html += '</tr>';
+  }
+  document.getElementById('pairBody').innerHTML = html || '<tr><td colspan="6" class="loading">まだペアが登録されていません</td></tr>';
+}
+
+/* ========== 申込時の選手変更（競技委員会承認） ========== */
+function openPreCfg(pairId) {
+  var p = null;
+  var i;
+  for (i = 0; i < D.pairs.length; i++) if (D.pairs[i].pairId === pairId) p = D.pairs[i];
+  if (!p) return;
+  var cur = p.preChange || {};
+  var lockSide = p.change ? p.change.side : '';
+  var h = '<div class="chg-box" style="margin-top:12px"><strong>申込時の選手変更（競技委員会承認）：' + esc(p.aName) + '・' + esc(p.bName) + '</strong>' +
+    '<div class="muted" style="margin:4px 0 8px">設定すると、このペアの申込フォームに「代わりの選手を選ぶ欄」が出ます。監督が選んで申し込むと、選手変更として記録されます（1ペア1名の枠を使います）。</div>' +
+    '<div class="chg-fields"><strong>変わる選手</strong>' +
+    '<label><input type="radio" name="preSide" value="A"' + (cur.side === 'A' ? ' checked' : '') + (lockSide === 'B' ? ' disabled' : '') + '> 選手A：' + esc(p.change && p.change.side === 'A' ? p.change.from : p.aName) + '</label>' +
+    '<label><input type="radio" name="preSide" value="B"' + (cur.side === 'B' ? ' checked' : '') + (lockSide === 'A' ? ' disabled' : '') + '> 選手B：' + esc(p.change && p.change.side === 'B' ? p.change.from : p.bName) + '</label></div>' +
+    '<div class="chg-fields" style="margin-top:8px"><strong>理由</strong><input type="text" id="preReason" style="flex:1;min-width:260px" value="' + esc(cur.reason || 'step4出場のため競技委員会で承認') + '">' +
+    '<label><input type="checkbox" id="prePub"' + (cur.side ? (cur.pub ? ' checked' : '') : ' checked') + '> 理由を選手変更一覧（公開）に載せる</label></div>' +
+    '<div class="chg-fields" style="margin-top:10px"><button class="btn btn-main" onclick="savePreCfg(\'' + esc(p.pairId) + '\')">設定する</button>' +
+    (cur.side ? '<button class="btn btn-red" onclick="clearPreCfg(\'' + esc(p.pairId) + '\')">解除する</button>' : '') +
+    '<button class="btn btn-out" onclick="document.getElementById(\'preCfg\').innerHTML=\'\'">閉じる</button></div></div>';
+  document.getElementById('preCfg').innerHTML = h;
+  document.getElementById('preCfg').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function savePreCfg(pairId) {
+  var r = document.querySelector('input[name="preSide"]:checked');
+  if (!r) { toast('変わる選手（A・B）を選んでください', true); return; }
+  var reason = document.getElementById('preReason').value.trim();
+  if (!reason) { toast('理由を入れてください', true); return; }
+  api({ action: 'adminSetPreChange', pairId: pairId, side: r.value, reason: reason, publicReason: document.getElementById('prePub').checked }).then(function () {
+    toast('申込時の選手変更を設定しました');
+    document.getElementById('preCfg').innerHTML = '';
+    return reload();
+  }).catch(function (err) { toast('設定できません：' + err.message, true); });
+}
+
+function clearPreCfg(pairId) {
+  if (!confirm('申込時の選手変更の設定を解除します（すでに記録された選手変更は残ります）。よろしいですか？')) return;
+  api({ action: 'adminSetPreChange', pairId: pairId, side: '' }).then(function () {
+    toast('解除しました');
+    document.getElementById('preCfg').innerHTML = '';
+    return reload();
+  }).catch(function (err) { toast('解除できません：' + err.message, true); });
+}
+
+/* ========== 加盟チーム名簿 ========== */
+function renderMaster() {
+  document.getElementById('masterInfo').textContent = D.teams.length + 'チーム' + (D.masterUpdatedAt ? '（最終更新 ' + D.masterUpdatedAt + '）' : '（未取り込み）');
+  var html = '';
+  var i, t, m, f, j;
+  for (i = 0; i < D.teams.length; i++) {
+    t = D.teams[i];
+    m = 0; f = 0;
+    for (j = 0; j < t.players.length; j++) { if (t.players[j].gender === '女') f++; else if (t.players[j].gender === '男') m++; }
+    html += '<tr><td><strong>' + esc(t.name) + '</strong></td><td>' + esc(t.category) + '</td><td>' + esc(t.district) + '</td><td>' + esc(t.repName) + '</td>';
+    html += '<td>' + (t.hasEmail ? '<span class="badge b-ok">あり</span>' : '<span class="badge b-ng">なし</span>') + '</td>';
+    html += '<td>' + (t.paid ? '<span class="badge b-ok">入金済</span>' : '<span class="badge b-wait">未入金</span>') + '</td>';
+    html += '<td>' + m + ' / ' + f + '</td></tr>';
+  }
+  document.getElementById('masterBody').innerHTML = html || '<tr><td colspan="7" class="loading">「名簿を更新」を押して取り込んでください</td></tr>';
+}
+
+function refreshMaster() {
+  var btn = document.getElementById('refreshBtn');
+  btn.disabled = true;
+  btn.textContent = '取り込み中...';
+  api({ action: 'adminRefreshMaster' }).then(function (r) {
+    toast(r.count + 'チームを取り込みました');
+    btn.disabled = false;
+    btn.textContent = '↻ 名簿を更新';
+    return reload();
+  }).catch(function (err) {
+    btn.disabled = false;
+    btn.textContent = '↻ 名簿を更新';
+    toast('取り込みに失敗しました：' + err.message, true);
+  });
+}
+
+/* ========== 初期化 ========== */
+(function () {
+  var saved = '';
+  try { saved = sessionStorage.getItem(PW_KEY) || ''; } catch (e) {}
+  if (saved) {
+    pw = saved;
+    document.getElementById('pwInput').value = saved;
+    reload().catch(function () {});
+  }
+})();
+</script>
+</body>
+</html>
