@@ -625,7 +625,7 @@ function renderRanks() {
     html += '<div class="rk"><h4>' + bl[i] + 'ブロック</h4><table>';
     opts1 = '<option value="">1位を選択</option>';
     opts2 = '<option value="">2位を選択</option>';
-    opts3 = '<option value="">3位を選択（審判）</option>';
+    opts3 = '<option value="">' + (bl[i] === 'A' || bl[i] === 'B' ? '3位を選択（1回戦の審判）' : '3位を選択') + '</option>';
     for (j = 0; j < DATA.blocks[bl[i]].length; j++) {
       p = DATA.blocks[bl[i]][j];
       t = rows[p.id];
@@ -635,7 +635,7 @@ function renderRanks() {
       opts2 += '<option value="' + esc(p.id) + '"' + (rs[1] === p.id ? ' selected' : '') + '>' + esc(p.label) + '</option>';
       opts3 += '<option value="' + esc(p.id) + '"' + (rs[2] === p.id ? ' selected' : '') + '>' + esc(p.label) + '</option>';
     }
-    html += '</table><select id="r1_' + bl[i] + '" onchange="rankDraftSet(\'' + bl[i] + '\')">' + opts1 + '</select><select id="r2_' + bl[i] + '" onchange="rankDraftSet(\'' + bl[i] + '\')">' + opts2 + '</select>' + (bl[i] === 'A' || bl[i] === 'B' ? '<select id="r3_' + bl[i] + '" onchange="rankDraftSet(\'' + bl[i] + '\')">' + opts3 + '</select>' : '');
+    html += '</table><select id="r1_' + bl[i] + '" onchange="rankDraftSet(\'' + bl[i] + '\')">' + opts1 + '</select><select id="r2_' + bl[i] + '" onchange="rankDraftSet(\'' + bl[i] + '\')">' + opts2 + '</select>' + '<select id="r3_' + bl[i] + '" onchange="rankDraftSet(\'' + bl[i] + '\')">' + opts3 + '</select>';
     html += '<button class="btn" style="width:100%" onclick="saveRank(\'' + bl[i] + '\')">' + bl[i] + 'ブロックの順位を確定</button>';
     html += diffBox(bl[i], rows) + '</div>';
   }
@@ -762,7 +762,7 @@ function saveRank(blk) {
   var el3 = document.getElementById('r3_' + blk);
   var third = el3 ? el3.value : '';
   if (!first || !second) { toast('1位と2位を選んでください', true); return; }
-  if (el3 && !third && DATA.blocks[blk].length >= 3) { toast('3位も選んでください（決勝トーナメント1回戦の審判）', true); return; }
+  if (el3 && !third && DATA.blocks[blk].length >= 3) { toast('3位も選んでください' + (blk === 'A' || blk === 'B' ? '（決勝トーナメント1回戦の審判）' : '（4位は残りのペアに決まります）'), true); return; }
   busy = true;
   api({ action: 'ctlRanks', block: blk, first: first, second: second, third: third }).then(function (d) {
     busy = false;

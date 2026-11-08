@@ -288,9 +288,11 @@ function leagueStat(d, blk) {
       if (sc) { st[m.left.id].gf += sc[0]; st[m.left.id].ga += sc[1]; st[m.right.id].gf += sc[1]; st[m.right.id].ga += sc[0]; }
     }
   }
-  /* 順位：1・2位は本部の確定値。全試合終了かつ1・2位確定後、残り2ペアは勝数→直接対決 */
+  /* 順位：1〜3位は本部の確定値。4位は残りの1ペア
+     3位が未確定のときだけ自動：残り2ペアの勝数が違う、または同率が2ペアだけ（直接対決で決まる）とき。
+     3ペア以上の同率が絡むときは、得失などで本部が決めるので空欄にする */
   var rank = {};
-  var r1 = d.ranks[blk + '1'], r2 = d.ranks[blk + '2'];
+  var r1 = d.ranks[blk + '1'], r2 = d.ranks[blk + '2'], r3 = d.ranks[blk + '3'];
   if (r1) rank[r1] = 1;
   if (r2) rank[r2] = 2;
   if (r1 && r2 && done >= 6) {
@@ -298,9 +300,18 @@ function leagueStat(d, blk) {
     for (i = 0; i < ps.length; i++) if (ps[i].id !== r1 && ps[i].id !== r2) rest.push(ps[i].id);
     if (rest.length === 2) {
       var a = rest[0], b = rest[1];
-      var aFirst = st[a].w !== st[b].w ? st[a].w > st[b].w : !!(res[a + '|' + b] && res[a + '|' + b].win);
-      rank[aFirst ? a : b] = 3;
-      rank[aFirst ? b : a] = 4;
+      var aFirst = null;
+      if (r3 === a || r3 === b) aFirst = r3 === a;
+      else if (st[a].w !== st[b].w) aFirst = st[a].w > st[b].w;
+      else {
+        var same = 0;
+        for (i = 0; i < ps.length; i++) if (st[ps[i].id].w === st[a].w) same++;
+        if (same === 2 && res[a + '|' + b]) aFirst = !!res[a + '|' + b].win;
+      }
+      if (aFirst !== null) {
+        rank[aFirst ? a : b] = 3;
+        rank[aFirst ? b : a] = 4;
+      }
     }
   }
   return { byPos: byPos, st: st, res: res, rank: rank };
