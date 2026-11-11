@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex">
+<script>window.IWP_NS = 'coach'; window.IWP_DEFAULT = 'coach-team';</script>
+<script src="../gas-src.js"></script>
+<script src="../scenarios.js"></script>
+<script src="../engine.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>選手・監督の変更申請｜県インドア大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--main:#28a745;--dark:#1e7e34;--light:#e6f4ea;--acc:#e08a00;--red:#b33030;--gray:#f5f5f0;--text:#222;--muted:#666;--radius:12px}
+body.indiv{--main:#0056b3;--dark:#003d80;--light:#e7f0fb}
+html{font-size:16px}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,var(--dark),var(--main));color:#fff;padding:12px 16px;position:sticky;top:0;z-index:50;box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.header h1{max-width:640px;margin:0 auto;font-size:1rem;font-weight:900}
+.header h1 small{display:block;font-size:.7rem;font-weight:500;opacity:.9}
+.main{max-width:640px;margin:0 auto;padding:14px}
+.card{background:#fff;border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
+.card h2{font-size:.95rem;font-weight:900;color:var(--dark);margin-bottom:10px}
+.msg{border-radius:var(--radius);padding:14px;font-weight:700;line-height:1.6;margin-bottom:14px;font-size:.9rem}
+.msg.info{background:#e8f1fb;color:#0b3d75}
+.msg.ok{background:#d4edda;color:#155724}
+.msg.ng{background:#f8d7da;color:#721c24}
+.msg a{color:inherit}
+.reg{width:100%;border-collapse:collapse;font-size:.9rem}
+.reg th{background:var(--light);color:var(--dark);font-size:.78rem;padding:6px 8px;text-align:left;width:4.2em;white-space:nowrap}
+.reg td{padding:6px 8px;border-bottom:1px solid #eee}
+.reg .was{display:block;font-size:.72rem;color:var(--red)}
+.vac{color:#aaa}
+.pairbox{border:1.5px solid #e2e2da;border-radius:10px;padding:8px 10px;margin-bottom:8px;font-size:.88rem;line-height:1.7}
+.pairbox b{color:var(--dark)}
+.kinds{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:12px}
+.kinds button{padding:12px 6px;border-radius:10px;border:2px solid #ddd;background:#fff;font-family:inherit;font-size:.92rem;font-weight:900;color:#444;cursor:pointer}
+.kinds button.on{border-color:var(--main);background:var(--light);color:var(--dark)}
+label.f{display:block;font-size:.8rem;font-weight:700;color:var(--muted);margin:10px 0 4px}
+select,input[type=text]{width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:1rem;font-family:inherit;background:#fff}
+.row2{display:grid;grid-template-columns:1fr 7em;gap:8px}
+.btn{display:block;width:100%;padding:15px;border-radius:var(--radius);border:none;font-size:1.02rem;font-weight:900;font-family:inherit;cursor:pointer;margin-top:14px;background:var(--main);color:#fff}
+.btn:disabled{opacity:.5}
+.hint{font-size:.76rem;color:var(--muted);margin-top:6px;line-height:1.6}
+.preview{margin-top:12px;background:#fffaf0;border:2px dashed var(--acc);border-radius:10px;padding:10px 12px;font-size:.92rem;font-weight:700}
+.preview b{color:var(--red)}
+.req{border-left:5px solid #ccc;padding:8px 10px;margin-bottom:8px;background:#fafafa;border-radius:6px;font-size:.86rem;line-height:1.6}
+.req.p{border-color:var(--acc);background:#fffaf0}
+.req.y{border-color:#1a7f37;background:#eef8f0}
+.req.n{border-color:var(--red);background:#fdf0f0}
+.req .st{font-weight:900}
+.req .cm{font-size:.8rem;color:#444}
+.req .tm{font-size:.72rem;color:var(--muted)}
+.foot{font-size:.74rem;color:var(--muted);text-align:center;padding:10px 0 30px;line-height:1.7}
+.loading{text-align:center;padding:40px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="header"><h1><small id="hdSub">選手・監督の変更申請</small><span id="hdTeam">読み込み中...</span></h1></div>
+<main class="main" id="main"><div class="loading">読み込み中...</div></main>
+
+<script>
+/* ===== 設定 ===== */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
+/* ================ */
+var token = new URLSearchParams(location.search).get('t') || '';
+var D = null;
+var F = { kind: '', slot: '', pairId: '', side: '', pick: '' };
+var TITLES = ['教職員', '部活動指導員', '外部コーチ', '校外コーチ', 'クラブ指導者'];
+var KIND_LABEL = { player: '選手変更', vacant: '欠員報告', coach: '監督変更' };
+
+function esc(s) {
+  if (s === undefined || s === null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function norm(s) { return String(s || '').replace(/[\s　]/g, ''); }
+
+function load(keepForm) {
+  return fetch(GAS_URL + '?action=changeInfo&t=' + encodeURIComponent(token)).then(function (r) { return r.text(); }).then(function (t) {
+    var d;
+    try { d = JSON.parse(t); } catch (e) { throw new Error('サーバーの応答を読み取れません'); }
+    if (d.status !== 'ok') throw new Error(d.message);
+    D = d;
+    if (!keepForm) F = { kind: '', slot: '', pairId: '', side: '', pick: '' };
+    render();
+  }).catch(function (err) {
+    document.getElementById('main').innerHTML = '<div class="msg ng">' + esc(err.message) + '</div>';
+  });
+}
+
+function render() {
+  document.body.className = D.type === 'team' ? 'team' : 'indiv';
+  document.getElementById('hdTeam').textContent = D.team;
+  document.getElementById('hdSub').textContent = D.division + '　選手・監督の変更申請';
+  var h = '';
+  if (!D.applied) h += '<div class="msg ng">申込が済んでいないため、変更申請はできません。</div>';
+  else if (D.period.before) h += '<div class="msg info">' + esc(D.period.message) + '<br><a href="' + esc(D.entryUrl) + '">申込フォームを開く</a></div>';
+  else if (D.period.after) h += '<div class="msg ng">' + esc(D.period.message) + '<br>やむを得ない事情があるときは、大会本部（競技委員長）へ直接ご相談ください。</div>';
+  else if (D.period.deadline) h += '<div class="msg info">変更申請の締切：<strong>' + esc(D.period.deadline) + '</strong>（大会当日の受付終了まで）</div>';
+  h += statusCard();
+  if (D.applied && D.period.open) h += formCard();
+  h += currentCard();
+  h += '<div class="foot">変更の申請は、大会当日の受付終了時刻までです。<br>変更は、競技委員長が許可すると自動で反映され、申込責任者のメールにも結果が届きます。<br>スマートフォンが使えないときは、受付終了までに大会本部へ「選手変更届」（紙）を提出してください。<br>要項11(3)：個人戦は1ペア1名まで、団体戦はやむを得ない場合に受け付けます。</div>';
+  document.getElementById('main').innerHTML = h;
+  bind();
+}
+
+/* ---- 現在の登録 ---- */
+function currentCard() {
+  var h = '<div class="card"><h2>現在の登録</h2>';
+  var i, p;
+  if (D.type === 'team') {
+    h += '<table class="reg"><tr><th>監督</th><td>' + esc(D.coach.name || '（未登録）') + (D.coach.title ? '（' + esc(D.coach.title) + '）' : '') + '</td></tr>';
+    for (i = 0; i < D.players.length; i++) {
+      p = D.players[i];
+      h += '<tr><th>No.' + p.no + '</th><td>' + (p.vacant ? '<span class="vac">欠員</span>' : esc(p.name) + '（' + esc(p.grade) + '）') + (p.changedFrom ? '<span class="was">変更前：' + esc(p.changedFrom) + '</span>' : '') + '</td></tr>';
+    }
+    h += '</table>';
+  } else {
+    for (i = 0; i < D.pairs.length; i++) {
+      p = D.pairs[i];
+      h += '<div class="pairbox"><b>ペア' + (i + 1) + '</b>　' + esc(p.a.name) + '（' + esc(p.a.grade) + '）・' + esc(p.b.name) + '（' + esc(p.b.grade) + '）' +
+        (p.a.team !== p.b.team ? '<br><span class="hint">' + esc(p.a.team) + '／' + esc(p.b.team) + '</span>' : '') +
+        '<br>監督：' + esc(p.coach.name || '（未登録）') + (p.coach.title ? '（' + esc(p.coach.title) + '）' : '') +
+        (p.change ? '<br><span style="color:var(--red);font-size:.78rem">選手' + esc(p.change.side) + 'を変更済み（変更前：' + esc(p.change.from) + '）。これ以上の選手変更はできません。</span>' : '') + '</div>';
+    }
+  }
+  return h + '</div>';
+}
+
+/* ---- 申請の状況 ---- */
+function statusCard() {
+  if (!D.requests.length) return '';
+  var h = '<div class="card"><h2>申請の状況</h2>';
+  var i, r, cls;
+  for (i = 0; i < D.requests.length; i++) {
+    r = D.requests[i];
+    cls = r.state === '申請中' ? 'p' : r.state === '許可' ? 'y' : 'n';
+    h += '<div class="req ' + cls + '"><span class="st">' + (r.state === '申請中' ? '⏳ 確認待ち' : r.state === '許可' ? '✅ 許可・反映済み' : '✖ 却下') + '</span>　' + esc(r.kind) +
+      '<br>' + esc(r.target) + '：' + esc(r.from) + ' → ' + esc(r.to) +
+      (r.comment ? '<div class="cm">競技委員長から：' + esc(r.comment) + '</div>' : '') +
+      '<div class="tm">申請 ' + esc(String(r.at).slice(5, 16)) + (r.decidedAt ? '　処理 ' + esc(String(r.decidedAt).slice(5, 16)) : '') + '</div></div>';
+  }
+  return h + '</div>';
+}
+
+/* ---- 申請フォーム ---- */
+function formCard() {
+  var h = '<div class="card"><h2>変更を申請する</h2>';
+  h += '<div class="kinds">';
+  var kinds = D.type === 'team' ? ['player', 'vacant', 'coach'] : ['player', 'coach'];
+  var i;
+  for (i = 0; i < kinds.length; i++) h += '<button type="button" data-kind="' + kinds[i] + '" class="' + (F.kind === kinds[i] ? 'on' : '') + '">' + KIND_LABEL[kinds[i]] + '</button>';
+  h += '</div>';
+  if (!F.kind) return h + '<div class="hint">変更の種類を選んでください。団体戦は何人でも（1人ずつ申請）、個人戦は1ペアにつき1名まで変更できます。' + (D.type === 'team' ? '当日来られない選手は「欠員報告」をしてください。' : '') + '</div></div>';
+  h += targetFields() + newFields();
+  h += '<label class="f">理由（必須）</label><input type="text" id="fReason" placeholder="例：けがのため、体調不良のため" value="' + esc(F.reason || '') + '">';
+  h += '<label class="f">申請者（氏名）</label><input type="text" id="fBy" placeholder="例：岩手 太郎" value="' + esc(F.by || '') + '">';
+  h += '<div id="preview"></div>';
+  h += '<button class="btn" id="sendBtn" type="button">この内容で申請する</button></div>';
+  return h;
+}
+
+function targetFields() {
+  var h = '';
+  var i, p;
+  if (D.type === 'team') {
+    if (F.kind === 'coach') return '';
+    h += '<label class="f">' + (F.kind === 'vacant' ? '欠員にする選手' : '変更する番号') + '</label><select id="fSlot"><option value="">選んでください</option>';
+    for (i = 0; i < D.players.length; i++) {
+      p = D.players[i];
+      if (F.kind === 'vacant' && p.vacant) continue;
+      h += '<option value="' + p.no + '"' + (String(F.slot) === String(p.no) ? ' selected' : '') + '>No.' + p.no + '　' + (p.vacant ? '（欠員）' : esc(p.name) + '（' + esc(p.grade) + '）') + '</option>';
+    }
+    return h + '</select>';
+  }
+  h += '<label class="f">ペア</label><select id="fPair"><option value="">選んでください</option>';
+  for (i = 0; i < D.pairs.length; i++) {
+    p = D.pairs[i];
+    h += '<option value="' + esc(p.pairId) + '"' + (F.pairId === p.pairId ? ' selected' : '') + '>ペア' + (i + 1) + '　' + esc(p.a.name) + '・' + esc(p.b.name) + '</option>';
+  }
+  h += '</select>';
+  if (F.kind === 'player' && F.pairId) {
+    var pr = pairOf(F.pairId);
+    h += '<label class="f">交代する選手</label><select id="fSide"><option value="">選んでください</option>';
+    var sides = [['A', pr.a], ['B', pr.b]];
+    for (i = 0; i < 2; i++) {
+      var dis = pr.change && pr.change.side !== sides[i][0];
+      h += '<option value="' + sides[i][0] + '"' + (F.side === sides[i][0] ? ' selected' : '') + (dis ? ' disabled' : '') + '>' + esc(sides[i][1].name) + '（' + esc(sides[i][1].team) + '）' + (dis ? '　変更不可（1名のみ）' : '') + '</option>';
+    }
+    h += '</select>';
+  }
+  return h;
+}
+
+function newFields() {
+  var i;
+  if (F.kind === 'vacant') return '';
+  if (F.kind === 'coach') {
+    if (D.type === 'indiv' && !F.pairId) return '';
+    var h = '<label class="f">新しい監督（ベンチ入り指導者）</label><div class="row2"><input type="text" id="fName" placeholder="氏名" value="' + esc(F.name || '') + '"><select id="fTitle"><option value="">役職</option>';
+    for (i = 0; i < TITLES.length; i++) h += '<option' + (F.title === TITLES[i] ? ' selected' : '') + '>' + TITLES[i] + '</option>';
+    return h + '</select></div><div class="hint">要項7(2)：当該校の教職員・部活動指導員・外部コーチ・校外コーチ、またはクラブ指導者</div>';
+  }
+  var roster = [], used = {};
+  if (D.type === 'team') {
+    if (!F.slot) return '';
+    roster = D.roster;
+    for (i = 0; i < D.players.length; i++) if (!D.players[i].vacant) used[norm(D.players[i].name)] = 'No.' + D.players[i].no;
+  } else {
+    if (!F.pairId || !F.side) return '';
+    var pr = pairOf(F.pairId);
+    roster = D.rosters[F.side === 'A' ? pr.a.team : pr.b.team] || [];
+    for (i = 0; i < D.pairs.length; i++) { used[norm(D.pairs[i].a.name)] = '出場中'; used[norm(D.pairs[i].b.name)] = '出場中'; }
+  }
+  var h2 = '<label class="f">新しく入る選手</label><select id="fPick"><option value="">選んでください</option>';
+  for (i = 0; i < roster.length; i++) {
+    var u = used[norm(roster[i].name)];
+    h2 += '<option value="' + i + '"' + (String(F.pick) === String(i) ? ' selected' : '') + (u ? ' disabled' : '') + '>' + esc(roster[i].name) + '（' + esc(roster[i].grade) + '）' + (u ? '　' + u : '') + '</option>';
+  }
+  h2 += '<option value="manual"' + (F.pick === 'manual' ? ' selected' : '') + '>登録名簿にない選手（手入力）</option></select>';
+  if (F.pick === 'manual') {
+    h2 += '<div class="row2" style="margin-top:8px"><input type="text" id="fName" placeholder="氏名" value="' + esc(F.name || '') + '"><select id="fGrade"><option value="">学年</option>';
+    var gs = ['1年', '2年', '3年'];
+    for (i = 0; i < 3; i++) h2 += '<option' + (F.grade === gs[i] ? ' selected' : '') + '>' + gs[i] + '</option>';
+    h2 += '</select></div><div class="hint">登録名簿にない選手は、競技委員長が登録状況を確認します。</div>';
+  }
+  return h2;
+}
+
+function pairOf(id) {
+  var i;
+  for (i = 0; i < D.pairs.length; i++) if (D.pairs[i].pairId === id) return D.pairs[i];
+  return null;
+}
+
+function keepInputs() {
+  var ids = { fReason: 'reason', fBy: 'by', fName: 'name', fGrade: 'grade', fTitle: 'title' };
+  var k, el;
+  for (k in ids) { el = document.getElementById(k); if (el) F[ids[k]] = el.value; }
+}
+
+function bind() {
+  var bs = document.querySelectorAll('.kinds button');
+  var i;
+  for (i = 0; i < bs.length; i++) bs[i].onclick = function () { keepInputs(); F.kind = this.getAttribute('data-kind'); F.slot = ''; F.side = ''; F.pick = ''; render(); };
+  var on = function (id, key, reset) {
+    var el = document.getElementById(id);
+    if (el) el.onchange = function () { keepInputs(); F[key] = this.value; if (reset) { F.side = ''; F.pick = ''; } render(); };
+  };
+  on('fSlot', 'slot', true);
+  on('fPair', 'pairId', true);
+  on('fSide', 'side', false);
+  on('fPick', 'pick', false);
+  ['fName', 'fGrade', 'fTitle', 'fReason'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) { el.oninput = preview; el.onchange = preview; }
+  });
+  var btn = document.getElementById('sendBtn');
+  if (btn) btn.onclick = send;
+  preview();
+}
+
+/* 申請内容（変更前 → 変更後）を組み立てる */
+function build() {
+  keepInputs();
+  var b = { kind: F.kind, reason: (F.reason || '').trim(), by: (F.by || '').trim() };
+  var from = '', to = '', target = '';
+  var i;
+  if (F.kind === 'coach') {
+    b.name = (F.name || '').trim(); b.title = F.title || '';
+    if (D.type === 'indiv') {
+      if (!F.pairId) return null;
+      b.pairId = F.pairId;
+      var pc = pairOf(F.pairId);
+      target = 'ペア（' + pc.a.name + '・' + pc.b.name + '）の監督';
+      from = pc.coach.name;
+    } else { target = '監督'; from = D.coach.name; }
+    if (!b.name || !b.title) return null;
+    to = b.name + '（' + b.title + '）';
+  } else if (D.type === 'team') {
+    if (!F.slot) return null;
+    b.slot = F.slot;
+    var cur = D.players[+F.slot - 1];
+    target = 'No.' + F.slot;
+    from = cur.vacant ? '（欠員）' : cur.name;
+    if (F.kind === 'vacant') to = '（欠員）';
+  } else {
+    if (!F.pairId || !F.side) return null;
+    b.pairId = F.pairId; b.side = F.side;
+    var pr = pairOf(F.pairId);
+    target = 'ペア' + ' 選手' + F.side;
+    from = F.side === 'A' ? pr.a.name : pr.b.name;
+  }
+  if (F.kind === 'player') {
+    if (F.pick === 'manual') { b.name = (F.name || '').trim(); b.grade = F.grade || ''; }
+    else if (F.pick !== '') {
+      var roster = D.type === 'team' ? D.roster : D.rosters[F.side === 'A' ? pairOf(F.pairId).a.team : pairOf(F.pairId).b.team];
+      var p = roster[+F.pick];
+      if (p) { b.name = p.name; b.grade = p.grade; }
+    }
+    if (!b.name || !b.grade) return null;
+    to = b.name + '（' + b.grade + '）';
+  }
+  b._view = { target: target, from: from || '（未登録）', to: to };
+  return b;
+}
+
+function preview() {
+  var box = document.getElementById('preview');
+  if (!box) return;
+  var b = build();
+  box.innerHTML = b ? '<div class="preview">' + esc(KIND_LABEL[b.kind]) + '：' + esc(b._view.target) + '<br>' + esc(b._view.from) + ' → <b>' + esc(b._view.to) + '</b></div>' : '';
+}
+
+function send() {
+  var b = build();
+  if (!b) { alert('対象と変更後の内容を選んでください。'); return; }
+  if (!b.reason) { alert('理由を入力してください。'); return; }
+  if (!confirm(KIND_LABEL[b.kind] + 'を申請します。\n\n' + b._view.target + '：' + b._view.from + ' → ' + b._view.to + '\n\nよろしいですか？')) return;
+  var btn = document.getElementById('sendBtn');
+  btn.disabled = true;
+  btn.textContent = '送信中...';
+  delete b._view;
+  b.action = 'changeRequest';
+  b.t = token;
+  fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(b) })
+    .then(function (r) { return r.text(); })
+    .then(function (t) {
+      var d;
+      try { d = JSON.parse(t); } catch (e) { throw new Error('サーバーの応答を読み取れません: ' + t.substring(0, 80)); }
+      if (d.status !== 'ok') throw new Error(d.message);
+      alert('申請しました。競技委員長が確認します。結果はこのページと申込責任者のメールでお知らせします。');
+      return load(false);
+    })
+    .catch(function (err) {
+      alert('申請できませんでした：' + err.message);
+      btn.disabled = false;
+      btn.textContent = 'この内容で申請する';
+    });
+}
+
+if (!token) document.getElementById('main').innerHTML = '<div class="msg ng">リンクが正しくありません。受付票のボタンから開いてください。</div>';
+else {
+  load(false);
+  /* 確認待ちがあるときは結果を自動で取り込む（入力中のフォームは保つ） */
+  setInterval(function () {
+    var pending = D && D.requests.some(function (r) { return r.state === '申請中'; });
+    if (pending && document.visibilityState === 'visible') { keepInputs(); load(true); }
+  }, 30000);
+}
+</script>
+</body>
+</html>

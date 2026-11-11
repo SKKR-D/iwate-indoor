@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex">
+<script>window.IWP_NS = 'coach'; window.IWP_DEFAULT = 'coach-team';</script>
+<script src="../gas-src.js"></script>
+<script src="../scenarios.js"></script>
+<script src="../engine.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>組合せ・結果｜県インドア大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--main:#1a4a2e;--gray:#f5f5f0;--text:#111;--light:#666}
+html{font-size:15px}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--text)}
+.bar{background:linear-gradient(135deg,#123522,var(--main));color:#fff;padding:10px 14px;position:sticky;top:0;z-index:10}
+.bar-inner{max-width:860px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.bar h1{font-size:.95rem;font-weight:900}
+.bar h1 small{display:block;font-size:.66rem;font-weight:500;opacity:.85}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs a,.tabs button{padding:6px 12px;border-radius:16px;background:rgba(255,255,255,.15);color:#fff;text-decoration:none;font-size:.78rem;font-weight:700;border:none;font-family:inherit;cursor:pointer}
+.tabs a.on{background:#f3d36b;color:#3a2e00}
+.wrap{max-width:860px;margin:12px auto;padding:0 10px}
+.page{background:#fff;box-shadow:0 1px 8px rgba(0,0,0,.08);padding:14px 12px;border-radius:6px;margin-bottom:16px;overflow-x:auto}
+.page svg{display:block;width:100%;height:auto;min-width:600px}
+.note{font-size:.72rem;color:var(--light);margin:0 2px 16px}
+.loading{text-align:center;color:var(--light);padding:40px}
+@media print{
+  @page{size:A4 portrait;margin:8mm}
+  body{background:#fff}
+  .bar,.note{display:none}
+  .wrap{margin:0;padding:0;max-width:none}
+  .page{box-shadow:none;padding:0;border-radius:0;margin:0;overflow:visible;break-after:page;page-break-after:always}
+  .page:last-child{break-after:auto;page-break-after:auto}
+  .page svg{min-width:0;max-height:279mm}
+}
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-inner">
+  <h1><small id="sub">第40回岩手県中学校インドアソフトテニス大会</small><span id="ttl">組合せ・結果</span></h1>
+  <div class="tabs" id="tabs"></div>
+  <div class="tabs" id="modes"></div>
+</div></div>
+<div class="wrap">
+  <div id="sheet"><div class="page"><div class="loading">読み込み中...</div></div></div>
+  <div class="note" id="noteText"></div>
+</div>
+
+<script src="preview.js"></script>
+<script src="bracket-core.js"></script>
+<script>
+/* ★ GASのウェブアプリURL */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
+
+var params = new URLSearchParams(location.search);
+var div = params.get('div') || 'MT';
+if (['MT', 'WT', 'MI', 'WI', 'ALL'].indexOf(div) < 0) div = 'MT';
+/* mode=blank：結果を入れない白紙の組合せ（記入用）。省略時は結果入り（随時更新） */
+var BLANK = params.get('mode') === 'blank';
+function get(code) {
+  return pvFetch('action=progress&div=' + code, { action: 'adminPreview', div: code }).then(function (d) {
+    d.division.code = code;
+    return d;
+  });
+}
+
+var LIST = [['MT', '男子団体戦'], ['WT', '女子団体戦'], ['MI', '男子個人戦'], ['WI', '女子個人戦']];
+
+function renderTabs() {
+  var mq = BLANK ? '&mode=blank' : '';
+  var h = '';
+  var i;
+  for (i = 0; i < LIST.length; i++) h += '<a class="' + (LIST[i][0] === div ? 'on' : '') + '" href="?div=' + LIST[i][0] + mq + '">' + LIST[i][1] + '</a>';
+  h += '<a class="' + (div === 'ALL' ? 'on' : '') + '" href="?div=ALL' + mq + '">4区分まとめて</a>';
+  document.getElementById('tabs').innerHTML = h;
+  document.getElementById('modes').innerHTML =
+    '<a class="' + (BLANK ? '' : 'on') + '" href="?div=' + div + '">結果入り（随時更新）</a>' +
+    '<a class="' + (BLANK ? 'on' : '') + '" href="?div=' + div + '&mode=blank">白紙（記入用）</a>' +
+    '<a href="progress.html?div=' + (div === 'ALL' ? 'MT' : div) + '">進行表</a><button onclick="window.print()">🖨 印刷</button>';
+  document.getElementById('noteText').textContent = BLANK ?
+    '白紙の組合せです（結果は入りません）。会場掲示や記録用に印刷してください。1区分＝A4用紙1枚。' :
+    '結果が入ると自動で更新します（30秒ごと）。赤い線が勝ち上がり。「印刷」で1区分＝A4用紙1枚に印刷できます。';
+}
+
+function load() {
+  var sheet = document.getElementById('sheet');
+  var codes = div === 'ALL' ? ['MT', 'WT', 'MI', 'WI'] : [div];
+  var jobs = [];
+  var i;
+  for (i = 0; i < codes.length; i++) jobs.push(get(codes[i]));
+  Promise.all(jobs).then(function (ds) {
+    document.getElementById('sub').textContent = ds[0].tournament;
+    document.getElementById('ttl').textContent = (div === 'ALL' ? '4区分' : ds[0].division.name) + (BLANK ? '　組合せ（白紙）' : '　組合せ・結果');
+    document.title = (div === 'ALL' ? '組合せ・結果' : ds[0].division.name) + '｜' + ds[0].tournament;
+    var h = '';
+    for (i = 0; i < ds.length; i++) {
+      var d = BLANK ? blankOut(ds[i]) : ds[i];
+      var body;
+      if (!d.matches.length) body = '<div class="loading">' + esc(d.division.name) + '：組合せはまだ発表されていません</div>';
+      else body = d.division.type === 'team' || d.division.code.charAt(1) === 'T' ? teamPage(d) : indivPage(d);
+      h += '<div class="page">' + body + '</div>';
+    }
+    sheet.innerHTML = h;
+  }).catch(function (err) {
+    sheet.innerHTML = '<div class="page"><div class="loading">読み込めませんでした（' + esc(err.message) + '）。自動で再試行します。</div></div>';
+  });
+}
+
+renderTabs();
+load();
+if (!BLANK) setInterval(load, 30000);
+</script>
+</body>
+</html>

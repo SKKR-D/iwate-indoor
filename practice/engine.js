@@ -7,7 +7,9 @@
    - 規約：ES5（var / function のみ）
    ============================================================ */
 (function () {
-  var KEY = 'iwPractice.state.v1';
+  /* IWP_NS：練習の種類ごとにデータを分ける（運営の練習＝''、監督の体験＝'coach'） */
+  var NS = window.IWP_NS || '';
+  var KEY = 'iwPractice.state.v1' + (NS ? '.' + NS : '');
   var GAS_RE = /^https:\/\/script\.google\.com\/macros\//;
   var LS = window.localStorage;
   var SP = window.Storage && Storage.prototype;
@@ -19,14 +21,14 @@
   function rawSet(k, v) { try { rawSetItem.call(LS, k, v); return true; } catch (e) { return false; } }
 
   /* ページが使う保存（パスワードの記憶など）は練習用の名前に分ける。本番の画面の保存と混ざらない */
-  var PFX = 'iwPrac:';
+  var PFX = 'iwPrac:' + (NS ? NS + ':' : '');
   SP.getItem = function (k) { return rawGetItem.call(this, PFX + k); };
   SP.setItem = function (k, v) { return rawSetItem.call(this, PFX + k, v); };
   SP.removeItem = function (k) { return rawRemoveItem.call(this, PFX + k); };
 
   var SCEN = window.IW_SCENARIOS || {};
   var GAS = window.IW_GAS_SRC || '';
-  var DEFAULT_SCEN = 'indiv-pre';
+  var DEFAULT_SCEN = window.IWP_DEFAULT || 'indiv-pre';
 
   /* ---------- 状態（場面のデータ・練習の時刻・送ったことにしたメール） ---------- */
   function fresh(id) {
@@ -48,7 +50,7 @@
   }
 
   /* ページ側の時計も練習の時刻にそろえる（画面に出る「現在」の時刻など） */
-  var CLOCK = 'iwPractice.clock.v1';
+  var CLOCK = 'iwPractice.clock.v1' + (NS ? '.' + NS : '');
   function pageNow() {
     var c = null;
     try { c = JSON.parse(rawGet(CLOCK) || 'null'); } catch (e) { c = null; }
@@ -259,6 +261,8 @@
       return st;
     },
     clock: function () { return hm(nowMs(load())); },
+    nowMs: function () { return nowMs(load()); },
+    setNowMs: function (ms) { var st = load(); st.base = ms; st.real = RD.now(); save(st); return st; },
     get: function (params) { return JSON.parse(call('GET', params)); },
     post: function (body) { return JSON.parse(call('POST', JSON.stringify(body))); }
   };
@@ -281,6 +285,7 @@
       b.innerHTML = '<span>🧪 練習用（本番のデータではありません）</span><small>' + (sc.label || '') + '　練習の時刻 ' + hm(nowMs(st)) + '</small>' + (window.IWP_HUB ? '' : '<a href="index.html">練習の入口へ</a>');
     };
     draw();
+    window.IWP.bar = draw;
     setInterval(draw, 20000);
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', bar);

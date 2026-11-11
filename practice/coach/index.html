@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>監督の操作体験｜県インドア大会</title>
+<script>window.IWP_NS = 'coach'; window.IWP_DEFAULT = 'coach-team'; window.IWP_HUB = true;</script>
+<script src="../gas-src.js"></script>
+<script src="../scenarios.js"></script>
+<script src="../engine.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+/* 監督の操作体験：架空の「さくら中学校」の監督として、受付 → オーダー → 試合 → 次のオーダー … を体験する
+   本部・相手チームの動きは「進める」ボタンで自動。規約：ES5 */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--main:#1a4a2e;--main-l:#e8f2ec;--red:#b3261e;--line:#d9e0da;--muted:#5f6b63;--bg:#f5f5f0;--gold:#8a6400;--gold-l:#fff6dc;--blue:#1f5f99}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:#172019;font-size:15px;line-height:1.65}
+header{background:linear-gradient(135deg,#123522,var(--main));color:#fff;padding:16px 16px 14px}
+header .in{max-width:760px;margin:0 auto}
+header small{display:block;font-size:.74rem;opacity:.85}
+header h1{font-size:1.3rem;font-weight:900}
+header p{font-size:.84rem;opacity:.92;margin-top:4px}
+main{max-width:760px;margin:0 auto;padding:12px 16px 40px}
+.tabs{display:flex;gap:6px;margin-bottom:10px}
+.tabs button{flex:1;padding:10px;border:2px solid var(--main);background:#fff;color:var(--main);border-radius:10px;font-family:inherit;font-weight:900;font-size:.95rem;cursor:pointer}
+.tabs button.on{background:var(--main);color:#fff}
+.me{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline;background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:10px;font-size:.88rem}
+.me b{font-size:1.05rem}
+.me .clock{margin-left:auto;font-weight:900;color:var(--main);font-size:1.15rem;font-variant-numeric:tabular-nums}
+.now{background:#fff;border:3px solid var(--main);border-radius:14px;padding:14px 16px;margin-bottom:12px}
+.now .lbl{display:inline-block;background:var(--main);color:#fff;font-size:.74rem;font-weight:900;border-radius:10px;padding:1px 10px}
+.now h2{font-size:1.15rem;font-weight:900;margin:6px 0 4px;color:var(--main)}
+.now p{font-size:.92rem;margin:4px 0}
+.now .row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.btn{display:inline-block;padding:11px 16px;border-radius:10px;border:2px solid var(--main);background:var(--main);color:#fff;font-family:inherit;font-weight:900;font-size:.95rem;cursor:pointer;text-decoration:none;text-align:center}
+.btn.out{background:#fff;color:var(--main)}
+.btn.win{background:#c0392b;border-color:#c0392b}
+.btn.lose{background:#fff;color:#555;border-color:#999}
+.btn.sm{padding:6px 10px;font-size:.8rem}
+.btn[disabled]{opacity:.5;cursor:wait}
+.sim{display:inline-block;font-size:.7rem;font-weight:900;color:var(--gold);background:var(--gold-l);border:1px solid #e3c977;border-radius:6px;padding:0 6px;margin-right:4px;vertical-align:1px}
+.info{background:var(--main-l);border-radius:10px;padding:8px 12px;margin-top:8px;font-size:.88rem}
+.info dt{font-weight:900;color:var(--main);float:left;clear:left;width:7.5em}
+.info dd{margin-left:7.5em}
+.warn{background:#fdecea;color:#8b1d16;border-radius:8px;padding:6px 10px;font-size:.84rem;font-weight:700;margin-top:6px}
+.steps{list-style:none;margin:0 0 12px;background:#fff;border:1px solid var(--line);border-radius:12px;padding:6px 0}
+.steps li{display:flex;gap:10px;padding:7px 14px;font-size:.88rem;align-items:flex-start}
+.steps li .ic{flex:0 0 22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:.72rem;font-weight:900;border:2px solid #c5cec7;color:#93a096;margin-top:1px}
+.steps li.done .ic{background:var(--main);border-color:var(--main);color:#fff}
+.steps li.cur{background:#fffbe9}
+.steps li.cur .ic{border-color:var(--gold);color:var(--gold)}
+.steps li small{display:block;color:var(--muted);font-size:.76rem}
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px;margin-bottom:12px}
+.links a{display:block;background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px 12px;text-decoration:none;color:var(--main);font-weight:900;font-size:.9rem}
+.links a small{display:block;color:var(--muted);font-weight:500;font-size:.74rem}
+section.box{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin-bottom:12px}
+section.box h3{font-size:.98rem;font-weight:900;color:var(--main);margin-bottom:6px}
+.tl{display:grid;grid-template-columns:auto 1fr;gap:2px 12px;font-size:.88rem}
+.tl b{color:var(--main);font-variant-numeric:tabular-nums}
+details.faq{border-top:1px solid #eef1ee;padding:7px 0;font-size:.88rem}
+details.faq summary{font-weight:700;cursor:pointer}
+details.faq p{color:#333;margin-top:4px}
+.mine{font-size:.86rem;margin-top:6px}
+.mine table{width:100%;border-collapse:collapse}
+.mine td,.mine th{border-bottom:1px solid #e6ebe7;padding:5px 4px;text-align:left;vertical-align:top}
+.mine th{font-size:.74rem;color:var(--main);background:var(--main-l)}
+.mine td:first-child{white-space:nowrap}
+.tag{display:inline-block;font-size:.7rem;font-weight:900;border-radius:6px;padding:0 6px}
+.t-ref{background:#fff1e0;color:#9a4a00}
+.t-play{background:#e5eefb;color:var(--blue)}
+.foot{font-size:.78rem;color:var(--muted);margin-top:8px}
+.foot button{background:none;border:none;color:var(--red);font-family:inherit;font-weight:700;cursor:pointer;text-decoration:underline;font-size:.8rem}
+.busy{position:fixed;inset:0;background:rgba(255,255,255,.6);display:none;place-items:center;font-weight:900;color:var(--main);z-index:300}
+.busy.on{display:grid}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <small>第40回岩手県中学校インドアソフトテニス大会</small>
+  <h1>監督の操作体験（練習用）</h1>
+  <p>架空の「さくら中学校」の監督になって、当日の操作（受付・オーダー提出・結果の確認）を体験します。本部や相手チームの動きは <span class="sim" style="vertical-align:0">進める</span> ボタンで自動で進みます。本番のデータには一切触れません。</p>
+</div></header>
+<main>
+  <div class="tabs"><button id="tabT" onclick="switchTrack('team')">団体戦の監督（11/29）</button><button id="tabI" onclick="switchTrack('indiv')">個人戦の監督（11/28）</button></div>
+  <div class="me" id="me"></div>
+  <div class="now" id="now"></div>
+  <ol class="steps" id="steps"></ol>
+  <div class="links" id="links"></div>
+  <section class="box"><h3>当日の時刻（大会の設定から）</h3><div class="tl" id="tl"></div></section>
+  <section class="box"><h3>困ったときは</h3><div id="faq"></div></section>
+  <div class="foot">この体験のデータは、この端末のブラウザの中だけにあります。<button onclick="restart()">最初からやり直す</button></div>
+</main>
+<div class="busy" id="busy">進めています…</div>
+
+<script>
+var PW = 'renshu';
+var TEAM = 'さくら中学校';
+var ABBR = 'さくら中';
+var SCEN = { team: 'coach-team', indiv: 'coach-indiv' };
+
+function esc(s) {
+  if (s === undefined || s === null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function P(b) { b.pw = PW; var r = IWP.post(b); if (r.status !== 'ok') throw new Error(r.message); return r; }
+function track() { return IWP.scenarios[IWP.state().scen].day === 'indiv' ? 'indiv' : 'team'; }
+function divCode() { return track() === 'team' ? 'MT' : 'MI'; }
+function mn(hm) { var m = String(hm || '').match(/^(\d{1,2}):(\d{2})/); return m ? +m[1] * 60 + +m[2] : null; }
+function hmOf(min) { return Math.floor(min / 60) + ':' + ('0' + (min % 60)).slice(-2); }
+function dayBase() { var d = new Date(IWP.nowMs() + 9 * 3600e3); return Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), -9, 0); }
+function nowMin() { return Math.floor((IWP.nowMs() - dayBase()) / 60000); }
+function setMin(min) { if (min > nowMin()) IWP.setNowMs(dayBase() + min * 60000); }
+function cfg(k) { var rows = IWP.state().sheets['設定'] || []; var i; for (i = 0; i < rows.length; i++) if (rows[i][0] === k) return String(rows[i][1]); return ''; }
+
+/* 自分のチームの出場枠 */
+function myEntry() {
+  var rows = IWP.state().sheets['出場枠'] || [];
+  var h = rows[0] || [];
+  var d = divCode();
+  var i;
+  for (i = 1; i < rows.length; i++) {
+    if (rows[i][h.indexOf('区分')] === d && rows[i][h.indexOf('チーム名')] === TEAM) {
+      return { id: rows[i][h.indexOf('entryId')], token: rows[i][h.indexOf('トークン')], code: rows[i][h.indexOf('受付コード')], recv: rows[i][h.indexOf('受付状態')] === '受付済', fee: rows[i][h.indexOf('参加料')], pairs: rows[i][h.indexOf('ペア数')] };
+    }
+  }
+  return null;
+}
+
+/* 個人戦：自分のチームのペアID */
+function myPairIds(D) {
+  var ids = {};
+  var b, i, p;
+  for (b in D.blocks) if (D.blocks.hasOwnProperty(b)) for (i = 0; i < D.blocks[b].length; i++) { p = D.blocks[b][i]; if (String(p.sub).indexOf(ABBR) >= 0) ids[p.id] = p; }
+  return ids;
+}
+
+/* ===================== 本部・相手チームの動き（自動） ===================== */
+function plan() { try { return JSON.parse(localStorage.getItem('iwpCoachPlan') || '{}'); } catch (e) { return {}; } }
+function setPlan(p) { try { localStorage.setItem('iwpCoachPlan', JSON.stringify(p)); } catch (e) {} }
+
+function isMine(m, mine) { return !!(mine[m.left.id] || mine[m.right.id]); }
+function mySide(m, mine) { return mine[m.left.id] ? 'L' : 'R'; }
+
+/* 勝つ側：自分の試合は選んだ結果。個人戦の予選は「1組目は勝ち、2組目は負け」。ほかの試合は番号で決める */
+function winSide(m, mine, outcome) {
+  if (isMine(m, mine)) {
+    var s = mySide(m, mine);
+    var o = outcome;
+    if (m.stage === 'L') o = mine[s === 'L' ? m.left.id : m.right.id].first ? 'win' : 'lose';
+    return o === 'lose' ? (s === 'L' ? 'R' : 'L') : s;
+  }
+  return m.no % 3 === 0 ? 'R' : 'L';
+}
+
+function startMatch(m, d) {
+  if (d === 'MT' || d === 'WT') {
+    ['L', 'R'].forEach(function (sd) {
+      if ((sd === 'L' ? m.team.orderL : m.team.orderR)) return;
+      var ps = (sd === 'L' ? m.team.playersL : m.team.playersR).map(function (p) { return p.name; });
+      var pairs = [[ps[0], ps[1]], [ps[2], ps[3]], [ps[4] || '', ps[5] || '']].filter(function (p) { return p[0] && p[1]; });
+      P({ action: 'ctlOrder', div: d, matchId: m.id, side: sd, pairs: pairs });
+    });
+  }
+  P({ action: 'ctlUpdate', div: d, matchId: m.id, op: 'state', state: '試合中' });
+}
+
+function finishMatch(m, d, mine, outcome) {
+  var w = winSide(m, mine, outcome);
+  var l = w === 'L' ? 'R' : 'L';
+  if (d === 'MT' || d === 'WT') {
+    var g = function (side) { return side === 'L' ? '3-1' : '1-3'; };
+    P({ action: 'ctlPairs', div: d, matchId: m.id, pairs: [{ w: w, g: g(w) }, { w: l, g: l === 'L' ? '3-2' : '2-3' }, { w: w, g: w === 'L' ? '3-0' : '0-3' }] });
+  } else {
+    var sc = ['4-1', '4-2', '4-3', '4-0'][m.no % 4];
+    var p = sc.split('-');
+    P({ action: 'ctlUpdate', div: d, matchId: m.id, op: 'result', winner: w, score: w === 'L' ? sc : p[1] + '-' + p[0] });
+  }
+}
+
+/* 次の1つの出来事（試合の開始か終了）を進める。自分の試合でオーダー未提出なら止まる */
+function stepOnce(mine, outcome) {
+  var d = divCode();
+  var C = P({ action: 'ctlLoad', div: d });
+  var now = nowMin();
+  var busy = {};
+  var ev = [];
+  var i, m, c;
+  for (i = 0; i < C.matches.length; i++) {
+    m = C.matches[i];
+    if (m.state !== '試合中') continue;
+    ev.push({ t: Math.max(mn(m.planEnd) || now, now), k: 0, m: m });
+    busy[m.court] = 1;
+    if (m.two) { busy.A = 1; busy.B = 1; }
+  }
+  var wait = C.matches.filter(function (x) { return (x.state === '待機' || x.state === '呼出') && x.left.decided && x.right.decided && x.left.id && x.right.id; })
+    .sort(function (a, b) { return (mn(a.plan) - mn(b.plan)) || (a.seq - b.seq); });
+  ['A', 'B'].forEach(function (ct) {
+    var x = null;
+    for (i = 0; i < wait.length; i++) if (wait[i].court === ct || wait[i].two) { x = wait[i]; break; }
+    if (!x || busy[ct] || (x.two && (busy.A || busy.B))) return;
+    if (ev.some(function (e) { return e.m.id === x.id; })) return;
+    ev.push({ t: Math.max(mn(x.plan) || now, now), k: 1, m: x });
+  });
+  if (!ev.length) return null;
+  ev.sort(function (a, b) { return (a.t - b.t) || (a.k - b.k); });
+  var e = ev[0];
+  if (e.k === 1 && (d === 'MT' || d === 'WT') && isMine(e.m, mine) && !(mySide(e.m, mine) === 'L' ? e.m.team.orderL : e.m.team.orderR)) return { need: 'order', m: e.m };
+  setMin(e.t);
+  if (e.k === 1) startMatch(e.m, d);
+  else finishMatch(e.m, d, mine, outcome);
+  return e;
+}
+
+/* 個人戦：予選リーグが終わったブロックの順位を確定（勝数 → ゲーム差 → 枠番号） */
+function autoRanks() {
+  var d = divCode();
+  var D = P({ action: 'ctlLoad', div: d });
+  var b, i, m;
+  for (b in D.blocks) {
+    if (!D.blocks.hasOwnProperty(b) || (D.ranks && D.ranks[b + '1'])) continue;
+    var ms = D.matches.filter(function (x) { return x.stage === 'L' && String(x.round).charAt(0) === b; });
+    if (!ms.length || ms.some(function (x) { return x.state !== '終了'; })) continue;
+    var st = {};
+    D.blocks[b].forEach(function (p) { st[p.id] = { id: p.id, pos: p.pos, w: 0, gd: 0 }; });
+    for (i = 0; i < ms.length; i++) {
+      m = ms[i];
+      var sc = String(m.score).split('-');
+      var wi = m.winner === 'L' ? m.left.id : m.right.id;
+      st[wi].w++;
+      st[m.left.id].gd += (+sc[0] || 0) - (+sc[1] || 0);
+      st[m.right.id].gd += (+sc[1] || 0) - (+sc[0] || 0);
+    }
+    var arr = Object.keys(st).map(function (k) { return st[k]; }).sort(function (x, y) { return (y.w - x.w) || (y.gd - x.gd) || (x.pos - y.pos); });
+    P({ action: 'ctlRanks', div: d, block: b, first: arr[0].id, second: arr[1].id, third: arr[2] ? arr[2].id : '' });
+  }
+}
+
+function mineMap() {
+  if (track() === 'team') { var o = {}; o[myEntry().id] = { first: true }; return o; }
+  var D = IWP.get({ action: 'progress', div: divCode() });
+  var ids = myPairIds(D);
+  var out = {};
+  var first = true;
+  var k;
+  for (k in ids) if (ids.hasOwnProperty(k)) { out[k] = { first: first, label: ids[k].label }; first = false; }
+  return out;
+}
+
+/* 自分の試合が1つ終わるまで → そのあと、次にやること（オーダー・敗退・優勝）が出るまで進める */
+function playMine(outcome) {
+  run(function () {
+    var mine = mineMap();
+    var d = divCode();
+    var C = P({ action: 'ctlLoad', div: d });
+    var cur = C.matches.filter(function (x) { return isMine(x, mine) && x.state !== '終了' && x.left.decided && x.right.decided; })
+      .sort(function (a, b) { return (mn(a.plan) - mn(b.plan)) || (a.seq - b.seq); })[0];
+    var i, e;
+    for (i = 0; i < 400; i++) {
+      e = stepOnce(mine, outcome);
+      if (!e || e.need) break;
+      if (track() === 'indiv') autoRanks();
+      if (cur && e.k === 0 && e.m.id === cur.id) break;
+    }
+    afterMine(mine);
+  });
+}
+
+/* 次の自分の試合の相手が決まる（またはオーダーが必要になる）まで進める */
+function afterMine(mine) {
+  var i, e, v;
+  for (i = 0; i < 400; i++) {
+    v = status();
+    if (v.phase !== 'wait') break;
+    e = stepOnce(mine, 'win');
+    if (!e || e.need) break;
+    if (track() === 'indiv') autoRanks();
+  }
+}
+
+/* 個人戦：予選リーグを最後まで進める */
+function playLeague() {
+  run(function () {
+    var mine = mineMap();
+    var i, e, D;
+    for (i = 0; i < 400; i++) {
+      D = P({ action: 'ctlLoad', div: divCode() });
+      if (!D.matches.some(function (x) { return x.stage === 'L' && x.state !== '終了'; })) break;
+      e = stepOnce(mine, 'win');
+      if (!e) break;
+    }
+    autoRanks();
+  });
+}
+
+/* 大会の最後まで進める（結果の確認用） */
+function playAll() {
+  run(function () {
+    var mine = mineMap();
+    var i, e;
+    for (i = 0; i < 600; i++) {
+      e = stepOnce(mine, 'win');
+      if (!e) break;
+      if (e.need) { startMatch(e.m, divCode()); continue; }
+      if (track() === 'indiv') autoRanks();
+    }
+  });
+}
+
+function run(fn) {
+  var b = document.getElementById('busy');
+  b.className = 'busy on';
+  setTimeout(function () {
+    try { fn(); } catch (err) { alert('進められませんでした：' + err.message); }
+    b.className = 'busy';
+    render();
+  }, 30);
+}
+
+/* ===================== いまの状況 ===================== */
+function status() {
+  var E = myEntry();
+  if (!E) return { phase: 'none' };
+  if (track() === 'team') {
+    var pd = IWP.get({ action: 'portal', t: E.token });
+    var v = { E: E, pd: pd };
+    if (!E.recv) v.phase = 'reception';
+    else if (pd.view === 'champion') v.phase = 'champion';
+    else if (pd.view === 'finished') v.phase = 'finished';
+    else if (!pd.match || !pd.match.oppDecided) v.phase = 'wait';
+    else if (!pd.match.myOrder) v.phase = 'order';
+    else v.phase = 'ready';
+    return v;
+  }
+  var D = IWP.get({ action: 'progress', div: divCode() });
+  var mine = myPairIds(D);
+  var w = { E: E, D: D, mine: mine };
+  if (!E.recv) { w.phase = 'reception'; return w; }
+  var league = D.matches.filter(function (x) { return x.stage === 'L'; });
+  var mineLeft = D.matches.filter(function (x) { return (mine[x.left.id] || mine[x.right.id]) && x.state !== '終了'; });
+  var mineNext = mineLeft.filter(function (x) { return x.left.id && x.right.id; });
+  if (league.some(function (x) { return x.state !== '終了'; })) w.phase = 'league';
+  else if (!mineLeft.length) w.phase = 'finished';
+  else if (!mineNext.length) w.phase = 'wait';
+  else w.phase = 'ready';
+  w.next = mineNext[0] || null;
+  return w;
+}
+
+/* ===================== 画面 ===================== */
+function render() {
+  if (IWP.bar) IWP.bar();
+  var t = track();
+  document.getElementById('tabT').className = t === 'team' ? 'on' : '';
+  document.getElementById('tabI').className = t === 'indiv' ? 'on' : '';
+  var v = status();
+  var E = v.E;
+  var name = t === 'team' ? '男子団体戦' : '男子個人戦';
+  document.getElementById('me').innerHTML = '<span>あなたは</span><b>' + TEAM + '（' + name + '）の監督</b>' +
+    (t === 'indiv' ? '<span>2ペア出場</span>' : '') + '<span class="clock">' + IWP.clock() + '</span>';
+  document.getElementById('now').innerHTML = t === 'team' ? nowTeam(v) : nowIndiv(v);
+  document.getElementById('steps').innerHTML = stepsHtml(v);
+  var tk = E ? 'ticket.html?t=' + encodeURIComponent(E.token) : '#';
+  document.getElementById('links').innerHTML =
+    '<a href="' + tk + '" target="_blank">🎫 受付票<small>二次元コード・各ボタン</small></a>' +
+    (t === 'team' ? '<a href="portal.html?t=' + encodeURIComponent(E ? E.token : '') + '" target="_blank">📝 監督ポータル<small>オーダー提出・審判の担当</small></a>' : '') +
+    '<a href="progress.html?div=' + divCode() + '" target="_blank">📋 進行表<small>試合の順番・結果・審判</small></a>' +
+    '<a href="bracket.html?div=' + divCode() + '" target="_blank">🏆 組合せ（結果入り）<small>勝ち上がり</small></a>' +
+    '<a href="changes.html?div=' + divCode() + '" target="_blank">🔁 選手変更一覧<small>許可された変更</small></a>';
+  renderTl();
+  renderFaq();
+}
+
+function nowTeam(v) {
+  var E = v.E, pd = v.pd;
+  var h = '<span class="lbl">いまやること</span>';
+  var m = pd && pd.match;
+  if (v.phase === 'reception') {
+    h += '<h2>会場で受付をする（' + esc(cfg('受付時刻')) + '）</h2>' +
+      '<p>受付票（スマホの画面か印刷した紙）を受付係に見せ、参加料 <b>' + Number(E.fee || 0).toLocaleString() + '円</b> を払います。受付係が二次元コードを読み取ると、受付完了です。</p>' +
+      '<p>まず <b>🎫 受付票</b> を開いて、受付コードと二次元コードを確かめてください（下のリンク）。選手を変えたいときは、受付票の「選手・監督の変更申請」から <b>8:00まで</b> に申請します。</p>' +
+      '<div class="row"><a class="btn out" href="ticket.html?t=' + encodeURIComponent(E.token) + '" target="_blank">🎫 受付票を開く</a>' +
+      '<button class="btn" onclick="doReception()"><span class="sim">進める</span>受付係が読み取って受付完了</button></div>';
+    return h + reqBox(E);
+  }
+  if (v.phase === 'order') {
+    h += '<h2>' + esc(m.round) + 'のオーダーを出す</h2>' +
+      '<dl class="info"><dt>対戦相手</dt><dd>' + esc(m.opp.full || m.opp.label) + '</dd><dt>コート</dt><dd>' + esc(m.court) + '（第' + m.no + '試合）</dd><dt>締切</dt><dd><b>' + esc(m.deadline) + '</b>' + (m.gather ? '　コート集合 ' + esc(m.gather) : '') + '</dd></dl>' +
+      (m.deadlinePassed ? '<div class="warn">締切を過ぎています。本番では本部へ申し出てください（練習では、このまま提出できます）。</div>' : '') +
+      '<p>受付票の <b>📝 オーダー提出（監督用）</b>（＝監督ポータル）で、1〜3番手のペアを選んで提出します。提出すると、この画面が次に進みます。</p>' +
+      (pd.history.length ? '<p class="mine">2回戦以降は「前の試合と同じオーダー」で始まるので、変えるところだけ直して提出できます。</p>' : '') +
+      '<div class="row"><a class="btn" href="portal.html?t=' + encodeURIComponent(E.token) + '" target="_blank">📝 監督ポータルを開いて提出</a><button class="btn out" onclick="render()">提出した → 画面を更新</button></div>';
+    return h + historyHtml(pd);
+  }
+  if (v.phase === 'ready') {
+    h += '<h2>' + esc(m.round) + '：試合を待つ・試合をする</h2>' +
+      '<dl class="info"><dt>対戦相手</dt><dd>' + esc(m.opp.full || m.opp.label) + '</dd><dt>コート</dt><dd>' + esc(m.court) + '（第' + m.no + '試合）</dd><dt>予定</dt><dd>' + esc(m.plan) + '</dd><dt>オーダー</dt><dd>提出済（' + esc(m.myOrderAt) + '）' + (m.oppSubmitted ? '・相手も提出済' : '・相手は未提出') + '</dd></dl>' +
+      '<p>締切（' + esc(m.deadline) + '）までなら、監督ポータルでオーダーを出し直せます。本部が試合前に「オーダー公開」をすると、相手のオーダーが見えるようになり、変更はできなくなります。</p>' +
+      '<p>この試合の結果を選んで進めてください（本部が結果を入れるところまで自動で進みます）。</p>' +
+      '<div class="row"><button class="btn win" onclick="playMine(\'win\')"><span class="sim" style="background:#fff">進める</span>勝つ</button><button class="btn lose" onclick="playMine(\'lose\')"><span class="sim">進める</span>負ける</button></div>';
+    return h + historyHtml(pd);
+  }
+  if (v.phase === 'wait') {
+    h += '<h2>次の対戦相手が決まるのを待つ</h2><p>前の試合が終わると、次の相手とオーダーの締切が決まります。進行表で、いまの試合の進み具合を確かめられます。</p>' +
+      '<div class="row"><button class="btn" onclick="playMine(\'win\')"><span class="sim">進める</span>相手が決まるまで進める</button></div>';
+    return h + historyHtml(pd);
+  }
+  if (v.phase === 'finished') {
+    var last = pd.history.length ? pd.history[pd.history.length - 1] : null;
+    var duty = (pd.refDuties || []).filter(function (r) { return r.state !== '終了'; });
+    if (last && last.round === '決勝') h += '<h2>準優勝です。表彰式へ</h2><p>決勝の審判は審判員が担当するので、審判の担当はありません。</p>';
+    else if (duty.length) h += '<h2>負けたチーム：次の試合の審判をする</h2><p>負けたチームは、<b>同じコートの次の試合の審判</b>をします（1名）。<b>第' + duty[0].no + '試合（' + esc(duty[0].court) + 'コート・' + esc(duty[0].round) + '）</b>です。監督ポータルの「🟧 審判の担当」にも出ています。審判が終わったら、このチームの試合はすべて終了です。</p>';
+    else h += '<h2>このチームの試合はすべて終了しました</h2><p>' + (last && last.round === '準決勝' ? '準決勝で負けたチームは第3位です（表彰があります）。決勝は審判員が審判をするので、審判の担当はありません。' : '審判の担当があるときは、監督ポータルの「🟧 審判の担当」に出ます。') + '</p>';
+    h += '' +
+      '<div class="row"><a class="btn" href="portal.html?t=' + encodeURIComponent(E.token) + '" target="_blank">📝 監督ポータルで確かめる</a><button class="btn out" onclick="playAll()"><span class="sim">進める</span>大会の最後まで進めて結果を見る</button></div>';
+    return h + historyHtml(pd);
+  }
+  if (v.phase === 'champion') {
+    h += '<h2>🏆 優勝です。表彰式へ</h2><p>監督ポータルにも「優勝おめでとうございます」と出ます。組合せ（結果入り）の下の欄に、優勝〜第3位が入ります。</p>' +
+      '<div class="row"><a class="btn" href="bracket.html?div=' + divCode() + '" target="_blank">🏆 組合せ（結果入り）を見る</a><a class="btn out" href="portal.html?t=' + encodeURIComponent(E.token) + '" target="_blank">📝 監督ポータルを見る</a></div>';
+    return h + historyHtml(pd);
+  }
+  return h + '<p>データを読み込めませんでした。「最初からやり直す」を押してください。</p>';
+}
+
+function historyHtml(pd) {
+  if (!pd || !pd.history || !pd.history.length) return '';
+  var h = '<div class="mine"><table><tr><th>試合</th><th>相手</th><th>結果</th></tr>';
+  pd.history.forEach(function (x) { h += '<tr><td>' + esc(x.round) + '</td><td>' + esc(x.opp) + '</td><td>' + (x.win ? '<b style="color:#c0392b">○ 勝ち</b>' : '● 負け') + ' ' + esc(x.score) + '</td></tr>'; });
+  return h + '</table></div>';
+}
+
+function nowIndiv(v) {
+  var E = v.E;
+  var h = '<span class="lbl">いまやること</span>';
+  if (v.phase === 'reception') {
+    h += '<h2>会場で受付をする（' + esc(cfg('受付時刻')) + '）</h2>' +
+      '<p>受付票を受付係に見せ、参加料 <b>' + Number(E.fee || 0).toLocaleString() + '円</b>（1ペア ' + Math.round((E.fee || 0) / (E.pairs || 1)).toLocaleString() + '円 × ' + esc(E.pairs) + 'ペア）を払います。個人戦は<b>チームで1回</b>の受付です。</p>' +
+      '<p>選手を変えたいときは、受付票の「選手・監督の変更申請」から <b>8:00まで</b> に申請します。</p>' +
+      '<div class="row"><a class="btn out" href="ticket.html?t=' + encodeURIComponent(E.token) + '" target="_blank">🎫 受付票を開く</a>' +
+      '<button class="btn" onclick="doReception()"><span class="sim">進める</span>受付係が読み取って受付完了</button></div>';
+    return h + reqBox(E);
+  }
+  if (v.phase === 'league') {
+    h += '<h2>予選リーグ：自分のペアの試合と審判を確かめる</h2>' +
+      '<p>個人戦は4ペアずつの予選リーグです。リーグの中で<b>審判も担当</b>します（1〜2回）。<b>📋 進行表</b>で、自分のペアの試合の順番と、審判の担当を確かめてください。</p>' +
+      mineIndivHtml(v) +
+      '<div class="row"><a class="btn out" href="progress.html?div=' + divCode() + '" target="_blank">📋 進行表を開く</a><button class="btn" onclick="playLeague()"><span class="sim">進める</span>予選リーグを最後まで進める</button></div>';
+    return h;
+  }
+  if (v.phase === 'ready') {
+    var n = v.next;
+    h += '<h2>決勝トーナメント：' + esc(n.round) + '</h2><p>予選リーグの1位・2位が決勝トーナメントに進みます（本部が順位を確定）。組合せ（結果入り）で、勝ち上がりと次の相手を確かめてください。</p>' +
+      mineIndivHtml(v) +
+      '<div class="row"><button class="btn win" onclick="playMine(\'win\')"><span class="sim" style="background:#fff">進める</span>勝つ</button><button class="btn lose" onclick="playMine(\'lose\')"><span class="sim">進める</span>負ける</button></div>';
+    return h;
+  }
+  if (v.phase === 'wait') {
+    h += '<h2>次の対戦相手が決まるのを待つ</h2>' + mineIndivHtml(v) + '<div class="row"><button class="btn" onclick="playMine(\'win\')"><span class="sim">進める</span>相手が決まるまで進める</button></div>';
+    return h;
+  }
+  if (v.phase === 'finished') {
+    var ko = v.D.matches.filter(function (x) { return x.stage !== 'L' && x.state === '終了' && (v.mine[x.left.id] || v.mine[x.right.id]); });
+    var lk = ko.length ? ko[ko.length - 1] : null;
+    var lkWin = lk && v.mine[(lk.winner === 'L' ? lk.left : lk.right).id];
+    var msg = !lk ? '予選リーグで敗退しました。結果は組合せ（結果入り）で確かめられます。'
+      : lk.stage === 'F' ? (lkWin ? '🏆 優勝です。表彰式へ。' : '準優勝です。表彰式へ。')
+      : lk.stage === 'SF' ? '準決勝で負けたペアは第3位です（表彰があります）。'
+      : '決勝トーナメント1回戦で負けたペアは、同じコートの次の試合の審判をすることがあります。進行表の「審判」で確かめてください。';
+    h += '<h2>自分のチームの試合はすべて終わりました</h2><p>' + msg + '</p>' +
+      mineIndivHtml(v) + '<div class="row"><button class="btn out" onclick="playAll()"><span class="sim">進める</span>大会の最後まで進めて結果を見る</button><a class="btn" href="bracket.html?div=' + divCode() + '" target="_blank">🏆 組合せ（結果入り）</a></div>';
+    return h;
+  }
+  return h + '<p>データを読み込めませんでした。「最初からやり直す」を押してください。</p>';
+}
+
+/* 個人戦：自分のペアの試合・審判の一覧 */
+function mineIndivHtml(v) {
+  var D = v.D, mine = v.mine;
+  var rows = [];
+  D.matches.forEach(function (m) {
+    var play = mine[m.left.id] || mine[m.right.id];
+    var ref = m.referee && m.referee.id && mine[m.referee.id];
+    if (!play && !ref) return;
+    var t = m.state === '終了' ? (m.winner && mine[(m.winner === 'L' ? m.left : m.right).id] ? '<b style="color:#c0392b">○ 勝ち</b> ' : '● 負け ') + esc(m.score) : esc(m.state === '試合中' ? '試合中' : '予定 ' + (m.plan || ''));
+    rows.push('<tr><td>第' + m.no + '試合<br><small>' + esc(m.court) + 'コート</small></td><td>' + (play ? '<span class="tag t-play">試合</span> ' + esc(m.left.label) + ' − ' + esc(m.right.label) : '<span class="tag t-ref">審判</span> ' + esc(ref.label) + '<br><small>' + esc(m.left.label) + ' − ' + esc(m.right.label) + '</small>') + '</td><td>' + (play ? t : (m.state === '終了' ? '済' : esc(m.plan || ''))) + '</td></tr>');
+  });
+  if (!rows.length) return '';
+  return '<div class="mine"><table><tr><th>試合</th><th>自分のペア</th><th>結果・予定</th></tr>' + rows.join('') + '</table></div>';
+}
+
+/* 選手変更の申請（受付前・8:00まで） */
+function reqBox(E) {
+  var reqs = [];
+  try { reqs = P({ action: 'adminLoad' }).requests.filter(function (r) { return r.entryId === E.id; }); } catch (e) { reqs = []; }
+  var pend = reqs.filter(function (r) { return r.state === '申請中'; });
+  var h = '<div class="info" style="margin-top:12px"><b>（体験できること）選手変更の申請</b><br>受付票の「✏️ 選手・監督の変更申請」から申請すると、競技委員長が許可して反映します。';
+  if (pend.length) h += '<br>申請中：' + pend.map(function (r) { return esc(r.target) + '（' + esc(r.from) + ' → ' + esc(r.to) + '）'; }).join('、') + '<div class="row"><button class="btn sm" onclick="approveReq()"><span class="sim">進める</span>競技委員長が許可した</button></div>';
+  else if (reqs.length) h += '<br>処理済：' + reqs.map(function (r) { return esc(r.target) + '（' + esc(r.state) + '）'; }).join('、') + '　→ 🔁 選手変更一覧に出ます。';
+  return h + '</div>';
+}
+
+function approveReq() {
+  run(function () {
+    var E = myEntry();
+    P({ action: 'adminLoad' }).requests.filter(function (r) { return r.entryId === E.id && r.state === '申請中'; })
+      .forEach(function (r) { P({ action: 'adminChangeDecide', id: r.id, decision: 'approve' }); });
+  });
+}
+
+/* 受付：自分のチームと、ほかのチームもまとめて受付済みにする */
+function doReception() {
+  run(function () {
+    var rows = IWP.state().sheets['出場枠'];
+    var h = rows[0];
+    var d = divCode();
+    var list = [];
+    var i;
+    for (i = 1; i < rows.length; i++) if (rows[i][h.indexOf('区分')] === d && rows[i][h.indexOf('状態')] === '申込済' && rows[i][h.indexOf('受付状態')] !== '受付済') list.push(rows[i][h.indexOf('受付コード')]);
+    setMin(mn('7:42'));
+    var E = myEntry();
+    P({ action: 'recConfirm', code: E.code, staff: '受付係' });
+    list.forEach(function (code) { if (code !== E.code) P({ action: 'recConfirm', code: code, staff: '受付係' }); });
+    setMin(mn('8:05'));
+  });
+}
+
+function stepsHtml(v) {
+  var t = track();
+  var order = t === 'team'
+    ? [['reception', '受付（' + cfg('受付時刻') + '）', '受付票を見せて参加料を払う。選手変更の申請は8:00まで'],
+       ['order', 'オーダー提出', '1回戦は ' + cfg('1回戦オーダー締切') + ' まで。2回戦以降は前の試合の終了から ' + (cfg('オーダー提出（分）') || '10') + '分以内'],
+       ['ready', '試合', '本部が「オーダー公開」→ 試合開始。結果は進行表・組合せにすぐ出る'],
+       ['wait', '次の相手が決まる', '決まったら、次のオーダーを出す（ここまでをくり返す）'],
+       ['finished', '負けたら審判', '同じコートの次の試合の審判をして終了'],
+       ['champion', '決勝まで勝ったら表彰', '組合せ（結果入り）に優勝〜第3位']]
+    : [['reception', '受付（' + cfg('受付時刻') + '）', 'チームで1回。参加料はペア数分'],
+       ['league', '予選リーグ', '4ペアのリーグ。リーグ内で審判も担当'],
+       ['ready', '決勝トーナメント', '各ブロック1位・2位。準決勝・決勝は審判員が審判'],
+       ['wait', '次の相手が決まる', ''],
+       ['finished', 'すべて終了', '結果は組合せ（結果入り）で確認']];
+  var idx = -1;
+  var i;
+  for (i = 0; i < order.length; i++) if (order[i][0] === v.phase) idx = i;
+  if (t === 'team' && (v.phase === 'order' || v.phase === 'ready' || v.phase === 'wait')) idx = { order: 1, ready: 2, wait: 3 }[v.phase];
+  var h = '';
+  for (i = 0; i < order.length; i++) {
+    var cls = i === idx ? 'cur' : (i < idx && !(t === 'team' && v.phase === 'champion' && i === 4) ? 'done' : '');
+    if (t === 'team' && v.phase === 'finished' && i === 5) cls = '';
+    h += '<li class="' + cls + '"><span class="ic">' + (cls === 'done' ? '✓' : (i + 1)) + '</span><span><b>' + esc(order[i][1]) + '</b>' + (order[i][2] ? '<small>' + esc(order[i][2]) + '</small>' : '') + '</span></li>';
+  }
+  return h;
+}
+
+function renderTl() {
+  var t = track();
+  var rows = [['開場', cfg('開場時刻')], ['受付', cfg('受付時刻')], ['選手変更の申請', '受付の終わり（' + (cfg('受付時刻').split('〜')[1] || '8:00') + '）まで']];
+  if (t === 'team') rows.push(['1回戦のオーダー', cfg('1回戦オーダー締切') + ' まで（監督ポータル）']);
+  rows.push(['競技開始', cfg('競技開始時刻')]);
+  if (t === 'team') rows.push(['2回戦以降のオーダー', '前の試合（遅い方）の終了から ' + (cfg('オーダー提出（分）') || '10') + '分以内']);
+  document.getElementById('tl').innerHTML = rows.filter(function (r) { return r[1]; }).map(function (r) { return '<span>' + esc(r[0]) + '</span><b>' + esc(r[1]) + '</b>'; }).join('');
+}
+
+function renderFaq() {
+  var t = track();
+  var q = [
+    ['受付票をなくした・スマホを忘れた', '受付で「チーム名」を伝えてください。受付係がチーム名で探して受付できます。'],
+    ['選手を変えたい', '受付票の「✏️ 選手・監督の変更申請」から、当日の受付の終わり（8:00）までに申請します。競技委員長が許可すると反映され、選手変更一覧に載ります。']
+  ];
+  if (t === 'team') {
+    q.push(['オーダーを間違えた', '締切までなら、監督ポータルで何度でも出し直せます（最後に出したものが有効）。本部が「オーダー公開」をしたあとは変更できないので、本部へ申し出てください。']);
+    q.push(['スマホが使えない・締切に間に合わない', '本部へ申し出てください。紙のオーダー票を出せば、本部が代わりに入力します。']);
+    q.push(['審判はいつ？', '負けたチームが、同じコートの次の試合の審判をします。1回戦の各コートの最初の試合は、組合せ番号7・8番（Aコート）、15・16番（Bコート）のチームから1名ずつ。決勝は審判員が担当します。監督ポータルの「🟧 審判の担当」に出ます。']);
+  } else {
+    q.push(['審判はいつ？', '予選リーグでは、同じリーグのペアが審判をします（1〜2回）。決勝トーナメント1回戦は、各コートの最初の試合をA・Bブロックの3位、2試合目を最初の試合の敗者が担当します。準決勝・決勝は審判員です。進行表の各試合に「審判」が出ます。']);
+  }
+  q.push(['いま何試合目？', '進行表で、コートごとに「試合中」「コール」「待機」と予定時刻が出ます（30秒ごとに自動更新）。']);
+  document.getElementById('faq').innerHTML = q.map(function (x) { return '<details class="faq"><summary>' + esc(x[0]) + '</summary><p>' + esc(x[1]) + '</p></details>'; }).join('');
+}
+
+function switchTrack(t) {
+  if (track() === t) return;
+  if (!confirm((t === 'team' ? '団体戦' : '個人戦') + 'の監督の体験に切り替えます（いまの体験の内容は消えます）。')) return;
+  IWP.reset(SCEN[t]);
+  setPlan({});
+  render();
+}
+
+function restart() {
+  if (!confirm('最初の状態（受付前）に戻します。よろしいですか？')) return;
+  IWP.reset(SCEN[track()]);
+  setPlan({});
+  render();
+}
+
+/* 初回：体験用の場面でなければ団体戦から始める */
+(function () {
+  var s = IWP.state().scen;
+  if (s !== SCEN.team && s !== SCEN.indiv) IWP.reset(SCEN.team);
+  render();
+  window.addEventListener('focus', render);
+  setInterval(function () { document.querySelector('.me .clock').textContent = IWP.clock(); }, 15000);
+})();
+</script>
+</body>
+</html>

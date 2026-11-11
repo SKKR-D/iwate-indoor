@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex">
+<script>window.IWP_NS = 'coach'; window.IWP_DEFAULT = 'coach-team';</script>
+<script src="../gas-src.js"></script>
+<script src="../scenarios.js"></script>
+<script src="../engine.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>選手変更一覧｜県インドア大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--main:#1a4a2e;--red:#c0392b;--gray:#f5f5f0;--muted:#666}
+html{font-size:15px}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:#111}
+.bar{background:linear-gradient(135deg,#123522,var(--main));color:#fff;padding:10px 14px;position:sticky;top:0;z-index:10}
+.bar-inner{max-width:900px;margin:0 auto;display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:space-between}
+.bar h1{font-size:.95rem;font-weight:900}
+.bar h1 small{display:block;font-size:.66rem;font-weight:500;opacity:.85}
+.tabs{display:flex;gap:6px;flex-wrap:wrap}
+.tabs a,.tabs button{padding:6px 12px;border-radius:16px;background:rgba(255,255,255,.15);color:#fff;text-decoration:none;font-size:.78rem;font-weight:700;border:none;font-family:inherit;cursor:pointer}
+.tabs a.on{background:#f3d36b;color:#3a2e00}
+.wrap{max-width:900px;margin:12px auto;padding:0 10px 30px}
+.sheet{background:#fff;border-radius:8px;box-shadow:0 1px 8px rgba(0,0,0,.08);padding:16px}
+.sheet h2{font-size:1.1rem;font-weight:900;text-align:center;margin-bottom:2px}
+.sheet .sub{text-align:center;font-size:.78rem;color:var(--muted);margin-bottom:12px}
+h3{font-size:.95rem;font-weight:900;color:var(--main);margin:14px 0 6px;border-left:4px solid var(--main);padding-left:8px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th{background:#e8efe9;color:var(--main);font-size:.76rem;padding:6px;border:1px solid #c9d6cc;text-align:left;white-space:nowrap}
+td{padding:6px;border:1px solid #d9e0da;vertical-align:top}
+td.tm{white-space:nowrap;color:var(--muted);font-size:.78rem}
+td.fr{color:#666;text-decoration:line-through;text-decoration-color:#aaa}
+td.to{font-weight:900;color:var(--red)}
+td .nt{display:block;font-size:.74rem;color:#7a4b00;font-weight:700;margin-top:2px}
+td.ar{text-align:center;color:#999;width:1.6em;padding:6px 0}
+.none{text-align:center;color:var(--muted);padding:14px;font-size:.88rem}
+.note{font-size:.74rem;color:var(--muted);margin-top:12px;line-height:1.6}
+@media (max-width:600px){ table{font-size:.8rem} th,td{padding:5px 4px} }
+@media print{
+  @page{size:A4 portrait;margin:10mm}
+  body{background:#fff}
+  .bar{display:none}
+  .wrap{margin:0;padding:0;max-width:none}
+  .sheet{box-shadow:none;padding:0}
+  .sheet h2{font-size:16pt}
+  table{font-size:10.5pt}
+  tr{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-inner">
+  <h1><small id="sub">第40回岩手県中学校インドアソフトテニス大会</small>選手変更一覧</h1>
+  <div class="tabs" id="tabs"></div>
+</div></div>
+<div class="wrap"><div class="sheet" id="sheet"><div class="none">読み込み中...</div></div></div>
+
+<script>
+/* ===== 設定 ===== */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
+/* ================ */
+var params = new URLSearchParams(location.search);
+var div = params.get('div') || '';
+var LIST = [['', 'すべて'], ['MI', '男子個人戦'], ['WI', '女子個人戦'], ['MT', '男子団体戦'], ['WT', '女子団体戦']];
+
+function esc(s) {
+  if (s === undefined || s === null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function tabs() {
+  var h = '';
+  var i;
+  for (i = 0; i < LIST.length; i++) h += '<a class="' + (LIST[i][0] === div ? 'on' : '') + '" href="?' + (LIST[i][0] ? 'div=' + LIST[i][0] : '') + '">' + LIST[i][1] + '</a>';
+  h += '<button onclick="window.print()">🖨 印刷（掲示用）</button>';
+  document.getElementById('tabs').innerHTML = h;
+}
+
+/* 区分ごとの表（変更前 → 変更後） */
+function changesTable(rows) {
+  if (!rows.length) return '<div class="none">選手変更はありません</div>';
+  var h = '<table><thead><tr><th>時刻</th><th>チーム</th><th>対象</th><th>変更前</th><th></th><th>変更後</th></tr></thead><tbody>';
+  var i, c;
+  for (i = 0; i < rows.length; i++) {
+    c = rows[i];
+    h += '<tr><td class="tm">' + esc(String(c.at).replace('-', '/')) + '</td><td>' + esc(c.team) + '</td><td>' + esc(c.target) + (c.note ? '<span class="nt">' + esc(c.note) + '</span>' : '') + '</td>' +
+      (c.coach ? '<td colspan="3">' + esc(c.to) + '</td>' : '<td class="fr">' + esc(c.from) + '</td><td class="ar">→</td><td class="to">' + esc(c.to) + '</td>') + '</tr>';
+  }
+  return h + '</tbody></table>';
+}
+
+function load() {
+  fetch(GAS_URL + '?action=changes' + (div ? '&div=' + div : '')).then(function (r) { return r.text(); }).then(function (t) {
+    var d = JSON.parse(t);
+    if (d.status !== 'ok') throw new Error(d.message);
+    document.getElementById('sub').textContent = d.tournament;
+    var now = new Date();
+    var stamp = (now.getMonth() + 1) + '月' + now.getDate() + '日 ' + now.getHours() + ':' + ('0' + now.getMinutes()).slice(-2);
+    var h = '<h2>選手変更一覧' + (div ? '（' + esc(d.divisions[div].name) + '）' : '') + '</h2><div class="sub">' + esc(d.tournament) + '　' + stamp + ' 現在</div>';
+    var codes = div ? [div] : ['MI', 'WI', 'MT', 'WT'];
+    var i, name, rows;
+    for (i = 0; i < codes.length; i++) {
+      name = d.divisions[codes[i]].name;
+      rows = d.changes.filter(function (c) { return c.div === name; });
+      if (!div && !rows.length) continue;
+      h += '<h3>' + esc(name) + '</h3>' + changesTable(rows);
+    }
+    if (!div && !d.changes.length) h += '<div class="none">選手変更はありません</div>';
+    h += '<div class="note">競技委員長が許可した変更を、許可した順に載せています（30秒ごとに自動更新）。</div>';
+    document.getElementById('sheet').innerHTML = h;
+  }).catch(function (err) {
+    document.getElementById('sheet').innerHTML = '<div class="none">読み込めませんでした（' + esc(err.message) + '）。自動で再試行します。</div>';
+  });
+}
+
+tabs();
+load();
+setInterval(load, 30000);
+</script>
+</body>
+</html>

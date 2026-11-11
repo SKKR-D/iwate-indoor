@@ -202,7 +202,7 @@ function renderMails() {
   document.getElementById('mails').innerHTML = h;
 }
 
-function renderAll() { renderScen(); renderClock(); renderRoles(); renderTeams(); renderMails(); }
+function renderAll() { if (IWP.bar) IWP.bar(); renderScen(); renderClock(); renderRoles(); renderTeams(); renderMails(); }
 
 function pick(id) {
   var st = IWP.state();
