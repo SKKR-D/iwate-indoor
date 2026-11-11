@@ -389,7 +389,7 @@ function nowTeam(v) {
       (m.deadlinePassed ? '<div class="warn">締切を過ぎています。本番では本部へ申し出てください（練習では、このまま提出できます）。</div>' : '') +
       '<p>受付票の <b>📝 オーダー提出（監督用）</b>（＝監督ポータル）で、1〜3番手のペアを選んで提出します。提出すると、この画面が次に進みます。</p>' +
       (pd.history.length ? '<p class="mine">2回戦以降は「前の試合と同じオーダー」で始まるので、変えるところだけ直して提出できます。</p>' : '') +
-      '<div class="row"><a class="btn" href="portal.html?t=' + encodeURIComponent(E.token) + '" target="_blank">📝 監督ポータルを開いて提出</a><button class="btn out" onclick="render()">提出した → 画面を更新</button></div>';
+      '<div class="row"><a class="btn" href="portal.html?t=' + encodeURIComponent(E.token) + '" target="_blank">📝 監督ポータルを開いて提出</a><button class="btn out" onclick="checkOrder()">提出したか確かめる</button></div><div id="orderMsg"></div>';
     return h + historyHtml(pd);
   }
   if (v.phase === 'ready') {
@@ -487,6 +487,16 @@ function mineIndivHtml(v) {
   });
   if (!rows.length) return '';
   return '<div class="mine"><table><tr><th>試合</th><th>自分のペア</th><th>結果・予定</th></tr>' + rows.join('') + '</table></div>';
+}
+
+/* 「提出したか確かめる」：まだなら、何をすればよいかを出す */
+function checkOrder() {
+  render();
+  var v = status();
+  var box = document.getElementById('orderMsg');
+  if (v.phase === 'order' && box) {
+    box.innerHTML = '<div class="warn">まだ提出されていません。監督ポータルで、1〜3番手の選手をすべて選んで「オーダーを確認する」→ 確認の画面で「提出する」まで押してください。「✅ オーダー提出済み」と出れば完了です（提出すると、この画面は自動で次に進みます）。</div>';
+  }
 }
 
 /* 選手変更の申請（受付前・8:00まで） */
@@ -599,6 +609,10 @@ function restart() {
   if (s !== SCEN.team && s !== SCEN.indiv) IWP.reset(SCEN.team);
   render();
   window.addEventListener('focus', render);
+  /* 監督ポータル（別のタブ）で提出すると、この画面も自動で次に進む */
+  window.addEventListener('storage', function (e) { if (!e.key || e.key.indexOf('iwPractice.state') === 0) render(); });
+  /* スマホで「戻る」で戻ったとき（前の表示のまま残っている場合）も読み直す */
+  window.addEventListener('pageshow', function (e) { if (e.persisted) render(); });
   setInterval(function () { document.querySelector('.me .clock').textContent = IWP.clock(); }, 15000);
 })();
 </script>
