@@ -408,15 +408,17 @@ function nowTeam(v) {
   if (v.phase === 'finished') {
     var last = pd.history.length ? pd.history[pd.history.length - 1] : null;
     var duty = (pd.refDuties || []).filter(function (r) { return r.state !== '終了'; });
-    if (last && last.round === '決勝') h += '<h2>準優勝です。表彰式へ</h2><p>決勝の審判は審判員が担当するので、審判の担当はありません。</p>';
+    var awardP = '<p>ベスト4以上は表彰の対象です。監督ポータルに「🏅 ' + esc(pd.award || '') + '　表彰式があります。連絡があるまでお待ちください」と出ます。</p>';
+    if (last && last.round === '決勝') h += '<h2>🏅 準優勝です（表彰があります）</h2>' + awardP + '<p>決勝の審判は審判員が担当するので、審判の担当はありません。</p>';
+    else if (last && last.round === '準決勝') h += '<h2>🏅 第3位です（表彰があります）</h2>' + awardP + '<p>決勝は審判員が審判をするので、審判の担当はありません。</p>';
     else if (duty.length) h += '<h2>負けたチーム：次の試合の審判をする</h2><p>負けたチームは、<b>同じコートの次の試合の審判</b>をします（1名）。<b>第' + duty[0].no + '試合（' + esc(duty[0].court) + 'コート・' + esc(duty[0].round) + '）</b>です。監督ポータルの「🟧 審判の担当」にも出ています。審判が終わったら、このチームの試合はすべて終了です。</p>';
-    else h += '<h2>このチームの試合はすべて終了しました</h2><p>' + (last && last.round === '準決勝' ? '準決勝で負けたチームは第3位です（表彰があります）。決勝は審判員が審判をするので、審判の担当はありません。' : '審判の担当があるときは、監督ポータルの「🟧 審判の担当」に出ます。') + '</p>';
+    else h += '<h2>このチームの試合はすべて終了しました</h2><p>' + '審判の担当があるときは、監督ポータルの「🟧 審判の担当」に出ます。' + '</p>';
     h += '' +
       '<div class="row"><a class="btn" href="portal.html?t=' + encodeURIComponent(E.token) + '" target="_blank">📝 監督ポータルで確かめる</a><button class="btn out" onclick="playAll()"><span class="sim">進める</span>大会の最後まで進めて結果を見る</button></div>';
     return h + historyHtml(pd);
   }
   if (v.phase === 'champion') {
-    h += '<h2>🏆 優勝です。表彰式へ</h2><p>監督ポータルにも「優勝おめでとうございます」と出ます。組合せ（結果入り）の下の欄に、優勝〜第3位が入ります。</p>' +
+    h += '<h2>🏆 優勝です（表彰があります）</h2><p>監督ポータルに「優勝おめでとうございます」と「🏅 優勝　表彰式があります。連絡があるまでお待ちください」が出ます。組合せ（結果入り）の下の欄に、優勝〜第3位が入ります。</p>' +
       '<div class="row"><a class="btn" href="bracket.html?div=' + divCode() + '" target="_blank">🏆 組合せ（結果入り）を見る</a><a class="btn out" href="portal.html?t=' + encodeURIComponent(E.token) + '" target="_blank">📝 監督ポータルを見る</a></div>';
     return h + historyHtml(pd);
   }
@@ -464,10 +466,15 @@ function nowIndiv(v) {
     var lk = ko.length ? ko[ko.length - 1] : null;
     var lkWin = lk && v.mine[(lk.winner === 'L' ? lk.left : lk.right).id];
     var msg = !lk ? '予選リーグで敗退しました。結果は組合せ（結果入り）で確かめられます。'
-      : lk.stage === 'F' ? (lkWin ? '🏆 優勝です。表彰式へ。' : '準優勝です。表彰式へ。')
-      : lk.stage === 'SF' ? '準決勝で負けたペアは第3位です（表彰があります）。'
+      : lk.stage === 'F' ? (lkWin ? '🏆 優勝です。' : '準優勝です。')
+      : lk.stage === 'SF' ? '準決勝で負けたペアは第3位です。'
       : '決勝トーナメント1回戦で負けたペアは、同じコートの次の試合の審判をすることがあります。進行表の「審判」で確かめてください。';
-    h += '<h2>自分のチームの試合はすべて終わりました</h2><p>' + msg + '</p>' +
+    /* ベスト4以上のペアは表彰：受付票と同じ内容をここにも出す */
+    var aw = [];
+    try { aw = IWP.get({ action: 'getTicket', t: E.token }).awards || []; } catch (e) { aw = []; }
+    if (aw.length) msg = 'ベスト4以上は表彰の対象です。受付票に「🏅 ' + aw.map(function (x) { return esc(x.label) + 'ペア（' + esc(x.place) + '）'; }).join('と') + 'は　表彰式があります。連絡があるまでお待ちください」と出ます。';
+    h += '<h2>' + (aw.length ? '🏅 表彰があります' : '自分のチームの試合はすべて終わりました') + '</h2><p>' + msg + '</p>' +
+      (aw.length ? '<div class="row" style="margin-bottom:6px"><a class="btn" href="ticket.html?t=' + encodeURIComponent(E.token) + '" target="_blank">🎫 受付票で確かめる</a></div>' : '') +
       mineIndivHtml(v) + '<div class="row"><button class="btn out" onclick="playAll()"><span class="sim">進める</span>大会の最後まで進めて結果を見る</button><a class="btn" href="bracket.html?div=' + divCode() + '" target="_blank">🏆 組合せ（結果入り）</a></div>';
     return h;
   }
@@ -542,21 +549,25 @@ function stepsHtml(v) {
        ['order', 'オーダー提出', '1回戦は ' + cfg('1回戦オーダー締切') + ' まで。2回戦以降は前の試合の終了から ' + (cfg('オーダー提出（分）') || '10') + '分以内'],
        ['ready', '試合', '本部が「オーダー公開」→ 試合開始。結果は進行表・組合せにすぐ出る'],
        ['wait', '次の相手が決まる', '決まったら、次のオーダーを出す（ここまでをくり返す）'],
-       ['finished', '負けたら審判', '同じコートの次の試合の審判をして終了'],
-       ['champion', '決勝まで勝ったら表彰', '組合せ（結果入り）に優勝〜第3位']]
+       ['finished', '負けたら審判', '同じコートの次の試合の審判をして終了（準決勝・決勝は審判員が審判）'],
+       ['champion', 'ベスト4以上は表彰', '準決勝で負けたら第3位、決勝で負けたら準優勝、勝てば優勝。監督ポータルに「表彰式があります」と出たら、連絡があるまで待つ']]
     : [['reception', '受付（' + cfg('受付時刻') + '）', 'チームで1回。参加料はペア数分'],
        ['league', '予選リーグ', '4ペアのリーグ。リーグ内で審判も担当'],
        ['ready', '決勝トーナメント', '各ブロック1位・2位。準決勝・決勝は審判員が審判'],
        ['wait', '次の相手が決まる', ''],
-       ['finished', 'すべて終了', '結果は組合せ（結果入り）で確認']];
+       ['finished', 'すべて終了・ベスト4以上は表彰', '準決勝に進んだペア（第3位・準優勝・優勝）は表彰。受付票に「表彰式があります」と出たら、連絡があるまで待つ']];
   var idx = -1;
   var i;
   for (i = 0; i < order.length; i++) if (order[i][0] === v.phase) idx = i;
   if (t === 'team' && (v.phase === 'order' || v.phase === 'ready' || v.phase === 'wait')) idx = { order: 1, ready: 2, wait: 3 }[v.phase];
+  /* 団体戦：準決勝・決勝で負けた（表彰あり）ときは「ベスト4以上は表彰」を今の段階にする */
+  var teamAward = t === 'team' && v.phase === 'finished' && v.pd && v.pd.award;
+  if (teamAward) idx = 5;
   var h = '';
   for (i = 0; i < order.length; i++) {
     var cls = i === idx ? 'cur' : (i < idx && !(t === 'team' && v.phase === 'champion' && i === 4) ? 'done' : '');
-    if (t === 'team' && v.phase === 'finished' && i === 5) cls = '';
+    if (t === 'team' && v.phase === 'finished' && i === 5 && !teamAward) cls = '';
+    if (teamAward && i === 4) cls = '';
     h += '<li class="' + cls + '"><span class="ic">' + (cls === 'done' ? '✓' : (i + 1)) + '</span><span><b>' + esc(order[i][1]) + '</b>' + (order[i][2] ? '<small>' + esc(order[i][2]) + '</small>' : '') + '</span></li>';
   }
   return h;
@@ -584,6 +595,7 @@ function renderFaq() {
   } else {
     q.push(['審判はいつ？', '予選リーグでは、同じリーグのペアが審判をします（1〜2回）。決勝トーナメント1回戦は、各コートの最初の試合をA・Bブロックの3位、2試合目を最初の試合の敗者が担当します。準決勝・決勝は審判員です。進行表の各試合に「審判」が出ます。']);
   }
+  q.push(['表彰は？', 'ベスト4以上（第3位・準優勝・優勝）が表彰の対象です。' + (t === 'team' ? '準決勝で負けた時点（第3位）、または決勝が終わった時点で、監督ポータルに' : '準決勝で負けた時点（第3位）、または決勝が終わった時点で、受付票に') + '「🏅 表彰式があります。連絡があるまでお待ちください」と出ます。']);
   q.push(['いま何試合目？', '進行表で、コートごとに「試合中」「コール」「待機」と予定時刻が出ます（30秒ごとに自動更新）。']);
   document.getElementById('faq').innerHTML = q.map(function (x) { return '<details class="faq"><summary>' + esc(x[0]) + '</summary><p>' + esc(x[1]) + '</p></details>'; }).join('');
 }
