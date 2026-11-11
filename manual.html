@@ -128,7 +128,12 @@ ul.check small{color:var(--muted);display:block}
   /* 1係＝A4 1枚 */
   .part{break-before:page;break-inside:avoid;padding-block:0}
   .part:first-of-type{break-before:auto}
-  #honbu,#teams{font-size:8.9pt}
+  #honbu,#teams,#reception{font-size:8.9pt}
+  #reception{font-size:8.6pt;line-height:1.4}
+  #reception dl div{padding-block:2px}
+  #teams{font-size:8pt;line-height:1.32}
+  #teams h3{margin:5px 0 3px}
+  #teams td,#teams th{padding-top:2px;padding-bottom:2px}
   #honbu{font-size:8.1pt;line-height:1.36}
   #honbu h3{margin:5px 0 3px}
   #honbu ol.steps>li{padding-top:2px;padding-bottom:2px}
@@ -312,6 +317,7 @@ ul.check small{color:var(--muted);display:block}
     <div><dt>「領収書メールを送れませんでした」と出た</dt><dd>受付自体は完了している。チーム名を本部に伝え、管理画面から再送してもらう。</dd></div>
     <div><dt>紙の領収書がほしいと言われた</dt><dd>印刷済みの領収書から該当チームのものを渡す（1チーム1枚）。</dd></div>
     <div><dt>選手・監督を変更したいと言われた</dt><dd>受付票の「選手・監督の変更申請」から申請するよう案内する（<b>受付終了 8:00 まで</b>。競技委員長が許可すると自動で反映）。スマートフォンがない場合は選手変更届（紙）を書いてもらい、本部へ届ける。</dd></div>
+    <div><dt>「変更申請、どうなりましたか」と聞かれた</dt><dd>申請中のチームは一覧に <b>📝 変更申請中</b> と出る。チームを開くと申請の状況（⏳申請中・✅許可・❌却下と理由）が出るので、それを伝える。受付はそのまま進めてよい。結果は監督の受付票・監督ポータルの上にも出る。</dd></div>
     <div><dt>8:00になった</dt><dd>画面の一覧で「未受付」のチームを確認し、本部へ報告する。</dd></div>
   </dl>
 </div></section>
@@ -336,7 +342,9 @@ ul.check small{color:var(--muted);display:block}
     <li>試合が始まったら <span class="btn">開始</span>。</li>
     <li>コートからスコアシートが届いたら結果を入れる。<br>個人戦：<span class="btn">結果入力</span> で勝者とゲーム数（例：4-2）<br>団体戦：<span class="btn">マッチ結果</span> でマッチごとの勝者とゲーム数（例：3-1）<br>不戦勝・リタイアは「4-R」（団体戦のマッチは「3-R」）。R＝リタイアメント。勝者のゲーム数を先に入れる</li>
     <li>勝者は自動で次の試合に入る。間違えたら <span class="btn">結果修正</span>、状態を戻すときは <span class="btn">戻す</span>。スコアシートは試合順に保管する。</li>
+    <li><span class="who">団体戦</span> 決着すると <b>📢 放送文</b>（結果と、次の試合のオーダー締切）が出る。そのまま読み上げる（例：「第3試合は、さくら中学校の勝ちです。次の第9試合、さくら中学校対けやき中学校のオーダー締切は11時10分です。」）。あとからカードの <span class="btn">📢 放送文</span> でも出せる。</li>
   </ol>
+  <div class="caution">監督のスマートフォンに出るお知らせは、団体戦のオーダー（次の相手と締切が決まったとき・締切5分前）だけ。試合・審判のコール、オーダー締切、表彰は<b>必ず放送</b>で伝える。</div>
 
   <h3>個人戦（28日）</h3>
   <ul class="dots">
@@ -388,7 +396,7 @@ ul.check small{color:var(--muted);display:block}
     <li><b>組合せ（結果入り）</b>：本部の入力で随時更新。区切りのよいところで印刷して貼り替える。</li>
     <li>どちらも1区分＝A4縦1枚。「4区分まとめて」で4枚一度に印刷できる。</li>
     <li>運営ポータルの「進行表の二次元コード」をA4で印刷して会場入口・観覧席に掲示し、選手・保護者がスマートフォンで予定時刻を確認できるようにする。</li>
-    <li>選手変更があったら、運営ポータルの「選手変更一覧」（変更前→変更後）を印刷して掲示する。</li>
+    <li>選手変更一覧（運営ポータル）は、受付終了（8:00）で「🔒 この一覧で確定」と出る。確定したら印刷（その日の男女2区分が1枚に出る）して掲示し、本部へ伝える（本部が「選手変更一覧を掲示しました。監督ポータルからも見られます」と放送）。変更がない日も「選手変更はありません」を掲示してよい。</li>
   </ul>
 
   <h3>表彰の準備</h3>
@@ -454,14 +462,14 @@ ul.check small{color:var(--muted);display:block}
       <tr><td class="t">大会前</td><td>メールの申込リンクから申し込む（11/19 17:00まで）。申込責任者に受付票（二次元コード）が届く</td><td><span class="who">委員長</span> 管理画面で申込状況を確認し、未申込のチームに督促メール</td></tr>
       <tr><td class="t">7:30</td><td>会場に到着。受付に代表者（監督または申込責任者）が並ぶ</td><td><span class="who">全係</span> 持ち場で端末を起動・ログイン。受付前の列を整理</td></tr>
       <tr><td class="t">7:35〜8:00</td><td>受付票を見せ、参加料を現金で払う。領収書（PDF）がメールで届く</td><td><span class="who">受付</span> 二次元コードを読む → 金額確認 → 現金受領・受付完了</td></tr>
-      <tr><td class="t">8:00</td><td>（未受付のチームがあれば遅れて到着）</td><td><span class="who">受付</span> 未受付のチームを本部へ報告　<span class="who">本部</span> 監督へ連絡</td></tr>
+      <tr><td class="t">8:00</td><td>（未受付のチームがあれば遅れて到着）</td><td><span class="who">受付</span> 未受付のチームを本部へ報告　<span class="who">本部</span> 監督へ連絡　<span class="who">記録</span> 選手変更一覧（確定）を印刷・掲示 → 本部が放送</td></tr>
       <tr><td class="t">〜8:40</td><td><span class="who">団体戦</span> 監督がスマートフォンで1回戦のオーダーを出す（8:40までは修正できる）</td><td><span class="who">本部</span> 進行管理で提出状況を見る。8:40を過ぎても未提出なら赤表示 → 監督に声をかけ、紙のオーダー票を受けて代理入力</td></tr>
       <tr><td class="t">8:25〜</td><td>監督会議（8:25）・開始式（8:45）に出る</td><td><span class="who">本部</span> 監督会議・開始式の進行</td></tr>
       <tr><td class="t">9:00〜</td><td>進行表で自分の試合のコート・予定時刻を見て待機。コールされたらコートへ</td><td><span class="who">本部</span> コール　<span class="who">記録</span> スコアシートをコートへ</td></tr>
       <tr><td class="t">試合前</td><td><span class="who">団体戦</span> コートで整列・あいさつ。ここで初めて相手のオーダーが監督ポータルに出る</td><td><span class="who">本部</span> あいさつに合わせて「オーダー公開」→「開始」　<span class="who">コート</span> 試合を進める</td></tr>
       <tr><td class="t">審判</td><td><span class="who">個人戦</span> 予選リーグはリーグ内で審判（1〜2回）。決勝T1回戦の初戦はＡ・Ｂブロック3位、2戦目は初戦の敗者<br><span class="who">団体戦</span> 各コートの初戦はＡ＝7番・8番、Ｂ＝15番・16番のチームから1名ずつ。以降は負けたチームが同じコートの次の試合の審判</td><td><span class="who">本部</span> コールで審判も呼ぶ　<span class="who">コート</span> 審判がそろっているか確認</td></tr>
       <tr><td class="t">試合後</td><td>勝者がスコアシートにサインする</td><td><span class="who">コート</span> シートをすぐ本部へ　<span class="who">本部</span> 結果入力 → 勝者が次の試合に自動で入る</td></tr>
-      <tr><td class="t">2回戦以降</td><td><span class="who">団体戦</span> 前の試合の終了から10分以内にオーダー（修正もこの締切まで）、15分以内にコート集合</td><td><span class="who">本部</span> 締切超過（赤表示）の試合を催促。未提出は紙で代理入力</td></tr>
+      <tr><td class="t">2回戦以降</td><td><span class="who">団体戦</span> 前の試合の終了から10分以内にオーダー（修正もこの締切まで）、15分以内にコート集合</td><td><span class="who">本部</span> 決着ごとに 📢 放送文（次の試合とオーダー締切）を読み上げる。締切超過（赤表示）の試合を催促。未提出は紙で代理入力</td></tr>
       <tr><td class="t">予選終了</td><td><span class="who">個人戦</span> 各ブロック1位・2位が決勝トーナメントへ</td><td><span class="who">本部</span> ブロックの順位を確定 → 決勝トーナメントの対戦が自動で決まる。放送で進出ペアを知らせる</td></tr>
       <tr><td class="t">決勝後</td><td>表彰を待つ</td><td><span class="who">記録</span> 結果入りの組合せで順位を確認し、表彰へ</td></tr>
     </tbody>
@@ -474,6 +482,8 @@ ul.check small{color:var(--muted);display:block}
       <tr><td>受付票が見つからない・開けない</td><td>受付</td><td>「チーム名で探す」で受付する</td></tr>
       <tr><td>領収書のメールが届かない・紙がほしい</td><td>受付／委員長</td><td>紙の領収書を渡す。メールは管理画面から再送</td></tr>
       <tr><td>選手・監督を変えたい</td><td>受付 → 委員長</td><td>受付票の「変更申請」を案内（受付終了 8:00 まで。紙の届も可）。委員長が許可すると反映され、選手変更一覧に載る</td></tr>
+      <tr><td>変更申請の結果は？</td><td>受付</td><td>受付画面でチームを開くと申請の状況が出る。監督の受付票・監督ポータルの上にも出ると伝える</td></tr>
+      <tr><td>相手チームに選手変更はある？</td><td>全係</td><td>「選手変更一覧」を案内（監督ポータルは次の試合の欄にも出る。8:00以降は確定）</td></tr>
       <tr><td>オーダーを出せない・間違えた</td><td>本部</td><td>紙のオーダー票を受けて代理入力・訂正</td></tr>
       <tr><td>次の試合はいつ・どのコート？</td><td>全係</td><td>進行表（監督は監督ポータルにも表示）を案内</td></tr>
       <tr><td>次はいつ審判をする？</td><td>全係</td><td>進行表のカードの「審判：」を案内（団体戦の監督は監督ポータルにも表示）</td></tr>

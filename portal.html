@@ -79,6 +79,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 </head>
 <body>
 <script src="coach-return.js"></script>
+<script src="coach-alert.js"></script>
+<script src="coach-req.js"></script>
 <header class="header">
   <div class="header-inner">
     <h1><small id="hdSub">監督ポータル</small><span id="hdTeam">読み込み中...</span></h1>
@@ -150,6 +152,8 @@ function matchCard() {
       ? '<b>次がこの試合です</b>' + (liveTxt ? '<small>いま ' + liveTxt + 'が試合中</small>' : '')
       : 'この試合の前に <b>あと' + q.ahead + '試合</b>' + (liveTxt ? '<small>いま ' + liveTxt + 'が試合中</small>' : '')) + '</div>';
   }
+  /* 相手チームの選手変更（許可されたもの） */
+  if (m.oppDecided) h += crOppHtml(m.oppChanges, m.opp.full || m.opp.label);
   return h + '</div>';
 }
 
@@ -195,8 +199,12 @@ function dutyCard() {
 function render() {
   document.getElementById('hdTeam').textContent = D.team.name;
   document.getElementById('hdSub').textContent = D.division + '　監督ポータル';
-  var h = dutyCard();
+  /* お知らせ（団体戦のオーダーだけ：相手と締切が決まったとき・締切5分前。画面を開いている間、確認するまで残る） */
+  caScope(token);
   var v = D.view;
+  var h = (D.match && D.reception ? '<div id="caBox">' + caBoxHtml() + '</div>' : '') +
+    /* 変更申請の状況（申請中・許可・却下） */
+    crCardHtml(D.requests, { token: token, changeOpen: D.changeOpen !== false, type: 'team' }) + dutyCard();
   if (v === 'nodraw') {
     h += '<div class="msg info">組合せが発表されると、ここに対戦が表示されます。</div>';
   } else if (v === 'champion') {
@@ -215,12 +223,14 @@ function render() {
     } else if (v === 'order') {
       if (m.myOrder) {
         h += '<div class="msg ok">✅ オーダー提出済み（' + esc(m.myOrderAt) + (m.myOrderBy === '本部' ? '・本部入力' : '') + '）<br>' + (m.oppSubmitted ? '相手チームも提出済みです。試合開始のあいさつで本部が両チームのオーダーを公開します。' : '相手チームの提出を待っています。') + '</div>';
+        h += pendingNote();
         h += '<div class="card"><h2>提出したオーダー</h2>' + orderTable(m.myOrder, null) +
           (m.deadlinePassed
             ? '<div class="muted" style="margin-top:10px">締切（' + esc(m.deadline) + '）を過ぎたため、修正できません。変更は本部へ申し出てください。</div>'
             : '<div style="margin-top:12px"><button class="btn btn-out" onclick="startEdit()">オーダーを修正する</button></div><div class="muted" style="margin-top:6px">締切（' + esc(m.deadline || '-') + '）までは修正できます。相手のオーダーは、試合開始のあいさつで本部が公開するまで見えません。</div>') + '</div>';
       } else {
         h += m.deadlinePassed ? '<div class="msg ng">⚠ 締切（' + esc(m.deadline) + '）を過ぎています。すぐに提出してください。</div>' : '';
+        h += pendingNote();
         h += orderForm();
       }
     } else if (v === 'locked' || v === 'playing') {
@@ -234,9 +244,18 @@ function render() {
   if (!D.reception) h += '<a class="nav-link" href="ticket.html?t=' + encodeURIComponent(token) + '">🎫 受付票を表示する（受付で見せる）</a>';
   if (D.changeOpen !== false) h += '<a class="chg-link" href="change.html?t=' + encodeURIComponent(token) + '">✏️ 選手・監督の変更申請</a>';
   h += '<a class="nav-link" href="progress.html' + dq + '">📋 進行表を見る（試合の進み具合・結果）</a>';
-  h += '<a class="nav-link nav-end" href="bracket.html' + dq + '">🏆 組合せ（結果入り）を見る</a>';
+  h += '<a class="nav-link" href="bracket.html' + dq + '">🏆 組合せ（結果入り）を見る</a>';
+  h += '<a class="nav-link nav-end" href="changes.html' + dq + '">🔁 選手変更一覧を見る（' + esc(D.division) + '）</a>';
   document.getElementById('main').innerHTML = h;
+  caCheck(caEventsPortal(D));
   if (v === 'order' && !D.match.myOrder) bindForm();
+}
+
+/* 変更申請が確認中のとき：オーダーの選手について注意 */
+function pendingNote() {
+  if (!crPending(D.requests)) return '';
+  return '<div class="msg wait">⏳ 選手の変更申請を競技委員長が確認中です。許可されるまでは、今の選手名簿でオーダーを作ります。' +
+    '許可されると、選手名簿と提出済みのオーダーの名前が新しい選手に入れ替わります（欠員報告のときは入れ替わらないので、オーダーを直してください）。</div>';
 }
 
 /* 表彰の対象（第3位・準優勝・優勝）：目立つ枠で知らせる */

@@ -105,6 +105,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .quick button.on{border-color:var(--main);background:var(--main);color:#fff}
 .modal input{width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;font-size:1rem;font-family:inherit;margin-bottom:12px}
 .mbtns{display:flex;gap:8px}
+.ann{background:#fff8e6;border:3px solid #e08a00;border-radius:12px;padding:14px;font-size:1.15rem;font-weight:700;line-height:1.8;margin-bottom:10px}
+.ann-note{font-size:.78rem;color:#666;margin-bottom:12px;line-height:1.5}
 .mbtns .btn{flex:1;padding:12px}
 .login{max-width:360px;margin:60px auto;background:#fff;border-radius:12px;padding:20px}
 .login input{width:100%;padding:10px;border:2px solid #ddd;border-radius:8px;margin:10px 0;font-size:1rem}
@@ -312,6 +314,7 @@ function cardHtml(m, court) {
     if (isTeam && m.team && m.team.open && m.team.pubAt && (m.state === '待機' || m.state === '呼出')) h += '<button onclick="unpublish(\'' + id + '\')">非公開に戻す</button>';
     if (m.state !== '待機' || ready) h += '<button class="p" ' + (ready ? '' : 'disabled') + ' onclick="' + (isTeam ? 'openPairs' : 'openResult') + '(\'' + id + '\')">' + (m.state === '終了' ? '結果修正' : isTeam ? 'マッチ結果' : '結果入力') + '</button>';
     if (m.state !== '待機') h += '<button class="r" onclick="undo(\'' + id + '\')">戻す</button>';
+    if (isTeam && m.state === '終了' && m.winner) h += '<button class="pub" onclick="showAnnounce(\'' + id + '\')" title="結果と次の試合のオーダー締切の放送文">📢 放送文</button>';
     h += '<button onclick="window.open(\'scoresheet.html?div=' + divCode + '&match=' + id + '\')" title="この試合のスコアシートを印刷">🖨 シート</button>';
     h += '<span class="sp"></span>';
     if (m.state !== '終了' && m.state !== '試合中') {
@@ -521,6 +524,8 @@ function savePairs() {
     apply(d);
     var m = findMatch(pr.id);
     toast(m.state === '終了' ? '決着：' + (m.winner === 'L' ? m.left.label : m.right.label) + 'の勝ち（' + m.score + '）' : '保存しました（' + m.team.wL + '-' + m.team.wR + '）');
+    /* 決着したら、放送文を出す（次の試合とオーダー締切） */
+    if (m.state === '終了') showAnnounce(m.id);
   }).catch(function (err) { busy = false; toast(err.message, true); });
 }
 
@@ -612,10 +617,64 @@ function saveResult() {
     closeModal();
     apply(d);
     toast('結果を確定しました');
+    if (DATA.division.type === 'team') showAnnounce(res.id);
   }).catch(function (err) {
     busy = false;
     toast(err.message, true);
   });
+}
+
+/* ========== 放送文（団体戦：結果が決まったら、次の試合とオーダー締切を放送する） ========== */
+function hmJa(hm) {
+  var x = String(hm || '').match(/(\d{1,2}):(\d{2})/);
+  return x ? (+x[1]) + '時' + (x[2] === '00' ? '' : (+x[2]) + '分') : '';
+}
+
+function teamSay(side) { return side.full || side.label; }
+
+function announceText(m) {
+  if (!m || m.state !== '終了' || !m.winner) return '';
+  var w = m.winner === 'L' ? m.left : m.right;
+  if (m.stage === 'F') return '決勝戦（第' + m.no + '試合）は、' + teamSay(w) + 'の優勝です。';
+  var t = '第' + m.no + '試合（' + m.round + '）は、' + teamSay(w) + 'の勝ちです。';
+  var nx = null;
+  var i, x;
+  for (i = 0; i < DATA.matches.length; i++) {
+    x = DATA.matches[i];
+    if (x.id === m.id || x.state === '終了') continue;
+    if ((x.left && x.left.id === w.id) || (x.right && x.right.id === w.id)) { if (!nx || x.no < nx.no) nx = x; }
+  }
+  if (!nx) return t;
+  var opp = nx.left.id === w.id ? nx.right : nx.left;
+  if (!opp.decided) return t + teamSay(w) + 'の次の試合は第' + nx.no + '試合（' + nx.round + '）です。対戦相手は' + opp.label + 'です。';
+  if (nx.team && nx.team.both) return t + '次の第' + nx.no + '試合（' + nx.round + '）は、' + teamSay(nx.left) + '対' + teamSay(nx.right) + 'です。';
+  return t + '次の第' + nx.no + '試合（' + nx.round + '）、' + teamSay(nx.left) + '対' + teamSay(nx.right) + 'の' +
+    (nx.team && nx.team.deadline ? 'オーダー締切は' + hmJa(nx.team.deadline) + 'です。' : 'オーダーを提出してください。') +
+    '両チームの監督は、監督ポータルからオーダーを提出してください。';
+}
+
+function showAnnounce(id) {
+  var m = findMatch(id);
+  var t = announceText(m);
+  if (!t) return;
+  modalOpen = true;
+  document.getElementById('modal').innerHTML = '<h3>📢 放送文（第' + m.no + '試合の結果）</h3><div class="ann" id="annText">' + esc(t) + '</div>' +
+    '<div class="ann-note">このまま読み上げてください。試合のコール・審判・表彰も放送でお知らせします（監督のスマホには、オーダーのお知らせだけが出ます）。</div>' +
+    '<div class="mbtns"><button class="btn btn-out" onclick="copyAnnounce()">コピー</button><button class="btn" onclick="closeModal()">閉じる</button></div>';
+  document.getElementById('overlay').className = 'overlay show';
+}
+
+function copyAnnounce() {
+  var t = document.getElementById('annText').textContent;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(t).then(function () { toast('コピーしました'); }); return; }
+  } catch (e) {}
+  var ta = document.createElement('textarea');
+  ta.value = t;
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); toast('コピーしました'); } catch (e) { toast('コピーできませんでした', true); }
+  document.body.removeChild(ta);
 }
 
 /* ========== 予選順位 ========== */

@@ -12,6 +12,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="coach-return.js"></script>
+<script src="coach-req.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--main:#1a4a2e;--white:#fff;--gray:#f5f5f0;--text:#222;--text-light:#666;--radius:12px;--red:#b33030}
@@ -86,6 +87,8 @@ function render(d) {
   html += '<div class="team">' + esc(d.teamName) + '</div>';
   html += '<div class="meta">' + esc(d.date) + '<br>' + esc(d.venue) + (d.pairCount ? '<br>出場 ' + d.pairCount + 'ペア' : '') + '</div>';
   html += awardBox(d);
+  /* 変更申請の状況（申請中・許可・却下）。結果が出たら目立たせる */
+  html += crCardHtml(d.requests, { token: token, changeOpen: d.changeOpen !== false, type: d.type });
   if (d.openTime || d.receptionTime) html += '<div class="times"><span>開場 <strong>' + esc(d.openTime) + '</strong></span><span>受付 <strong>' + esc(d.receptionTime) + '</strong></span></div>';
   html += '<div id="qr"></div>';
   html += '<div class="code">' + esc(d.receptionCode) + '</div>';
@@ -96,12 +99,13 @@ function render(d) {
   }
   if (d.type === 'team') {
     html += d.reception
-      ? '<a class="portal-btn" href="portal.html?t=' + encodeURIComponent(token) + '">📝 オーダー提出（監督用）</a>'
+      ? '<a class="portal-btn" href="portal.html?t=' + encodeURIComponent(token) + '">📝 オーダー提出（監督用）</a><div class="portal-note">監督ポータルで、次の対戦相手・オーダーの締切・相手チームの選手変更を確認できます。試合のコール・審判・表彰は会場の放送でお知らせします。</div>'
       : '<div class="portal-note">受付が済むと、ここに「オーダー提出（監督用）」ボタンが表示されます。</div>';
   }
   /* 変更申請は、申請できる期間（当日の受付終了まで）だけ出す */
   if (d.changeOpen !== false) html += '<a class="chg-btn" href="change.html?t=' + encodeURIComponent(token) + '">✏️ 選手・監督の変更申請</a>';
   html += '<a class="nav-btn" href="progress.html' + (d.divCode ? '?div=' + encodeURIComponent(d.divCode) : '') + '">📋 進行表を見る（試合の進み具合・結果）</a>';
+  html += '<a class="nav-btn" href="changes.html' + (d.divCode ? '?div=' + encodeURIComponent(d.divCode) : '') + '">🔁 選手変更一覧を見る（' + esc(d.division) + '）</a>';
   html += '<div class="howto">・当日の受付で、この画面（または印刷した紙）を提示してください。<br>・参加料と引き換えに二次元コードを読み取り、受付完了となります。<br>・領収書は受付完了後、申込責任者のメールに送ります。</div>';
   html += '</div>';
   v.innerHTML = html;
@@ -117,7 +121,7 @@ function render(d) {
   document.title = d.division + ' 受付票（' + d.teamName + '）';
 }
 
-/* 読み込み。開いたままでも受付済み・表彰の表示が変わるように30秒ごとに読み直す（内容が変わったときだけ描き直す） */
+/* 読み込み。開いたままでも受付済み・コール・表彰の表示が変わるように20秒ごとに読み直す（内容が変わったときだけ描き直す） */
 var lastText = '';
 function loadTicket(first) {
   fetch(GAS_URL + '?action=getTicket&t=' + encodeURIComponent(token))
@@ -137,7 +141,7 @@ function loadTicket(first) {
   if (!token) { fail('リンクが正しくありません。申込完了メールのリンクから開いてください。'); return; }
   if (GAS_URL.indexOf('http') !== 0) { fail('システム設定が未完了です（GAS_URL未設定）。'); return; }
   loadTicket(true);
-  setInterval(function () { loadTicket(false); }, 30000);
+  setInterval(function () { loadTicket(false); }, 20000);
 })();
 </script>
 </body>

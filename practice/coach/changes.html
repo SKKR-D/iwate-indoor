@@ -36,6 +36,10 @@ td.to{font-weight:900;color:var(--red)}
 td .nt{display:block;font-size:.74rem;color:#7a4b00;font-weight:700;margin-top:2px}
 td.ar{text-align:center;color:#999;width:1.6em;padding:6px 0}
 .none{text-align:center;color:var(--muted);padding:14px;font-size:.88rem}
+.st{font-size:.8rem;font-weight:700;border-radius:8px;padding:6px 10px;margin:0 0 6px;line-height:1.5}
+.st.fix{background:#e3f1e6;color:#1d5b2c}
+.st.open{background:#fff3cd;color:#7a5d00}
+.st.pre{background:#eef1f5;color:#445}
 .note{font-size:.74rem;color:var(--muted);margin-top:12px;line-height:1.6}
 @media (max-width:600px){ table{font-size:.8rem} th,td{padding:5px 4px} }
 @media print{
@@ -62,20 +66,47 @@ td.ar{text-align:center;color:#999;width:1.6em;padding:6px 0}
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
 /* ================ */
 var params = new URLSearchParams(location.search);
+/* div：MI/WI/MT/WT（その区分だけ）、I（個人戦の日＝男女）、T（団体戦の日＝男女）、all（すべて）。
+   指定がないときは、きょうの種別（個人戦の日は個人戦、団体戦の日は団体戦）を出す */
 var div = params.get('div') || '';
-var LIST = [['', 'すべて'], ['MI', '男子個人戦'], ['WI', '女子個人戦'], ['MT', '男子団体戦'], ['WT', '女子団体戦']];
+var GROUPS = { I: ['MI', 'WI'], T: ['MT', 'WT'], all: ['MI', 'WI', 'MT', 'WT'] };
+var PER = null;
 
 function esc(s) {
   if (s === undefined || s === null) return '';
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
-function tabs() {
+/* いま表示する区分（指定がなければ、きょうの種別） */
+function effDiv() {
+  if (div) return div;
+  if (PER) {
+    if (PER.MI && PER.MI.today) return 'I';
+    if (PER.MT && PER.MT.today) return 'T';
+  }
+  return 'all';
+}
+
+function tabs(names) {
+  var e = effDiv();
+  var dayI = PER && PER.MI && PER.MI.day ? '（' + PER.MI.day + '）' : '';
+  var dayT = PER && PER.MT && PER.MT.day ? '（' + PER.MT.day + '）' : '';
+  var list = [['I', '個人戦' + dayI], ['T', '団体戦' + dayT], ['all', 'すべて']];
+  if (names && names[e]) list.push([e, names[e]]);
   var h = '';
   var i;
-  for (i = 0; i < LIST.length; i++) h += '<a class="' + (LIST[i][0] === div ? 'on' : '') + '" href="?' + (LIST[i][0] ? 'div=' + LIST[i][0] : '') + '">' + LIST[i][1] + '</a>';
+  for (i = 0; i < list.length; i++) h += '<a class="' + (list[i][0] === e ? 'on' : '') + '" href="?div=' + list[i][0] + '">' + list[i][1] + '</a>';
   h += '<button onclick="window.print()">🖨 印刷（掲示用）</button>';
   document.getElementById('tabs').innerHTML = h;
+}
+
+/* 区分ごとの「受付中／確定」の表示 */
+function stLine(code) {
+  var p = PER && PER[code];
+  if (!p || !p.deadline) return '';
+  if (p.closed) return '<div class="st fix">🔒 受付終了（' + esc(p.day) + ' ' + esc(p.deadline) + '）― この一覧で確定です</div>';
+  if (p.today) return '<div class="st open">受付中：変更申請は ' + esc(p.deadline) + ' まで。許可されると、ここに追加されます。</div>';
+  return '<div class="st pre">大会当日（' + esc(p.day) + '）の受付終了 ' + esc(p.deadline) + ' まで、追加されることがあります。</div>';
 }
 
 /* 区分ごとの表（変更前 → 変更後） */
@@ -92,23 +123,28 @@ function changesTable(rows) {
 }
 
 function load() {
-  fetch(GAS_URL + '?action=changes' + (div ? '&div=' + div : '')).then(function (r) { return r.text(); }).then(function (t) {
+  fetch(GAS_URL + '?action=changes').then(function (r) { return r.text(); }).then(function (t) {
     var d = JSON.parse(t);
     if (d.status !== 'ok') throw new Error(d.message);
+    PER = d.periods || null;
+    var names = {};
+    var k;
+    for (k in d.divisions) if (d.divisions.hasOwnProperty(k)) names[k] = d.divisions[k].name;
+    var e = effDiv();
+    tabs(names);
     document.getElementById('sub').textContent = d.tournament;
     var now = new Date();
     var stamp = (now.getMonth() + 1) + '月' + now.getDate() + '日 ' + now.getHours() + ':' + ('0' + now.getMinutes()).slice(-2);
-    var h = '<h2>選手変更一覧' + (div ? '（' + esc(d.divisions[div].name) + '）' : '') + '</h2><div class="sub">' + esc(d.tournament) + '　' + stamp + ' 現在</div>';
-    var codes = div ? [div] : ['MI', 'WI', 'MT', 'WT'];
+    var codes = GROUPS[e] || (names[e] ? [e] : GROUPS.all);
+    var title = e === 'I' ? '個人戦' + (PER && PER.MI && PER.MI.day ? '・' + PER.MI.day : '') : e === 'T' ? '団体戦' + (PER && PER.MT && PER.MT.day ? '・' + PER.MT.day : '') : e === 'all' ? '' : names[e] || '';
+    var h = '<h2>選手変更一覧' + (title ? '（' + esc(title) + '）' : '') + '</h2><div class="sub">' + esc(d.tournament) + '　' + stamp + ' 現在</div>';
     var i, name, rows;
     for (i = 0; i < codes.length; i++) {
-      name = d.divisions[codes[i]].name;
+      name = names[codes[i]];
       rows = d.changes.filter(function (c) { return c.div === name; });
-      if (!div && !rows.length) continue;
-      h += '<h3>' + esc(name) + '</h3>' + changesTable(rows);
+      h += '<h3>' + esc(name) + '</h3>' + stLine(codes[i]) + changesTable(rows);
     }
-    if (!div && !d.changes.length) h += '<div class="none">選手変更はありません</div>';
-    h += '<div class="note">競技委員長が許可した変更を、許可した順に載せています（30秒ごとに自動更新）。</div>';
+    h += '<div class="note">競技委員長が許可した変更を、許可した順に載せています（30秒ごとに自動更新）。変更申請は当日の受付終了で締め切り、そのあとはこの一覧で確定です。</div>';
     document.getElementById('sheet').innerHTML = h;
   }).catch(function (err) {
     document.getElementById('sheet').innerHTML = '<div class="none">読み込めませんでした（' + esc(err.message) + '）。自動で再試行します。</div>';
