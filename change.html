@@ -18,6 +18,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .main{max-width:640px;margin:0 auto;padding:14px}
 .card{background:#fff;border-radius:var(--radius);padding:16px;margin-bottom:14px;box-shadow:0 1px 6px rgba(0,0,0,.06)}
 .card h2{font-size:.95rem;font-weight:900;color:var(--dark);margin-bottom:10px}
+.back-btn{display:block;text-align:center;margin:4px 0 14px;padding:14px;border-radius:var(--radius);background:#fff;border:2px solid var(--dark);color:var(--dark);font-weight:900;font-size:1rem;text-decoration:none}
 .msg{border-radius:var(--radius);padding:14px;font-weight:700;line-height:1.6;margin-bottom:14px;font-size:.9rem}
 .msg.info{background:#e8f1fb;color:#0b3d75}
 .msg.ok{background:#d4edda;color:#155724}
@@ -97,6 +98,7 @@ function render() {
   h += statusCard();
   if (D.applied && D.period.open) h += formCard();
   h += currentCard();
+  h += '<a class="back-btn" href="ticket.html?t=' + encodeURIComponent(token) + '">← 受付票に戻る</a>';
   h += '<div class="foot">変更の申請は、大会当日の受付終了時刻までです。<br>変更は、競技委員長が許可すると自動で反映され、申込責任者のメールにも結果が届きます。<br>スマートフォンが使えないときは、受付終了までに大会本部へ「選手変更届」（紙）を提出してください。<br>要項11(3)：個人戦は1ペア1名まで、団体戦はやむを得ない場合に受け付けます。</div>';
   document.getElementById('main').innerHTML = h;
   bind();
