@@ -58,6 +58,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .duty .it:last-of-type{border-bottom:0}
 .duty .it b{font-weight:900}
 .hist{font-size:.85rem}
+.queue{margin-top:10px;padding:10px 12px;border-radius:10px;background:#fff7e0;border:1.5px solid #f0d27a;color:#6b4e00;font-size:.95rem;text-align:center;line-height:1.5}
+.queue b{font-size:1.1rem;color:#8a4b00}
+.queue small{display:block;font-size:.8rem;color:#7a6630}
 .chg-link,.nav-link{display:block;text-align:center;margin:4px 0 10px;padding:14px;border-radius:12px;background:#fff;border:2px solid #e08a00;color:#8a4b00;font-weight:900;font-size:1rem;text-decoration:none}
 .nav-link{border-color:#1a4a2e;color:#1a4a2e}
 .nav-end{margin-bottom:14px}
@@ -75,6 +78,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 </style>
 </head>
 <body>
+<script src="coach-return.js"></script>
 <header class="header">
   <div class="header-inner">
     <h1><small id="hdSub">監督ポータル</small><span id="hdTeam">読み込み中...</span></h1>
@@ -115,6 +119,7 @@ function load() {
       try { d = JSON.parse(text); } catch (e) { throw new Error('サーバーの応答を読み取れません'); }
       if (d.status !== 'ok') { fatal(d.message); return; }
       D = d;
+      coachReturnSave(token, 'team', D.team.name);
       render();
     })
     .catch(function (err) {
@@ -136,7 +141,16 @@ function matchCard() {
   h += '<div class="' + (m.deadlinePassed && !m.myOrder ? 'warn' : '') + '"><div class="l">オーダー締切</div><div class="v">' + esc(m.deadline || '-') + '</div></div>';
   h += '<div><div class="l">コート集合</div><div class="v">' + esc(m.gather || '-') + '</div></div>';
   h += '<div><div class="l">開始予定</div><div class="v">' + esc(m.plan || '-') + '</div></div>';
-  return h + '</div></div>';
+  h += '</div>';
+  /* コートの様子：いま試合中の試合と、この試合の前に残っている試合の数（進行表を見に行かなくてもわかるように） */
+  var q = m.queue;
+  if (q) {
+    var liveTxt = q.live.map(function (x) { return esc(x.court) + 'コートは第' + x.no + '試合'; }).join('・');
+    h += '<div class="queue">' + (q.ahead === 0
+      ? '<b>次がこの試合です</b>' + (liveTxt ? '<small>いま ' + liveTxt + 'が試合中</small>' : '')
+      : 'この試合の前に <b>あと' + q.ahead + '試合</b>' + (liveTxt ? '<small>いま ' + liveTxt + 'が試合中</small>' : '')) + '</div>';
+  }
+  return h + '</div>';
 }
 
 function orderTable(mine, opp) {

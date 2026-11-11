@@ -89,7 +89,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 @media(max-width:680px){.cols{grid-template-columns:1fr}}
 </style>
 </head>
-<body>
+<body data-coach-return="show">
 <header class="header">
   <div class="header-inner">
     <small id="hdTour">岩手県中学生ソフトテニス連盟</small>
@@ -325,5 +325,6 @@ function load() {
   setInterval(load, 30000);
 })();
 </script>
+<script src="coach-return.js"></script>
 </body>
 </html>

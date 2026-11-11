@@ -33,7 +33,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 }
 </style>
 </head>
-<body>
+<body data-coach-return="show">
 <div class="bar"><div class="bar-inner">
   <h1><small id="sub">第40回岩手県中学校インドアソフトテニス大会</small><span id="ttl">組合せ・結果</span></h1>
   <div class="tabs" id="tabs"></div>
@@ -108,5 +108,6 @@ renderTabs();
 load();
 if (!BLANK) setInterval(load, 30000);
 </script>
+<script src="coach-return.js"></script>
 </body>
 </html>

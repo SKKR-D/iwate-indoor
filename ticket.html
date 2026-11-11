@@ -7,6 +7,7 @@
 <title>当日受付票｜県インドア大会</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="coach-return.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{--main:#1a4a2e;--white:#fff;--gray:#f5f5f0;--text:#222;--text-light:#666;--radius:12px;--red:#b33030}
@@ -86,6 +87,8 @@ function render(d) {
   html += '<div class="howto">・当日の受付で、この画面（または印刷した紙）を提示してください。<br>・参加料と引き換えに二次元コードを読み取り、受付完了となります。<br>・領収書は受付完了後、申込責任者のメールに送ります。</div>';
   html += '</div>';
   v.innerHTML = html;
+  /* 進行表・組合せから戻れるように、この端末に戻り先を覚える（団体戦＝監督ポータル、個人戦＝受付票） */
+  coachReturnSave(token, d.type === 'team' ? 'team' : 'indiv', d.teamName);
   /* 受付用QRの中身：大会識別子＋受付コード */
   if (typeof QRCode === 'function') {
     new QRCode(document.getElementById('qr'), { text: 'IWIN:' + d.receptionCode, width: 200, height: 200, correctLevel: QRCode.CorrectLevel.M });
