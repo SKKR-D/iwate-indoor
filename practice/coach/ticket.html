@@ -36,6 +36,9 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .done{margin-top:14px;background:#d4edda;color:#155724;border-radius:10px;padding:10px;font-weight:900}
 .howto{font-size:.78rem;color:var(--text-light);text-align:left;line-height:1.7;margin-top:16px;border-top:1px solid #eee;padding-top:12px}
 .portal-btn{display:block;margin-top:14px;padding:16px;border-radius:12px;background:#28a745;color:#fff;font-weight:900;font-size:1.05rem;text-decoration:none}
+.award{margin:12px 0 14px;padding:16px 14px;border-radius:14px;background:linear-gradient(135deg,#fff3c4,#ffe08a);border:3px solid #d49b00;text-align:center;box-shadow:0 2px 10px rgba(180,130,0,.25)}
+.award .aw-pl{font-size:1.15rem;font-weight:900;color:#7a4b00;line-height:1.5;margin-bottom:6px}
+.award .aw-msg{font-size:1.1rem;font-weight:900;color:#5a3600;line-height:1.5}
 .chg-btn{display:block;margin-top:10px;padding:14px;border-radius:12px;background:#fff;border:2px solid #e08a00;color:#8a4b00;font-weight:900;font-size:1rem;text-decoration:none}
 .nav-btn{display:block;margin-top:10px;padding:14px;border-radius:12px;background:#fff;border:2px solid #1a4a2e;color:#1a4a2e;font-weight:900;font-size:1rem;text-decoration:none}
 .portal-note{margin-top:14px;font-size:.78rem;color:var(--text-light);background:#f3f7f4;border-radius:10px;padding:10px}
@@ -66,6 +69,16 @@ function fail(msg) {
   v.textContent = msg;
 }
 
+/* 表彰の対象：団体戦「第3位（準優勝・優勝）」、個人戦「○○・○○ペア（第3位）と○○・○○ペア（優勝）は…」 */
+function awardBox(d) {
+  var a = d.awards || [];
+  if (!a.length) return '';
+  var who;
+  if (d.type === 'team') who = '<div class="aw-pl">🏅 ' + esc(a[0].place) + '</div>';
+  else who = '<div class="aw-pl">🏅 ' + a.map(function (x) { return esc(x.label) + 'ペア（' + esc(x.place) + '）'; }).join('と<br>') + 'は</div>';
+  return '<div class="award">' + who + '<div class="aw-msg">表彰式があります。<br>連絡があるまでお待ちください。</div></div>';
+}
+
 function render(d) {
   var v = document.getElementById('view');
   v.className = 'ticket';
@@ -73,6 +86,7 @@ function render(d) {
   html += '<div class="t-body">';
   html += '<div class="team">' + esc(d.teamName) + '</div>';
   html += '<div class="meta">' + esc(d.date) + '<br>' + esc(d.venue) + (d.pairCount ? '<br>出場 ' + d.pairCount + 'ペア' : '') + '</div>';
+  html += awardBox(d);
   if (d.openTime || d.receptionTime) html += '<div class="times"><span>開場 <strong>' + esc(d.openTime) + '</strong></span><span>受付 <strong>' + esc(d.receptionTime) + '</strong></span></div>';
   html += '<div id="qr"></div>';
   html += '<div class="code">' + esc(d.receptionCode) + '</div>';
@@ -104,18 +118,27 @@ function render(d) {
   document.title = d.division + ' 受付票（' + d.teamName + '）';
 }
 
-(function () {
-  if (!token) { fail('リンクが正しくありません。申込完了メールのリンクから開いてください。'); return; }
-  if (GAS_URL.indexOf('http') !== 0) { fail('システム設定が未完了です（GAS_URL未設定）。'); return; }
+/* 読み込み。開いたままでも受付済み・表彰の表示が変わるように30秒ごとに読み直す（内容が変わったときだけ描き直す） */
+var lastText = '';
+function loadTicket(first) {
   fetch(GAS_URL + '?action=getTicket&t=' + encodeURIComponent(token))
     .then(function (res) { return res.text(); })
     .then(function (text) {
       var d;
       try { d = JSON.parse(text); } catch (e) { throw new Error('サーバーの応答を読み取れません: ' + text.substring(0, 100)); }
-      if (d.status !== 'ok') { fail(d.message); return; }
+      if (d.status !== 'ok') { if (first) fail(d.message); return; }
+      if (text === lastText) return;
+      lastText = text;
       render(d);
     })
-    .catch(function (err) { fail('読み込みに失敗しました：' + err.message); });
+    .catch(function (err) { if (first) fail('読み込みに失敗しました：' + err.message); });
+}
+
+(function () {
+  if (!token) { fail('リンクが正しくありません。申込完了メールのリンクから開いてください。'); return; }
+  if (GAS_URL.indexOf('http') !== 0) { fail('システム設定が未完了です（GAS_URL未設定）。'); return; }
+  loadTicket(true);
+  setInterval(function () { loadTicket(false); }, 30000);
 })();
 </script>
 </body>

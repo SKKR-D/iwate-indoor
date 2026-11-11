@@ -27,10 +27,14 @@ function gradeMark(g) {
 }
 
 /* 試合のスコア（左-右）を数値で */
+/* スコア [左, 右]。不戦勝・リタイアは勝者から見て「4-R」（R＝リタイアメント）。R はそのまま 'R' を返す */
 function scorePair(m) {
-  if (!m || m.state !== '終了') return null;
-  var sc = String(m.score || '').match(/(\d+)\s*-\s*(\d+)/);
-  return sc ? [+sc[1], +sc[2]] : null;
+  if (!m || m.state !== '終了' || m.note === '不戦勝') return null;
+  var s = String(m.score || '');
+  if (s === '不戦勝' && (m.winner === 'L' || m.winner === 'R')) s = m.winner === 'L' ? '4-R' : 'R-4';
+  var sc = s.match(/(\d+|R)\s*-\s*(\d+|R)/);
+  if (!sc) return null;
+  return [sc[1] === 'R' ? 'R' : +sc[1], sc[2] === 'R' ? 'R' : +sc[2]];
 }
 
 function won(m, side) { return !!(m && m.state === '終了' && m.winner === side); }
@@ -219,7 +223,7 @@ function placeOf(m, kind) {
   return w === 'L' ? m.left : m.right;
 }
 
-/* 団体戦の1試合の詳細（チーム名・勝ち数、番手ごとの選手名とゲーム数） */
+/* 団体戦の1試合の詳細（チーム名・勝ち数、マッチごとの選手名とゲーム数。不戦勝・欠員は 3-R） */
 function detail(g, m, y) {
   var cx = W / 2;
   var bxL = 140, bxR = W - 140 - 190, bw = 190, bh = 28;
@@ -244,14 +248,13 @@ function detail(g, m, y) {
     if (!p) continue;
     pairNames(g, p.l, bxL + 4, yy);
     pairNames(g, p.r, bxR + 4, yy);
-    if (p.kind === 'played') {
-      var gs = String(p.g || '').match(/(\d+)-(\d+)/);
+    if (p.kind === 'played' || p.kind === 'forfeit') {
+      var gx = p.kind === 'forfeit' && (!p.g || p.g === '不戦勝') ? (p.w === 'L' ? '3-R' : 'R-3') : p.g;
+      var gs = String(gx || '').match(/(\d+|R)-(\d+|R)/);
       if (gs) {
-        g.num(cx - 30, yy, +gs[1], p.w === 'L', 11);
-        g.num(cx + 30, yy, +gs[2], p.w === 'R', 11);
+        g.num(cx - 30, yy, gs[1] === 'R' ? 'R' : +gs[1], p.w === 'L' && gs[1] !== 'R', 11);
+        g.num(cx + 30, yy, gs[2] === 'R' ? 'R' : +gs[2], p.w === 'R' && gs[2] !== 'R', 11);
       }
-    } else if (p.kind === 'forfeit') {
-      g.text(p.w === 'L' ? cx - 30 : cx + 30, yy, '不戦勝', { size: 8, anchor: 'middle', color: RED });
     }
   }
   return yy + 4;
@@ -285,7 +288,7 @@ function leagueStat(d, blk) {
     if (st[m.left.id] && st[m.right.id]) {
       st[m.left.id].n++; st[m.right.id].n++;
       if (m.winner === 'L') st[m.left.id].w++; else if (m.winner === 'R') st[m.right.id].w++;
-      if (sc) { st[m.left.id].gf += sc[0]; st[m.left.id].ga += sc[1]; st[m.right.id].gf += sc[1]; st[m.right.id].ga += sc[0]; }
+      if (sc && sc[0] !== 'R' && sc[1] !== 'R') { st[m.left.id].gf += sc[0]; st[m.left.id].ga += sc[1]; st[m.right.id].gf += sc[1]; st[m.right.id].ga += sc[0]; }
     }
   }
   /* 順位：1〜3位は本部の確定値。4位は残りの1ペア

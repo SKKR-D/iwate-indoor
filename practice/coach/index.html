@@ -387,7 +387,7 @@ function nowTeam(v) {
     h += '<h2>' + esc(m.round) + 'のオーダーを出す</h2>' +
       '<dl class="info"><dt>対戦相手</dt><dd>' + esc(m.opp.full || m.opp.label) + '</dd><dt>コート</dt><dd>' + esc(m.court) + '（第' + m.no + '試合）</dd><dt>締切</dt><dd><b>' + esc(m.deadline) + '</b>' + (m.gather ? '　コート集合 ' + esc(m.gather) : '') + '</dd></dl>' +
       (m.deadlinePassed ? '<div class="warn">締切を過ぎています。本番では本部へ申し出てください（練習では、このまま提出できます）。</div>' : '') +
-      '<p>受付票の <b>📝 オーダー提出（監督用）</b>（＝監督ポータル）で、1〜3番手のペアを選んで提出します。提出すると、この画面が次に進みます。</p>' +
+      '<p>受付票の <b>📝 オーダー提出（監督用）</b>（＝監督ポータル）で、第1〜第3マッチのペアを選んで提出します。提出すると、この画面が次に進みます。</p>' +
       (pd.history.length ? '<p class="mine">2回戦以降は「前の試合と同じオーダー」で始まるので、変えるところだけ直して提出できます。</p>' : '') +
       '<div class="row"><a class="btn" href="portal.html?t=' + encodeURIComponent(E.token) + '" target="_blank">📝 監督ポータルを開いて提出</a><button class="btn out" onclick="checkOrder()">提出したか確かめる</button></div><div id="orderMsg"></div>';
     return h + historyHtml(pd);
@@ -495,7 +495,7 @@ function checkOrder() {
   var v = status();
   var box = document.getElementById('orderMsg');
   if (v.phase === 'order' && box) {
-    box.innerHTML = '<div class="warn">まだ提出されていません。監督ポータルで、1〜3番手の選手をすべて選んで「オーダーを確認する」→ 確認の画面で「提出する」まで押してください。「✅ オーダー提出済み」と出れば完了です（提出すると、この画面は自動で次に進みます）。</div>';
+    box.innerHTML = '<div class="warn">まだ提出されていません。監督ポータルで、第1〜第3マッチの選手をすべて選んで「オーダーを確認する」→ 確認の画面で「提出する」まで押してください。「✅ オーダー提出済み」と出れば完了です（提出すると、この画面は自動で次に進みます）。</div>';
   }
 }
 

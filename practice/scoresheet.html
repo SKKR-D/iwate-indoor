@@ -428,14 +428,14 @@ function teamBlock(g, C, Y, r0, X0, X1, pr, has, b) {
         g.ct(C(sc[2]), C(sc[3]), Y(rP), Y(rG), names[0], { s: 4.4, b: true });
         g.ct(C(sc[4]), C(sc[5]), Y(rP), Y(rG), names[1], { s: 4.4, b: true });
       } else if (b === 2) {
-        g.ct(C(sc[2]), C(sc[5]), Y(rP), Y(rG), '（欠員のため不戦敗）', { s: 3.2, c: '#555' });
+        g.ct(C(sc[2]), C(sc[5]), Y(rP), Y(rG), '欠員（不戦敗）', { s: 3.2, c: '#555' });
       }
     }
   }
   /* 中央 */
   g.ln(C(16), Y(rP), C(16), Y(rW), MID);
   g.ln(C(18), Y(rP), C(18), Y(rW), MID);
-  g.t((C(16) + C(18)) / 2, Y(rP) + 2.2, CIRC[b + 1] + '番手　(スコア)', { s: 1.9, a: 'middle' });
+  g.t((C(16) + C(18)) / 2, Y(rP) + 2.2, '第' + (b + 1) + 'マッチ　(スコア)', { s: 1.9, a: 'middle' });
   g.t((C(16) + C(18)) / 2, Y(rG) - 0.9, '―', { s: 3.2, a: 'middle' });
   g.ln(X0, Y(rG), X1, Y(rG), MID);
   var gameH = Y(r0 + 4) - Y(r0 + 2), finalH = Y(rW) - Y(rF);

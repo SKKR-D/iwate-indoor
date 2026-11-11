@@ -59,6 +59,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .duty .it:last-of-type{border-bottom:0}
 .duty .it b{font-weight:900}
 .hist{font-size:.85rem}
+.award{margin:0 0 14px;padding:18px 16px;border-radius:14px;background:linear-gradient(135deg,#fff3c4,#ffe08a);border:3px solid #d49b00;text-align:center;box-shadow:0 2px 10px rgba(180,130,0,.25)}
+.award .pl{font-size:1.5rem;font-weight:900;color:#7a4b00;margin-bottom:6px}
+.award .msg2{font-size:1.15rem;font-weight:900;color:#5a3600;line-height:1.5}
+.pair.forfeit small{display:block;font-weight:500;font-size:.8rem;margin-top:2px}
 .queue{margin-top:10px;padding:10px 12px;border-radius:10px;background:#fff7e0;border:1.5px solid #f0d27a;color:#6b4e00;font-size:.95rem;text-align:center;line-height:1.5}
 .queue b{font-size:1.1rem;color:#8a4b00}
 .queue small{display:block;font-size:.8rem;color:#7a6630}
@@ -160,9 +164,9 @@ function orderTable(mine, opp) {
   for (i = 0; i < 3; i++) {
     var a = mine ? mine[i] : null;
     var b = opp ? opp[i] : null;
-    h += '<tr><th>' + (i + 1) + '番手</th>';
-    h += a ? '<td>' + esc(a[0]) + '<br>' + esc(a[1]) + '</td>' : '<td class="ff">' + (mine ? '不戦敗' : '') + '</td>';
-    h += opp ? (b ? '<td class="op">' + esc(b[0]) + '<br>' + esc(b[1]) + '</td>' : '<td class="ff">不戦敗</td>') : '<td class="ff">（公開前）</td>';
+    h += '<tr><th>第' + (i + 1) + 'マッチ</th>';
+    h += a ? '<td>' + esc(a[0]) + '<br>' + esc(a[1]) + '</td>' : '<td class="ff">' + (mine ? '欠員（不戦敗）' : '') + '</td>';
+    h += opp ? (b ? '<td class="op">' + esc(b[0]) + '<br>' + esc(b[1]) + '</td>' : '<td class="ff">欠員（不戦敗）</td>') : '<td class="ff">（公開前）</td>';
     h += '</tr>';
   }
   return h + '</table>';
@@ -202,8 +206,10 @@ function render() {
     h += '<div class="msg info">組合せが発表されると、ここに対戦が表示されます。</div>';
   } else if (v === 'champion') {
     h += '<div class="card big">🏆 優勝おめでとうございます</div>';
+    h += awardBox();
   } else if (v === 'finished') {
     h += '<div class="card big">' + ((D.refDuties || []).length ? '試合はすべて終了しました。上の審判をお願いします' : '大会お疲れさまでした') + '</div>';
+    h += awardBox();
   } else {
     h += matchCard();
     var m = D.match;
@@ -238,6 +244,12 @@ function render() {
   if (v === 'order' && !D.match.myOrder) bindForm();
 }
 
+/* 表彰の対象（第3位・準優勝・優勝）：目立つ枠で知らせる */
+function awardBox() {
+  if (!D.award) return '';
+  return '<div class="award"><div class="pl">🏅 ' + esc(D.award) + '</div><div class="msg2">表彰式があります。<br>連絡があるまでお待ちください。</div></div>';
+}
+
 function resultsLine() {
   var ps = D.match.pairs;
   var me = D.match.side;
@@ -245,7 +257,7 @@ function resultsLine() {
   var i;
   for (i = 0; i < 3; i++) {
     if (!ps[i] || !ps[i].w) continue;
-    out.push((i + 1) + '番手 ' + (ps[i].w === me ? '○' : '●'));
+    out.push('第' + (i + 1) + 'マッチ ' + (ps[i].w === me ? '○' : '●'));
   }
   return out.length ? '<div class="muted" style="margin-top:8px">' + out.join('　') + '</div>' : '';
 }
@@ -263,14 +275,14 @@ function orderForm() {
   if (!draft) draft = D.match.myOrder || D.prevOrder || [[ '', '' ], [ '', '' ], [ '', '' ]];
   var need = needPairs();
   var h = '<div class="card"><h2>オーダー提出</h2>';
-  h += '<div class="muted" style="margin-bottom:8px">選手名を選んでください。選んだ選手はほかの番手でグレーになります。' + (D.prevOrder && !D.match.myOrder ? '前の試合のオーダーを表示しています。' : '') + '</div>';
+  h += '<div class="muted" style="margin-bottom:8px">選手名を選んでください。選んだ選手はほかのマッチでグレーになります。' + (D.prevOrder && !D.match.myOrder ? '前の試合のオーダーを表示しています。' : '') + '</div>';
   var i;
   for (i = 0; i < 3; i++) {
     if (i >= need) {
-      h += '<div class="pair forfeit">3番手：不戦敗（選手' + D.players.length + '名のため）</div>';
+      h += '<div class="pair forfeit">第3マッチ：欠員（不戦敗）<br><small>選手' + D.players.length + '名のため</small></div>';
       continue;
     }
-    h += '<div class="pair"><div class="t">' + (i + 1) + '番手</div><select data-p="' + i + '" data-k="0"></select><select data-p="' + i + '" data-k="1"></select></div>';
+    h += '<div class="pair"><div class="t">第' + (i + 1) + 'マッチ</div><select data-p="' + i + '" data-k="0"></select><select data-p="' + i + '" data-k="1"></select></div>';
   }
   h += '<button class="btn btn-main" onclick="confirmOrder()">オーダーを確認する</button>';
   if (editing) h += '<div style="margin-top:8px"><button class="btn btn-out" onclick="cancelEdit()">修正をやめる</button></div>';
@@ -309,7 +321,7 @@ function fillSelects() {
     if (!draft[i]) draft[i] = ['', ''];
     for (j = 0; j < 2; j++) {
       if (draft[i][j] && !valid[draft[i][j]]) draft[i][j] = '';
-      if (draft[i][j]) used[draft[i][j]] = (i + 1) + '番手';
+      if (draft[i][j]) used[draft[i][j]] = '第' + (i + 1) + 'マッチ';
     }
   }
   var sels = document.querySelectorAll('select[data-p]');
@@ -332,7 +344,7 @@ function confirmOrder() {
   var need = needPairs();
   var i;
   for (i = 0; i < need; i++) {
-    if (!draft[i] || !draft[i][0] || !draft[i][1]) { alert((i + 1) + '番手の選手を2名選んでください。'); return; }
+    if (!draft[i] || !draft[i][0] || !draft[i][1]) { alert('第' + (i + 1) + 'マッチの選手を2名選んでください。'); return; }
   }
   var pairs = draft.slice(0, need);
   editing = true;

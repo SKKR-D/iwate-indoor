@@ -153,7 +153,7 @@ function stateBadge(m) {
   return '<span class="badge b-wait">待機</span>';
 }
 
-/* 勝った側の数字を丸数字に（例：4-2 → ④-2、2-1（G差）→ ②-1（G差）） */
+/* 勝った側の数字を丸数字に（例：4-2 → ④-2、2-1（G差）→ ②-1（G差）、不戦勝・リタイア 4-R → ④-R） */
 function circNum(n) {
   n = parseInt(n, 10);
   if (n === 0) return '⓪';
@@ -162,9 +162,16 @@ function circNum(n) {
 }
 
 function winScore(score, winner) {
-  var mm = String(score || '').match(/^(\d+)\s*[-－]\s*(\d+)(.*)$/);
+  var mm = String(score || '').match(/^(\d+|R)\s*[-－]\s*(\d+|R)(.*)$/);
   if (!mm || (winner !== 'L' && winner !== 'R')) return esc(score);
-  return '<span class="' + (winner === 'L' ? 'wn' : '') + '">' + (winner === 'L' ? circNum(mm[1]) : mm[1]) + '</span>-<span class="' + (winner === 'R' ? 'wn' : '') + '">' + (winner === 'R' ? circNum(mm[2]) : mm[2]) + '</span>' + esc(mm[3]);
+  var cell = function (v, win) { return v === 'R' ? 'R' : (win ? circNum(v) : v); };
+  return '<span class="' + (winner === 'L' ? 'wn' : '') + '">' + cell(mm[1], winner === 'L') + '</span>-<span class="' + (winner === 'R' ? 'wn' : '') + '">' + cell(mm[2], winner === 'R') + '</span>' + esc(mm[3]);
+}
+
+/* 旧表記「不戦勝」（結果として入力されたもの）を「4-R」の形に（n＝勝者のゲーム数：個人戦4、団体戦のマッチ3） */
+function rScore(s, w, n) {
+  if (s === '不戦勝' && (w === 'L' || w === 'R')) return w === 'L' ? n + '-R' : 'R-' + n;
+  return s;
 }
 
 function timeText(m) {
@@ -186,7 +193,7 @@ function cardHtml(m, showCourt) {
   h += '<div class="c-head"><span>' + (showCourt ? '<span class="court-tag">' + (m.two ? 'A・B' : esc(m.court)) + '</span>' : '') + '<span class="no">第' + m.no + '試合</span> <span class="rd">' + esc(m.round) + '</span>' + (m.two ? ' <span class="badge b-two">2面展開</span>' : '') + '</span>';
   h += '<span>' + stateBadge(m) + ' <span class="tm">' + esc(timeText(m)) + '</span></span></div>';
   h += '<div class="c-body">' + sideHtml(m, m.left, 'L');
-  h += '<div class="vs">' + (m.state === '終了' && m.score ? '<span class="score">' + winScore(m.score, m.winner) + '</span>' : 'vs') + '</div>';
+  h += '<div class="vs">' + (m.state === '終了' && m.score ? '<span class="score">' + winScore(m.note === '不戦勝' ? m.score : rScore(m.score, m.winner, DATA.division.type === 'team' ? 2 : 4), m.winner) + '</span>' : 'vs') + '</div>';
   h += sideHtml(m, m.right, 'R') + '</div>';
   if (m.referee && m.state !== '終了' && m.note !== '不戦勝') h += '<div class="refr' + (m.referee.official ? ' off' : (m.referee.decided ? '' : ' tbd')) + '">審判：<b>' + esc(m.referee.label) + '</b>' + (m.referee.sub ? ' <span class="sb" style="font-size:.68rem;color:#888">' + esc(m.referee.sub) + '</span>' : '') + '</div>';
   if (m.team && m.team.open) h += pairsHtml(m);
@@ -200,12 +207,12 @@ function pairsHtml(m) {
   var i, p, res;
   for (i = 0; i < 3; i++) {
     p = t.pairs[i];
-    res = p.kind === 'abort' ? '打切' : p.kind === 'none' ? '―' : p.w ? (p.g && p.g !== '不戦勝' ? p.g : '不戦') : '';
-    res = p.g && /^\d+-\d+$/.test(p.g) && p.kind !== 'abort' ? winScore(p.g, p.w) : esc(res);
+    var gx = p.kind === 'forfeit' && (!p.g || p.g === '不戦勝') ? (p.w === 'L' ? '3-R' : 'R-3') : p.g;
+    res = p.kind === 'abort' ? '打切' : p.kind === 'none' ? '―' : (p.w && gx ? winScore(gx, p.w) : '');
     h += '<span class="n">' + (i + 1) + '</span>';
-    h += '<span class="' + (p.w === 'L' ? 'won' : p.w ? 'lost' : '') + '">' + (p.l ? esc(p.l[0]) + '・' + esc(p.l[1]) : (t.orderL && i === 2 ? '不戦敗' : '')) + '</span>';
+    h += '<span class="' + (p.w === 'L' ? 'won' : p.w ? 'lost' : '') + '">' + (p.l ? esc(p.l[0]) + '・' + esc(p.l[1]) : (t.orderL && i === 2 ? '欠員（不戦敗）' : '')) + '</span>';
     h += '<span class="r">' + res + '</span>';
-    h += '<span class="' + (p.w === 'R' ? 'won' : p.w ? 'lost' : '') + '">' + (p.r ? esc(p.r[0]) + '・' + esc(p.r[1]) : (t.orderR && i === 2 ? '不戦敗' : '')) + '</span>';
+    h += '<span class="' + (p.w === 'R' ? 'won' : p.w ? 'lost' : '') + '">' + (p.r ? esc(p.r[0]) + '・' + esc(p.r[1]) : (t.orderR && i === 2 ? '欠員（不戦敗）' : '')) + '</span>';
   }
   return h + '</div>';
 }
