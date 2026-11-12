@@ -48,6 +48,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .reqwait{background:#e08a00;color:#fff;border-radius:10px;padding:1px 8px;font-weight:700}
 .chglink{color:inherit;font-weight:700}
 .refr{padding:4px 10px;font-size:.76rem;color:#555;border-top:1px dashed var(--line)}
+.gat{padding:3px 10px;font-size:.74rem;color:#1a4a2e;border-top:1px dashed var(--line)}
+.fixmark{display:inline-block;margin-left:3px;padding:0 5px;border-radius:6px;background:#e6efff;color:#2d4f8a;font-size:.66rem;font-weight:700}
+.tmrow{display:flex;gap:10px;align-items:center;margin:8px 0}.tmrow label{width:7.5em;font-weight:700;font-size:.9rem}
+.tmrow input{flex:1;padding:10px;font-size:1.1rem;border:2px solid var(--line);border-radius:8px}
+.tmauto{font-size:.78rem;color:#666;margin:-2px 0 8px 8.2em}
 .refr b{color:#333}
 .refr.tbd b{color:#999;font-weight:500}
 .refr.off b{color:#8a4b00}
@@ -300,6 +305,8 @@ function cardHtml(m, court) {
   h += '<div class="c-body">' + sideHtml(m, m.left, 'L') + '<div class="vs">' + (m.state === '終了' && m.score ? '<span class="score">' + esc(m.score) + '</span>' : 'vs') + '</div>' + sideHtml(m, m.right, 'R') + '</div>';
   if (m.referee && m.note !== '不戦勝') h += '<div class="refr' + (m.referee.official ? ' off' : (m.referee.decided ? '' : ' tbd')) + '">審判：<b>' + esc(m.referee.label) + '</b>' + (m.referee.sub ? ' <span class="muted">' + esc(m.referee.sub) + '</span>' : '') + '</div>';
   if (isTeam && m.team && m.note !== '不戦勝') h += teamInfo(m);
+  /* 個人戦：コート集合（9:00／前の試合が終わり次第／本部のコールで／手入力の時刻） */
+  if (!isTeam && m.note !== '不戦勝' && m.state !== '終了' && m.state !== '試合中' && (m.gather || m.gatherNote)) h += '<div class="gat">コート集合：<b>' + esc(m.gather || m.gatherNote) + '</b>' + (m.gatherFixed ? '<span class="fixmark">手入力</span>' : '') + '</div>';
   if (m.note !== '不戦勝' && (!m.two || court === 'A')) {
     var id = esc(m.id);
     h += '<div class="ctl">';
@@ -311,6 +318,7 @@ function cardHtml(m, court) {
     if (m.state !== '待機' || ready) h += '<button class="p" ' + (ready ? '' : 'disabled') + ' onclick="' + (isTeam ? 'openPairs' : 'openResult') + '(\'' + id + '\')">' + (m.state === '終了' ? '結果修正' : isTeam ? 'マッチ結果' : '結果入力') + '</button>';
     if (m.state !== '待機') h += '<button class="r" onclick="undo(\'' + id + '\')">戻す</button>';
     if (isTeam && m.state === '終了' && m.winner) h += '<button class="pub" onclick="showAnnounce(\'' + id + '\')" title="結果と次の試合のオーダー締切の放送文">📢 放送文</button>';
+    if (m.state !== '終了') h += '<button onclick="openTimes(\'' + id + '\')" title="コート集合' + (isTeam ? '・オーダー締切' : '') + 'を手入力で直す">⏱ ' + (isTeam ? '集合・締切' : '集合') + '</button>';
     h += '<button onclick="window.open(\'scoresheet.html?div=' + divCode + '&match=' + id + '\')" title="この試合のスコアシートを印刷">🖨 シート</button>';
     h += '<span class="sp"></span>';
     if (m.state !== '終了' && m.state !== '試合中') {
@@ -348,8 +356,8 @@ function teamInfo(m) {
   var h = '<div class="tinfo"><div class="ost">オーダー：' +
     '<span class="' + (t.orderL ? 'ok' : (t.overdue ? 'ng' : '')) + '">' + esc(m.left.label) + ' ' + (t.orderL ? '✓' + (t.byL === '本部' ? '（本部）' : '') : '未') + '</span>' +
     '<span class="' + (t.orderR ? 'ok' : (t.overdue ? 'ng' : '')) + '">' + esc(m.right.label) + ' ' + (t.orderR ? '✓' + (t.byR === '本部' ? '（本部）' : '') : '未') + '</span>' +
-    (t.deadline ? '<span class="' + (t.overdue ? 'ng' : '') + '">締切 ' + esc(t.deadline) + (t.overdue ? ' 超過' : '') + '</span>' : '') +
-    (t.gather ? '<span>集合 ' + esc(t.gather) + '</span>' : '') +
+    (t.deadline ? '<span class="' + (t.overdue ? 'ng' : '') + '">締切 ' + esc(t.deadline) + (t.dlFixed ? '<span class="fixmark">手入力</span>' : '') + (t.overdue ? ' 超過' : '') + '</span>' : '') +
+    (m.state !== '終了' && (t.gather || t.gatherNote) ? '<span>集合 ' + esc(t.gather || t.gatherNote) + (t.gatherFixed ? '<span class="fixmark">手入力</span>' : '') + '</span>' : '') +
     (t.open ? '<span class="ok">公開済' + (t.pubAt ? ' ' + esc(t.pubAt) : '') + '</span>' : (t.both ? '<span class="pubwait">未公開</span>' : '')) + '</div>';
   if (t.orderL || t.orderR || t.wL || t.wR) {
     h += '<div class="tp">';
@@ -614,6 +622,44 @@ function saveResult() {
     apply(d);
     toast('結果を確定しました');
     if (DATA.division.type === 'team') showAnnounce(res.id);
+  }).catch(function (err) {
+    busy = false;
+    toast(err.message, true);
+  });
+}
+
+/* ========== コート集合・オーダー締切の手入力（空欄＝自動） ========== */
+function openTimes(id) {
+  var m = findMatch(id);
+  var isTeam = DATA.division.type === 'team';
+  modalOpen = true;
+  var cur = function (v, fixed, note) { return '<div class="tmauto">いまの表示：' + esc(v || note || '-') + (fixed ? '（手入力）' : '（自動）') + '</div>'; };
+  var h = '<h3>⏱ 第' + m.no + '試合（' + esc(m.round) + '）の時刻</h3>' +
+    '<div class="tmrow"><label>コート集合</label><input id="tmG" inputmode="numeric" placeholder="例 10:30（空欄＝自動）" value="' + esc(m.gFix) + '"></div>' +
+    cur(m.gather, m.gatherFixed, m.gatherNote);
+  if (isTeam) h += '<div class="tmrow"><label>オーダー締切</label><input id="tmD" inputmode="numeric" placeholder="例 10:25（空欄＝自動）" value="' + esc(m.dFix) + '"></div>' +
+    cur(m.team && m.team.deadline, m.team && m.team.dlFixed, '');
+  h += '<div class="muted" style="margin:6px 0 12px;line-height:1.6">空欄にして保存すると自動に戻ります。<br>自動：各コートの1試合目は ' + esc((DATA.config && DATA.config.gather1) || '9:00') + '。' +
+    (isTeam ? '2試合目以降は前の試合の決着から' + esc((DATA.config && DATA.config.gatherMin) || '15') + '分後。締切は1回戦が ' + esc((DATA.config && DATA.config.r1Deadline) || '8:40') + '、2回戦以降は勝ち上がりの決着から' + esc((DATA.config && DATA.config.orderMin) || '10') + '分後。'
+      : '2試合目以降は「前の試合が終わり次第」、決勝トーナメントの各コート最初の試合は「本部のコールで」。') +
+    '<br>手入力した時刻は、監督ポータル・進行表にもそのまま出ます。</div>' +
+    '<div class="mbtns"><button class="btn btn-out" onclick="closeModal()">やめる</button><button class="btn" onclick="saveTimes(\'' + esc(id) + '\')">保存</button></div>';
+  document.getElementById('modal').innerHTML = h;
+  document.getElementById('overlay').className = 'overlay show';
+}
+
+function saveTimes(id) {
+  if (busy) return;
+  var norm = function (v) { return String(v || '').replace(/[０-９：]/g, function (c) { return c === '：' ? ':' : String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }).replace(/\s/g, ''); };
+  var g = norm(document.getElementById('tmG').value);
+  var dEl = document.getElementById('tmD');
+  var d = dEl ? norm(dEl.value) : '';
+  busy = true;
+  api({ action: 'ctlUpdate', matchId: id, op: 'times', gather: g, deadline: d }).then(function (r) {
+    busy = false;
+    closeModal();
+    apply(r);
+    toast('時刻を保存しました');
   }).catch(function (err) {
     busy = false;
     toast(err.message, true);

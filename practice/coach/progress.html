@@ -57,6 +57,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .chg{display:inline-block;margin-left:4px;font-size:.62rem;font-weight:900;color:#fff;background:#c0392b;border-radius:4px;padding:0 4px;vertical-align:1px}
 .refr{padding:4px 10px 6px;font-size:.74rem;color:#555;border-top:1px dashed #e3e3e3}
 .refr b{color:#333}
+.gat{padding:3px 10px;font-size:.74rem;color:#1a4a2e;border-top:1px dashed #e3e3e3}
+.gat b{color:#1a4a2e}
 .refr.tbd b{color:#999;font-weight:500}
 .refr.off b{color:#8a4b00}
 .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:.68rem;font-weight:900;white-space:nowrap}
@@ -195,6 +197,8 @@ function cardHtml(m, showCourt) {
   h += '<div class="c-body">' + sideHtml(m, m.left, 'L');
   h += '<div class="vs">' + (m.state === '終了' && m.score ? '<span class="score">' + winScore(m.note === '不戦勝' ? m.score : rScore(m.score, m.winner, DATA.division.type === 'team' ? 2 : 4), m.winner) + '</span>' : 'vs') + '</div>';
   h += sideHtml(m, m.right, 'R') + '</div>';
+  /* コート集合（これからの試合だけ）：9:00／前の試合が終わり次第／本部のコールで／前の試合の決着から15分後 など */
+  if ((m.state === '待機' || m.state === '呼出') && m.note !== '不戦勝' && (m.gather || m.gatherNote)) h += '<div class="gat">コート集合：<b>' + esc(m.gather || m.gatherNote) + '</b></div>';
   if (m.referee && m.state !== '終了' && m.note !== '不戦勝') h += '<div class="refr' + (m.referee.official ? ' off' : (m.referee.decided ? '' : ' tbd')) + '">審判：<b>' + esc(m.referee.label) + '</b>' + (m.referee.sub ? ' <span class="sb" style="font-size:.68rem;color:#888">' + esc(m.referee.sub) + '</span>' : '') + '</div>';
   if (m.team && m.team.open) h += pairsHtml(m);
   h += '</div>';

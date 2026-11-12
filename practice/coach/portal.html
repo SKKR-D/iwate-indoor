@@ -80,6 +80,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .muted{font-size:.76rem;color:var(--text-light)}
 .loading{text-align:center;color:var(--text-light);padding:40px}
 .footer{text-align:center;font-size:.7rem;color:var(--text-light);padding:16px}
+.vnote{display:block;font-size:.72rem;line-height:1.35;font-weight:700}
 </style>
 </head>
 <body>
@@ -146,7 +147,8 @@ function matchCard() {
   h += '<div class="vs">' + esc(D.team.abbr) + '<br><small>対</small>' + esc(m.opp.label) + (m.opp.full ? '<small>' + esc(m.opp.full) + '</small>' : '') + '</div>';
   h += '<div class="times">';
   h += '<div class="' + (m.deadlinePassed && !m.myOrder ? 'warn' : '') + '"><div class="l">オーダー締切</div><div class="v">' + esc(m.deadline || '-') + '</div></div>';
-  h += '<div><div class="l">コート集合</div><div class="v">' + esc(m.gather || '-') + '</div></div>';
+  /* 時刻がまだないときは言葉（例「前の試合の決着から15分後」）を小さく出す */
+  h += '<div><div class="l">コート集合</div><div class="v">' + (m.gather ? esc(m.gather) : (m.gatherNote ? '<span class="vnote">' + esc(m.gatherNote) + '</span>' : '-')) + '</div></div>';
   h += '<div><div class="l">開始予定</div><div class="v">' + esc(m.plan || '-') + '</div></div>';
   h += '</div>';
   /* コートの様子：いま試合中の試合と、この試合の前に残っている試合の数（進行表を見に行かなくてもわかるように） */
