@@ -33,7 +33,7 @@ video{display:block;width:100%;max-width:520px;aspect-ratio:9/16;background:#111
 .chap .tm{font-size:.74rem;color:var(--light);font-variant-numeric:tabular-nums}
 .chap button.cur{background:var(--cs);border-color:var(--c);font-weight:700}
 .chap button.cur .st{color:var(--acc)}
-.upd{font-size:.78rem;line-height:1.7;margin-top:10px;padding:8px 10px;border-radius:8px;background:#fff6dc;border:1px solid #ecd9a6;color:#5a4200}
+/* 旧：変更点の注記 */.upd{font-size:.78rem;line-height:1.7;margin-top:10px;padding:8px 10px;border-radius:8px;background:#fff6dc;border:1px solid #ecd9a6;color:#5a4200}
 .note{font-size:.75rem;color:var(--light);line-height:1.7;margin-top:8px}
 .footer{text-align:center;padding:10px 16px 30px;font-size:.72rem;color:var(--light);line-height:1.7}
 body.team{--c:var(--team);--cs:var(--team-soft)}
@@ -43,6 +43,11 @@ body.indiv{--c:var(--indiv);--cs:var(--indiv-soft)}
   .player{position:sticky;top:14px}
   video{width:auto;height:min(calc(100vh - 40px),764px);max-width:100%}
 }
+.tips{list-style:none;display:grid;gap:8px}
+.tips li{font-size:.85rem;line-height:1.7;padding-left:1.2em;position:relative}
+.tips li::before{content:'';position:absolute;left:.2em;top:.7em;width:.45em;height:.45em;border-radius:50%;background:var(--c)}
+.tips b{color:var(--c)}
+.tbtn{display:block;margin-top:12px;text-align:center;padding:11px;border-radius:10px;border:2px solid var(--c);color:var(--c);font-weight:900;font-size:.9rem;text-decoration:none;background:#fff}
 </style>
 </head>
 <body class="team">
@@ -65,11 +70,15 @@ body.indiv{--c:var(--indiv);--cs:var(--indiv-soft)}
       <h2 id="ttl">団体戦　監督の動き</h2>
       <p class="lead" id="lead"></p>
       <p class="note">音声はありません（字幕で説明しています）。画面は見本で、学校名・選手名は架空です。</p>
-      <p class="upd"><b>動画のあとで変わったところ</b><br>・団体戦の「1番手・2番手・3番手」は、いまの画面では「第1マッチ・第2マッチ・第3マッチ」、本部の「番手結果」は「マッチ結果」と表示されます。<br>・選手6名未満のチームの第3マッチは「欠員（不戦敗）」、不戦勝・リタイアのスコアは「④-R」（団体戦のマッチは「③-R」）と表示されます。<br>・受付票・監督ポータルの上に「📝 変更申請の状況」（申請中・許可・却下）が出ます。下のボタンに「🔁 選手変更一覧を見る」が増え、団体戦は次の対戦相手の選手変更が監督ポータルに出ます。<br>・団体戦の監督ポータルには、次の相手とオーダー締切が決まったとき・締切5分前にお知らせが出ます。試合・審判のコールと表彰は会場の放送でお知らせします。<br>・最新の画面は <a href="practice/coach/">監督の操作体験（練習用）</a> で実際に操作して確かめられます。</p>
     </div>
     <div class="box">
       <h2>見たいところから再生</h2>
       <ul class="chap" id="chap"></ul>
+    </div>
+    <div class="box">
+      <h2>当日の画面で</h2>
+      <ul class="tips" id="tips"></ul>
+      <a class="tbtn" href="practice/coach/">🧪 実際の画面で試す（練習用）</a>
     </div>
   </div>
 </main>
@@ -78,17 +87,30 @@ body.indiv{--c:var(--indiv);--cs:var(--indiv-soft)}
 <script>
 var DATA = {
   indiv: {
-    title: '個人戦　監督の動き', src: 'video/indiv.mp4', poster: 'video/indiv.jpg', len: 88,
-    lead: '受付から、<b>進行表</b>で試合の時刻と結果を確かめるまで（約1分30秒）。個人戦は<b>オーダーの提出はありません</b>。',
-    chap: [[0, 'はじめに'], [4, '当日の持ち物'], [12.8, '当日の流れ'], [23.1, '受付票を開く', 1], [28.6, '受付で見せて、支払う', 2], [36.1, '受付完了', 3], [41.1, '進行表を開く', 4], [47.2, '自分のペアの試合を探す', 5], [53.7, '予選リーグの勝敗', 6], [59, '決勝トーナメント', 7], [65.9, 'こんなときは'], [76.8, 'まとめ']]
+    title: '個人戦　監督の動き', src: 'video/indiv.mp4', poster: 'video/indiv.jpg', len: 97.5,
+    lead: '受付から、<b>進行表</b>で試合の時刻・コート集合・結果を確かめるまで（約1分40秒）。個人戦は<b>オーダーの提出はありません</b>。',
+    chap: [[0, 'はじめに'], [4, '当日の持ち物'], [12, '当日の流れ'], [23, '受付票を開く', 1], [29.5, '受付で見せて、支払う', 2], [37, '受付完了', 3], [43.5, '進行表を開く', 4], [50.5, '自分のペアの試合を探す', 5], [58, '予選リーグの勝敗', 6], [64.5, '決勝トーナメント', 7], [72, 'こんなときは'], [84, 'まとめ'], [94, 'おわりに']]
   },
   team: {
-    title: '団体戦　監督の動き', src: 'video/team.mp4', poster: 'video/team.jpg', len: 122,
-    lead: '受付から<b>オーダー提出</b>、2回戦以降の準備まで（約2分）。1回戦のオーダー締切は<b>8:40</b>、2回戦からは前の試合が終わって<b>10分以内</b>です。提出後の修正は<b>締切まで</b>、オーダーは<b>試合開始のあいさつで本部が公開</b>します。',
-    chap: [[0, 'はじめに'], [4, '当日の持ち物'], [12.4, '当日の流れ'], [21, '受付票を開く', 1], [26.5, '受付で見せて、支払う', 2], [32.9, '「オーダー提出」を押す', 3], [39, '締切と相手を確かめる', 4], [45.5, 'マッチごとに選手を選ぶ', 5], [52.2, '「オーダーを確認する」を押す', 6], [59.1, '確かめて「提出する」', 7], [66.2, '提出完了', 8], [72.7, 'あいさつでオーダー公開', 9], [80.4, '進行表で時刻を確かめる', 10], [87.1, '2回戦からは、すぐ次の準備', 11], [95.2, 'こんなときは'], [108, 'まとめ']]
+    title: '団体戦　監督の動き', src: 'video/team.mp4', poster: 'video/team.jpg', len: 137.0,
+    lead: '受付から<b>オーダー提出</b>、2回戦以降の準備まで（約2分20秒）。1回戦のオーダー締切は<b>8:40</b>、2回戦からは前の試合の決着から<b>10分以内</b>です。提出後の修正は<b>締切まで</b>、オーダーは<b>試合開始のあいさつで本部が公開</b>します。',
+    chap: [[0, 'はじめに'], [4, '当日の持ち物'], [12, '当日の流れ'], [23, '受付票を開く', 1], [29.5, '受付で見せて、支払う', 2], [37, '「オーダー提出」を押す', 3], [43.5, '締切と相手を確かめる', 4], [50, '相手チームの選手変更', 5], [56.5, 'マッチごとに選手を選ぶ', 6], [64.5, '「オーダーを確認する」を押す', 7], [70, '確かめて「提出する」', 8], [76.5, '提出完了', 9], [83.5, 'あいさつでオーダー公開', 10], [90.5, '2回戦からは、すぐ次の準備', 11], [100.5, '進行表・組合せを見る', 12], [109.5, 'こんなときは'], [122.5, 'まとめ'], [133.5, 'おわりに']]
   }
 };
 
+/* 当日の画面で知っておくこと（動画のあとで増えた画面も、監督の目線で） */
+var TIPS = {
+  indiv: [
+    '試合の順番・審判・<b>コート集合</b>は、進行表でいつでも確かめられます（各コートの1試合目は9:00集合、2試合目からは前の試合が終わり次第）。',
+    '試合と審判のコール、表彰は<b>会場の放送</b>でお知らせします。',
+    '選手変更を申請したときは、結果（許可・却下）が<b>受付票のいちばん上</b>に出ます。'
+  ],
+  team: [
+    '監督ポータルに、<b>次の相手・オーダー締切・コート集合</b>が出ます。開いているときは、締切のお知らせも画面に出ます。',
+    '選手変更の結果は、受付票・監督ポータルの<b>いちばん上</b>に出ます。<b>相手チームの選手変更</b>も監督ポータルに出ます。',
+    '試合のコール、表彰は<b>会場の放送</b>でお知らせします。'
+  ]
+};
 var key = new URLSearchParams(location.search).get('div');
 /* 指定がなければ、11/28までは個人戦、11/29からは団体戦 */
 if (key !== 'team' && key !== 'indiv') key = new Date() < new Date('2026-11-29T00:00:00+09:00') ? 'indiv' : 'team';
@@ -117,6 +139,7 @@ function init() {
     h += '<li><button type="button" data-i="' + i + '" onclick="jump(' + i + ')"><span class="st">' + (c[2] ? 'STEP ' + c[2] + '/' + steps : '') + '</span><span>' + c[1] + '</span><span class="tm">' + mmss(c[0]) + '</span></button></li>';
   }
   document.getElementById('chap').innerHTML = h;
+  document.getElementById('tips').innerHTML = '<li>' + TIPS[key].join('</li><li>') + '</li>';
 }
 
 function jump(i) {
