@@ -201,18 +201,30 @@
     '}'
   ].join('\n');
 
+  /* 1回の呼び出し。ほかのタブ（進行表・受付票などの自動更新）と同時に動いても、前の状態で上書きしないように：
+     - データが変わらなかった呼び出し（読むだけ）は保存しない
+     - 動いている間にほかのタブが保存していたら、最新の状態でやり直す */
   function call(kind, payload) {
-    var st = load();
-    var S = services(st);
-    var names = [], vals = [], k;
-    for (k in S.svc) if (S.svc.hasOwnProperty(k)) { names.push(k); vals.push(S.svc[k]); }
-    var fn = Function.apply(null, names.concat([GAS + '\n' + OVERRIDES + '\nreturn { doGet: doGet, doPost: doPost };']));
-    var api = fn.apply(null, vals);
-    var out;
-    if (kind === 'GET') out = api.doGet({ parameter: payload });
-    else out = api.doPost({ postData: { contents: payload } });
-    st.sheets = {};
-    for (k in S.sheets) if (S.sheets.hasOwnProperty(k)) st.sheets[k] = S.sheets[k].data;
+    var attempt, raw0, st, before, S, names, vals, k, api, out, after;
+    for (attempt = 0; attempt < 5; attempt++) {
+      raw0 = rawGet(KEY);
+      st = load();
+      before = JSON.stringify([st.sheets, st.props || null, st.mails]);
+      S = services(st);
+      names = [];
+      vals = [];
+      for (k in S.svc) if (S.svc.hasOwnProperty(k)) { names.push(k); vals.push(S.svc[k]); }
+      api = Function.apply(null, names.concat([GAS + '\n' + OVERRIDES + '\nreturn { doGet: doGet, doPost: doPost };'])).apply(null, vals);
+      if (kind === 'GET') out = api.doGet({ parameter: payload });
+      else out = api.doPost({ postData: { contents: payload } });
+      st.sheets = {};
+      for (k in S.sheets) if (S.sheets.hasOwnProperty(k)) st.sheets[k] = S.sheets[k].data;
+      after = JSON.stringify([st.sheets, st.props || null, st.mails]);
+      if (after === before) return out.s;
+      if (raw0 !== null && rawGet(KEY) !== raw0) continue;
+      save(st);
+      return out.s;
+    }
     save(st);
     return out.s;
   }
