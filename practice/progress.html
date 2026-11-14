@@ -104,7 +104,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
   <div class="bar">
     <div class="info" id="info">読み込み中...</div>
     <a class="blink" id="bracketLink" href="bracket.html">🏆 トーナメント表</a>
-    <a class="blink" id="chgLink" href="changes.html">🔁 選手変更</a>
+    <a class="blink" id="chgLink" href="changes.html" style="display:none">🔁 選手変更</a>
     <div class="views">
       <button id="vCourt" onclick="setView('court')">コート別</button>
       <button id="vTime" onclick="setView('time')">時刻順</button>
@@ -329,7 +329,20 @@ function load() {
   for (i = 0; i < DIVS.length; i++) html += '<a class="' + (DIVS[i][0] === divCode ? 'on' : '') + '" href="?div=' + DIVS[i][0] + '">' + DIVS[i][1] + '</a>';
   document.getElementById('divTabs').innerHTML = html;
   document.getElementById('bracketLink').href = 'bracket.html?div=' + divCode;
-  document.getElementById('chgLink').href = 'changes.html?div=' + divCode;
+  /* 選手変更一覧へのリンクは、見られる人（会場の二次元コードから来た人・監督・係員）にだけ出す */
+  var vk = params.get('k') || '';
+  if (vk) { try { localStorage.setItem('iwateIndoorVenueKey', vk); } catch (e) {} }
+  else { try { vk = localStorage.getItem('iwateIndoorVenueKey') || ''; } catch (e) {} }
+  if (vk) document.getElementById('divTabs').innerHTML = html.replace(/href="\?div=(\w+)"/g, 'href="?div=$1&k=' + encodeURIComponent(vk) + '"');
+  window.addEventListener('load', function () {
+    var co = window.coachReturnGet ? coachReturnGet() : null;
+    var staff = '';
+    try { staff = localStorage.getItem('iwateIndoorStaffPw') || localStorage.getItem('iwateIndoorCtlPw') || localStorage.getItem('recPw') || ''; } catch (e) {}
+    if (!vk && !co && !staff) return;
+    var a = document.getElementById('chgLink');
+    a.href = 'changes.html?div=' + divCode + (vk ? '&k=' + encodeURIComponent(vk) : '') + (co ? '&t=' + encodeURIComponent(co.t) : '');
+    a.style.display = '';
+  });
   setView(store('progressView') || (window.innerWidth < 680 ? 'time' : 'court'));
   load();
   setInterval(load, 30000);

@@ -34,6 +34,12 @@ td.fr{color:#666;text-decoration:line-through;text-decoration-color:#aaa}
 td.to{font-weight:900;color:var(--red)}
 td .nt{display:block;font-size:.74rem;color:#7a4b00;font-weight:700;margin-top:2px}
 td.ar{text-align:center;color:#999;width:1.6em;padding:6px 0}
+.lock{border:2px solid #c9d6cc;border-radius:12px;padding:18px;font-size:.95rem;line-height:1.7;background:#f7faf8}
+.lk-how{font-size:.82rem;color:#555;margin-top:8px}
+.lk-staff{margin-top:14px;padding-top:12px;border-top:1px dashed #c9d6cc;font-size:.85rem}
+.lk-row{display:flex;gap:8px;margin-top:6px}.lk-row input{flex:1;padding:9px;border:1.5px solid #c9d6cc;border-radius:8px;font-size:1rem}
+.lk-row button{padding:9px 16px;border:none;border-radius:8px;background:#1a4a2e;color:#fff;font-weight:700;font-family:inherit}
+@media print{.lock{display:none}}
 .none{text-align:center;color:var(--muted);padding:14px;font-size:.88rem}
 .st{font-size:.8rem;font-weight:700;border-radius:8px;padding:6px 10px;margin:0 0 6px;line-height:1.5}
 .st.fix{background:#e3f1e6;color:#1d5b2c}
@@ -60,6 +66,7 @@ td.ar{text-align:center;color:#999;width:1.6em;padding:6px 0}
 </div></div>
 <div class="wrap"><div class="sheet" id="sheet"><div class="none">読み込み中...</div></div></div>
 
+<script src="coach-return.js"></script>
 <script>
 /* ===== 設定 ===== */
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
@@ -70,6 +77,32 @@ var params = new URLSearchParams(location.search);
 var div = params.get('div') || '';
 var GROUPS = { I: ['MI', 'WI'], T: ['MT', 'WT'], all: ['MI', 'WI', 'MT', 'WT'] };
 var PER = null;
+/* 見られる人：監督（t または この端末の受付票）、会場の人（k、限定公開の期間）、係員（パスワード） */
+var KEY = params.get('k') || '';
+if (KEY) { try { localStorage.setItem('iwateIndoorVenueKey', KEY); } catch (e) {} }
+else { try { KEY = localStorage.getItem('iwateIndoorVenueKey') || ''; } catch (e) {} }
+var STAFF_KEY = 'iwateIndoorStaffPw';
+var locked = false;
+
+function token() {
+  if (params.get('t')) return params.get('t');
+  try { var o = window.coachReturnGet ? coachReturnGet() : null; return o ? o.t : ''; } catch (e) { return ''; }
+}
+
+/* 係員のパスワード：この画面で入れたもの、本部・受付・管理画面で入れたもの */
+function staffPw() {
+  var v = '';
+  try {
+    v = localStorage.getItem(STAFF_KEY) || localStorage.getItem('iwateIndoorCtlPw') || localStorage.getItem('recPw') ||
+      localStorage.getItem('iwateIndoorPreviewPw') || sessionStorage.getItem('iwateIndoorAdminPw') || '';
+  } catch (e) { v = ''; }
+  return v;
+}
+
+/* タブのリンクにも t・k を付ける */
+function extra() {
+  return (params.get('t') ? '&t=' + encodeURIComponent(params.get('t')) : '') + (KEY ? '&k=' + encodeURIComponent(KEY) : '');
+}
 
 function esc(s) {
   if (s === undefined || s === null) return '';
@@ -94,7 +127,7 @@ function tabs(names) {
   if (names && names[e]) list.push([e, names[e]]);
   var h = '';
   var i;
-  for (i = 0; i < list.length; i++) h += '<a class="' + (list[i][0] === e ? 'on' : '') + '" href="?div=' + list[i][0] + '">' + list[i][1] + '</a>';
+  for (i = 0; i < list.length; i++) h += '<a class="' + (list[i][0] === e ? 'on' : '') + '" href="?div=' + list[i][0] + extra() + '">' + list[i][1] + '</a>';
   h += '<button onclick="window.print()">🖨 印刷（掲示用）</button>';
   document.getElementById('tabs').innerHTML = h;
 }
@@ -121,9 +154,36 @@ function changesTable(rows) {
   return h + '</tbody></table>';
 }
 
+function lockedView(d) {
+  locked = true;
+  tabs();
+  document.getElementById('sub').textContent = d.tournament || '';
+  document.getElementById('sheet').innerHTML = '<h2>選手変更一覧</h2><div class="lock">🔒 ' + esc(d.message) +
+    '<div class="lk-how">監督の方は、受付票（監督ポータル）の「🔁 選手変更一覧を見る」から開いてください。<br>会場の方は、会場に掲示している二次元コードから開いてください（' + esc(d.venueFrom) + '〜' + esc(d.venueTo) + '）。</div>' +
+    '<div class="lk-staff"><b>係員の方</b>　受付・本部などのパスワードを入れてください<div class="lk-row"><input type="password" id="lkPw" autocomplete="current-password" placeholder="パスワード">' +
+    '<button onclick="staffLogin()">表示する</button></div></div></div>';
+}
+
+function staffLogin() {
+  var v = document.getElementById('lkPw').value.trim();
+  if (!v) return;
+  try { localStorage.setItem(STAFF_KEY, v); } catch (e) {}
+  locked = false;
+  document.getElementById('sheet').innerHTML = '<div class="none">読み込み中...</div>';
+  load();
+}
+
 function load() {
-  fetch(GAS_URL + '?action=changes').then(function (r) { return r.text(); }).then(function (t) {
+  if (locked) return;
+  var body = { action: 'changesList', t: token(), k: KEY, pw: staffPw() };
+  fetch(GAS_URL, { method: 'POST', body: JSON.stringify(body) }).then(function (r) { return r.text(); }).then(function (t) {
     var d = JSON.parse(t);
+    if (d.status === 'locked') {
+      /* 覚えていたパスワードが違っていたら消す */
+      if (body.pw) { try { if (localStorage.getItem(STAFF_KEY) === body.pw) localStorage.removeItem(STAFF_KEY); } catch (e) {} }
+      lockedView(d);
+      return;
+    }
     if (d.status !== 'ok') throw new Error(d.message);
     PER = d.periods || null;
     var names = {};
@@ -154,6 +214,5 @@ tabs();
 load();
 setInterval(load, 30000);
 </script>
-<script src="coach-return.js"></script>
 </body>
 </html>

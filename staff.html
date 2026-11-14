@@ -62,6 +62,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   body.printing .poster .how{font-size:13pt}
   body.printing .pbtns{display:none}
 }
+.vk{margin-top:10px;font-size:.8rem;line-height:1.7;color:#333;background:#f4f7f5;border-radius:8px;padding:8px 10px}
+.vk:empty{display:none}.vk input{padding:5px 8px;border:1.5px solid #c9d6cc;border-radius:6px;margin:4px 6px 0 0;width:9em}
+.vk .btn{padding:5px 12px;font-size:.8rem}.vk-ng{color:#b33030;font-weight:700}.vk-ok{color:#1d5b2c;font-weight:700}
+@media print{.vk{display:none!important}}
 </style>
 </head>
 <body>
@@ -141,7 +145,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
     <div class="t3">試合の予定時刻・結果はこちら</div>
     <div id="qr"></div>
     <div class="url" id="qrUrl"></div>
-    <div class="how">スマートフォンのカメラで読み取ってください。<br>予定時刻は試合の進み具合に合わせて自動で更新されます。</div>
+    <div class="how">スマートフォンのカメラで読み取ってください。<br>予定時刻は試合の進み具合に合わせて自動で更新されます。<span id="qrVenue"></span></div>
+    <div class="vk" id="qrKey"></div>
     <div class="pbtns"><button class="btn" onclick="printQr()">🖨 A4で印刷</button><button class="btn sub" onclick="closeQr()">閉じる</button></div>
   </div>
 </div>
@@ -199,10 +204,44 @@ function choose(key) {
   renderVenues();
 }
 
+/* 会場に掲示する二次元コードには「会場の合言葉」を入れる（限定公開の期間、選手変更一覧も見られる）。
+   合言葉は係員のパスワードで受け取る */
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
+var VKEY = null;
+
+function staffPw() {
+  try {
+    return localStorage.getItem('iwateIndoorStaffPw') || localStorage.getItem('iwateIndoorCtlPw') || localStorage.getItem('recPw') ||
+      localStorage.getItem('iwateIndoorPreviewPw') || sessionStorage.getItem('iwateIndoorAdminPw') || '';
+  } catch (e) { return ''; }
+}
+
+function getVenueKey(pw) {
+  document.getElementById('qrKey').innerHTML = '合言葉を確かめています...';
+  fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'venueKey', pw: pw }) }).then(function (r) { return r.json(); }).then(function (d) {
+    if (d.status !== 'ok') throw new Error(d.message);
+    try { localStorage.setItem('iwateIndoorStaffPw', pw); } catch (e) {}
+    VKEY = d;
+    openQr();
+  }).catch(function (err) {
+    try { if (localStorage.getItem('iwateIndoorStaffPw') === pw) localStorage.removeItem('iwateIndoorStaffPw'); } catch (e) {}
+    keyForm(err.message);
+  });
+}
+
+function keyForm(msg) {
+  document.getElementById('qrKey').innerHTML = (msg ? '<div class="vk-ng">' + msg + '</div>' : '') +
+    '<b>会場に掲示する二次元コードにする</b>（選手変更一覧も見られるようになります）<br>受付・本部などのパスワード：' +
+    '<input type="password" id="vkPw"><button class="btn" onclick="getVenueKey(document.getElementById(\'vkPw\').value.trim())">合言葉を入れる</button>';
+}
+
 function openQr() {
   var v = find(cur);
   if (!v) return;
-  var url = siteBase() + 'progress.html?div=' + cur;
+  var url = siteBase() + 'progress.html?div=' + cur + (VKEY ? '&k=' + encodeURIComponent(VKEY.key) : '');
+  document.getElementById('qrVenue').innerHTML = VKEY ? '<br><b>' + VKEY.from + '〜' + VKEY.to + '</b> は、選手変更一覧も見られます。' : '';
+  document.getElementById('qrKey').innerHTML = VKEY ? '<span class="vk-ok">✅ 会場の合言葉入りです（掲示用）</span>' : '';
+  if (!VKEY) { var pw = staffPw(); if (pw) { getVenueKey(pw); } else keyForm(''); }
   document.getElementById('qrDiv').textContent = v.div + '　進行表';
   document.getElementById('qrUrl').textContent = url;
   var box = document.getElementById('qr');

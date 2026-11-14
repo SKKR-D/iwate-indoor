@@ -385,7 +385,8 @@ function teamsPage(code) {
 function changesPage() {
   var rows = BLANK_MODE ? [] : (P.changes || []);
   var h = '';
-  if (!rows.length) h = '<div class="wait">' + (BLANK_MODE ? '大会当日の選手変更は、会場掲示と二次元コードの「選手変更一覧」でお知らせします。' : '現在、選手変更はありません。') + '</div>';
+  if (!rows.length) h = '<div class="wait">' + (BLANK_MODE ? '大会当日の選手変更は、会場掲示と二次元コードの「選手変更一覧」でお知らせします。'
+    : P.changesLocked ? '選手変更一覧は、大会当日に会場で掲示します（会場の二次元コードからも見られます）。' : '現在、選手変更はありません。') + '</div>';
   else {
     h = '<div class="scroll"><table class="t"><thead><tr><th>時刻</th><th>区分</th><th>チーム</th><th>対象</th><th>変更前</th><th>変更後</th></tr></thead><tbody>';
     var i, c;
