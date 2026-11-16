@@ -23,6 +23,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 .main{max-width:760px;margin:0 auto;padding:16px 16px 40px}
 .sec{margin-bottom:18px}
 .sec h2{font-size:.85rem;font-weight:900;color:var(--main);margin:0 0 8px 2px;letter-spacing:.05em}
+.sec h2 small{font-size:.72rem;font-weight:700;color:#667;margin-left:8px;letter-spacing:0}
 .venues{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .venue{border:2px solid var(--line);background:var(--white);border-radius:var(--radius);padding:10px 12px;text-align:left;font-family:inherit;color:var(--text);cursor:pointer}
 .venue b{display:block;font-size:.98rem;font-weight:900}
@@ -86,21 +87,21 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   </section>
 
   <section class="sec">
-    <h2>受付係</h2>
+    <h2>受付<small>進行記録係・審判委員長（副委員長）</small></h2>
     <div class="grid">
       <a class="go" href="reception.html" target="_blank"><span class="ic">📷</span><span><b>当日受付</b><span>受付票の二次元コード読み取り・現金受領・領収書（受付パスワード）</span></span></a>
     </div>
   </section>
 
   <section class="sec">
-    <h2>本部・進行係</h2>
+    <h2>本部・進行<small>競技委員長・進行記録委員長（各副委員長）</small></h2>
     <div class="grid">
       <a class="go dv" data-href="control.html?div={d}" target="_blank"><span class="ic">🎛</span><span><b>本部 進行管理</b><span>コール・開始・結果入力・オーダー代理入力（本部パスワード）</span></span></a>
     </div>
   </section>
 
   <section class="sec">
-    <h2>記録・掲示係</h2>
+    <h2>記録・掲示<small>進行記録係</small></h2>
     <div class="grid">
       <a class="go dv" data-href="scoresheet.html?div={d}" target="_blank"><span class="ic">📝</span><span><b>スコアシート印刷</b><span>1試合1枚。コート・範囲で絞り込み、白紙も</span></span></a>
       <a class="go dv" data-href="bracket.html?div={d}" target="_blank"><span class="ic">🏆</span><span><b>組合せ（結果入り）</b><span>結果が随時入る。掲示の貼り替え・表彰の確認に</span></span></a>
@@ -114,21 +115,21 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
   </section>
 
   <section class="sec">
-    <h2>全係共通</h2>
+    <h2>全員共通</h2>
     <div class="grid">
-      <a class="go" href="../manual.html" target="_blank"><span class="ic">📘</span><span><b>当日運営マニュアル</b><span>係ごとの手順・こんなときは</span></span></a>
+      <a class="go" href="../manual.html" target="_blank"><span class="ic">📘</span><span><b>当日運営マニュアル</b><span>役員ごとの仕事・手順・こんなときは</span></span></a>
       <a class="go" href="../handbook.html" target="_blank"><span class="ic">📗</span><span><b>競技役員ハンドブック（全体版）</b><span>コアメンバー向け。発送〜申込〜組合せ公開〜変更申請〜当日まで</span></span></a>
       <a class="go" href="index.html" target="_blank"><span class="ic">🏠</span><span><b>大会トップ（公開）</b><span>チーム・観客が見るページ</span></span></a>
     </div>
   </section>
 
   <section class="sec">
-    <h2>係ごとの説明動画</h2>
+    <h2>説明動画</h2>
     <div class="grid">
-      <a class="go vlink" data-k="reception" href="../staff-video.html?k=reception" target="_blank"><span class="ic">🎬</span><span><b>受付係</b><span>日付・会場に合わせた動画</span></span></a>
-      <a class="go vlink" data-k="honbu" href="../staff-video.html?k=honbu" target="_blank"><span class="ic">🎬</span><span><b>本部・進行係</b><span>日付・会場に合わせた動画</span></span></a>
-      <a class="go vlink" data-k="record" href="../staff-video.html?k=record" target="_blank"><span class="ic">🎬</span><span><b>記録・掲示係</b><span>日付・会場に合わせた動画</span></span></a>
-      <a class="go vlink" data-k="court" href="../staff-video.html?k=court" target="_blank"><span class="ic">🎬</span><span><b>コート係</b><span>日付・会場に合わせた動画</span></span></a>
+      <a class="go vlink" data-k="reception" href="../staff-video.html?k=reception" target="_blank"><span class="ic">🎬</span><span><b>受付</b><span>進行記録係・審判委員長（副委員長）</span></span></a>
+      <a class="go vlink" data-k="honbu" href="../staff-video.html?k=honbu" target="_blank"><span class="ic">🎬</span><span><b>本部・進行</b><span>競技委員長・進行記録委員長（各副委員長）</span></span></a>
+      <a class="go vlink" data-k="record" href="../staff-video.html?k=record" target="_blank"><span class="ic">🎬</span><span><b>記録・掲示</b><span>進行記録係</span></span></a>
+      <a class="go vlink" data-k="court" href="../staff-video.html?k=court" target="_blank"><span class="ic">🎬</span><span><b>審判（コート主任）</b><span>審判委員</span></span></a>
     </div>
   </section>
 

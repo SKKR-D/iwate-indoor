@@ -57,6 +57,8 @@ h1,h2,h3{font-family:var(--f-head);text-wrap:balance;line-height:1.35;margin:0}
 h3{font-size:1.08rem;font-weight:700;margin:24px 0 10px;padding-left:10px;border-left:4px solid var(--accent)}
 p{margin:8px 0}
 
+.who-line{margin:8px 0 2px;padding:7px 12px;border-left:4px solid var(--accent);background:#fff;font-size:.86rem;line-height:1.7}
+.who-line b{color:var(--heading)}
 .page{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:14px;padding:10px 12px;background:var(--soft);border-radius:8px;font-size:.9rem}
 .page b{font-family:var(--f-head)}
 .plink{margin-left:auto;font-weight:700;font-size:.85rem;text-decoration:none;color:var(--on-deep);background:var(--accent);border-radius:6px;padding:4px 12px;white-space:nowrap}
@@ -134,7 +136,9 @@ ul.check small{color:var(--muted);display:block}
   #teams{font-size:8pt;line-height:1.32}
   #teams h3{margin:5px 0 3px}
   #teams td,#teams th{padding-top:2px;padding-bottom:2px}
-  #honbu{font-size:7.8pt;line-height:1.3}
+  #honbu{font-size:7.6pt;line-height:1.27}
+  .who-line{font-size:7.6pt;line-height:1.45;padding:3px 8px;margin:4px 0 0}
+  #honbu .lead{margin-top:3px}
   #honbu ul.dots>li{margin:0}
   #honbu .caution{padding:4px 8px;margin:4px 0}
   #honbu h3{margin:5px 0 3px}
@@ -191,10 +195,10 @@ ul.check small{color:var(--muted);display:block}
   <div class="wrap">
     <a href="#common">全係共通</a>
     <a href="#crew">体制・審判</a>
-    <a href="#reception">受付係</a>
-    <a href="#honbu">本部・進行係</a>
-    <a href="#record">記録・掲示係</a>
-    <a href="#court">コート係</a>
+    <a href="#reception">受付</a>
+    <a href="#honbu">本部・進行</a>
+    <a href="#record">記録・掲示</a>
+    <a href="#court">審判</a>
     <a href="#prep">前日までの準備</a>
     <span class="sep" aria-hidden="true"></span>
     <a class="ext" href="#teams">参加チーム＆監督の動き</a>
@@ -207,14 +211,14 @@ ul.check small{color:var(--muted);display:block}
 <!-- ============ 共通 ============ -->
 <section class="part" id="common"><div class="wrap">
   <div class="ptitle"><span class="tag">全係</span><h2>全係共通</h2></div>
-  <p class="lead">各会場<b>9人（運営スタッフ5人＋審判員4人）</b>で、受付・本部・記録・コートの各係を担当します（配置と審判のきまりは「体制・審判」）。運営はすべてスマートフォン・タブレットのブラウザで行い、試合結果は本部の入力だけで進行表・組合せ表まで自動で更新されます。</p>
+  <p class="lead">各会場<b>8人（運営スタッフ4人＋審判員4人）</b>で運営します（役員ごとの仕事と審判のきまりは「体制・審判」）。運営はすべてスマートフォン・タブレットのブラウザで行い、試合結果は本部の入力だけで進行表・組合せ表まで自動で更新されます。</p>
 
   <h3>当日の時程（両日・両会場共通）</h3>
   <div class="time">
     <div><b>7:30</b><span>開場。各係は持ち場で端末を起動し、ページを開いてログインしておく</span></div>
     <div><b>7:35〜8:00</b><span>受付（参加料の受け取り・領収書）。団体戦は受付後に監督がオーダーを提出</span></div>
     <div><b>7:45〜</b><span>練習（個人戦 7:45〜8:30・15分×3ローテ／団体戦 7:45〜8:25・5分×8ローテ）</span></div>
-    <div><b>8:00</b><span>受付終了。受付係は未受付のチームを本部へ報告</span></div>
+    <div><b>8:00</b><span>受付終了。未受付のチームを本部へ報告。進行記録係は記録・掲示に移る</span></div>
     <div><b>8:25</b><span>監督会議</span></div>
     <div><b>8:40</b><span>（29日 団体戦のみ）1回戦オーダー提出の締切</span></div>
     <div><b>8:45〜</b><span>開始式</span></div>
@@ -230,11 +234,11 @@ ul.check small{color:var(--muted);display:block}
     <li>自分の係のボタンを押す。ボタンの行き先は、選んだ日付・会場の区分に自動で切り替わる。</li>
   </ol>
   <div class="tbl"><table>
-    <thead><tr><th>係</th><th>ポータルのボタン</th><th>ログイン</th></tr></thead>
+    <thead><tr><th>役員</th><th>ポータルのボタン</th><th>ログイン</th></tr></thead>
     <tbody>
-      <tr><td>受付係</td><td>当日受付</td><td>受付パスワード＋担当者名</td></tr>
-      <tr><td>本部・進行係</td><td>本部 進行管理</td><td>本部パスワード</td></tr>
-      <tr><td>記録・掲示係</td><td>スコアシート印刷／組合せ（結果入り）／組合せ（白紙）／進行表／進行表の二次元コード</td><td>なし</td></tr>
+      <tr><td>進行記録係、審判委員長・副委員長（受付）</td><td>当日受付</td><td>受付パスワード＋担当者名</td></tr>
+      <tr><td>競技委員長・副委員長、進行記録委員長・副委員長</td><td>本部 進行管理</td><td>本部パスワード</td></tr>
+      <tr><td>進行記録係（記録・掲示）</td><td>スコアシート印刷／組合せ（結果入り）／組合せ（白紙）／進行表／進行表の二次元コード</td><td>なし</td></tr>
       <tr><td>全係</td><td>当日運営マニュアル／係ごとの説明動画</td><td>なし</td></tr>
       <tr><td>競技委員長</td><td>管理画面</td><td>管理パスワード</td></tr>
     </tbody>
@@ -254,16 +258,17 @@ ul.check small{color:var(--muted);display:block}
 <!-- ============ 体制・審判 ============ -->
 <section class="part" id="crew"><div class="wrap">
   <div class="ptitle"><span class="tag">体制</span><h2>運営体制と審判</h2></div>
-  <p class="lead">各会場9人（運営スタッフ5人＋審判員4人）で運営します。審判は、決勝（個人戦は準決勝から）を除き<b>選手が行います</b>。誰が審判をするかは本部画面・進行表のカードに「審判：」として自動で表示されます。</p>
+  <p class="lead">各会場8人（運営スタッフ4人＋審判員4人）で運営します。審判は、決勝（個人戦は準決勝から）を除き<b>選手が行います</b>。誰が審判をするかは本部画面・進行表のカードに「審判：」として自動で表示されます。</p>
 
-  <h3>各会場の配置（9人）</h3>
+  <h3>役員の仕事（各会場8人）</h3>
   <div class="tbl"><table>
-    <thead><tr><th>係</th><th>人数</th><th>7:30〜8:00</th><th>9:00以降</th></tr></thead>
+    <thead><tr><th>男子会場（雫石）</th><th>女子会場（紫波）</th><th>7:30〜8:00</th><th>9:00以降</th></tr></thead>
     <tbody>
-      <tr><td>本部・進行係</td><td>2</td><td>端末の準備、スコアシート印刷、（団体戦）オーダー提出の確認</td><td>1人が結果入力、1人がコール・放送・オーダー公開。交代で休憩</td></tr>
-      <tr><td>受付係</td><td>2</td><td>読み取り係と現金係に分かれて受付</td><td>1人は記録・掲示の応援。1人は<b>会場責任者</b>（トラブル・救護・体育館との窓口・参加料の保管・表彰の進行）</td></tr>
-      <tr><td>記録・掲示係</td><td>1</td><td>開場・掲示・受付の補助</td><td>スコアシートの受け渡し、組合せ表・進行表の掲示、表彰の準備</td></tr>
-      <tr><td>審判員（コート主任）</td><td>4</td><td>コートの準備</td><td>Ａ・Ｂコートに2人ずつ。コート主任として進行と選手審判の確認。下の試合は審判員が審判</td></tr>
+      <tr><td><b>競技委員長</b></td><td><b>競技副委員長</b></td><td>（団体戦）オーダー提出の確認、変更申請の確認</td><td>本部：コール・放送（📢 放送文）・オーダー公開、競技上の判断。進行記録委員長と交代で休憩</td></tr>
+      <tr><td><b>進行記録委員長</b></td><td><b>進行記録副委員長</b></td><td>端末の準備、スコアシートの準備</td><td>本部：本部画面の操作（開始・結果入力・順位の確定・進行の調整）</td></tr>
+      <tr><td><b>進行記録係</b></td><td><b>進行記録係</b></td><td>開場の掲示、受付（二次元コードの読み取り）</td><td>記録・掲示：スコアシートの受け渡し、組合せ表・進行表・選手変更一覧の掲示、表彰の準備</td></tr>
+      <tr><td><b>審判委員長</b></td><td><b>審判副委員長</b></td><td>受付（参加料の受け取り・確認）</td><td>会場責任者（トラブル・救護・体育館との窓口・参加料の保管・表彰の進行）、審判委員の統括（休憩の割り振り、準決勝・決勝の配置）</td></tr>
+      <tr><td><b>審判委員 4人</b></td><td><b>審判委員 4人</b></td><td>コートの準備</td><td>Ａ・Ｂコートに2人ずつ。コート主任として進行と選手審判の確認。下の試合は審判員が審判</td></tr>
     </tbody>
   </table></div>
 
@@ -282,13 +287,14 @@ ul.check small{color:var(--muted);display:block}
     <li>審判は選手から正審・副審の2人を出す。敗者審判は、結果を入力した時点で次の試合のカードに自動で表示される。</li>
     <li>本部はコールのとき、選手と一緒に審判も呼ぶ。コート主任は審判がそろっているか確認してから試合を始める。</li>
     <li>団体戦の監督には、監督ポータルに「審判の担当」が表示される。</li>
-    <li>審判員は交代で休憩を取り、準決勝（個人戦）・決勝の前には4人そろう。</li>
+    <li>審判員は審判委員長（副委員長）の割り振りで交代で休憩を取り、準決勝（個人戦）・決勝の前には4人そろう。</li>
   </ul>
 </div></section>
 
 <!-- ============ 受付係 ============ -->
 <section class="part" id="reception"><div class="wrap">
-  <div class="ptitle"><span class="tag">受付</span><h2>受付係</h2></div>
+  <div class="ptitle"><span class="tag">受付</span><h2>受付</h2></div>
+  <div class="who-line"><b>担当</b>　進行記録係（二次元コードの読み取り）、審判委員長・副委員長（参加料の受け取り・確認）</div>
   <p class="lead">受付票の二次元コードを読み、参加料を現金で受け取ります。受付完了と同時に、申込責任者へ領収書（PDF）がメールで届きます。</p>
   <div class="page"><b>担当ページ</b>運営ポータル →「当日受付」（受付パスワード＋担当者名でログイン）<a class="plink" href="https://skkr-d.github.io/iwate-indoor/staff.html" target="_blank" rel="noopener">運営ポータルを開く ↗</a></div>
 
@@ -326,7 +332,8 @@ ul.check small{color:var(--muted);display:block}
 
 <!-- ============ 本部・進行係 ============ -->
 <section class="part" id="honbu"><div class="wrap">
-  <div class="ptitle"><span class="tag">本部</span><h2>本部・進行係</h2></div>
+  <div class="ptitle"><span class="tag">本部</span><h2>本部・進行</h2></div>
+  <div class="who-line"><b>担当</b>　競技委員長・副委員長（コール・放送・オーダー公開・競技上の判断）、進行記録委員長・副委員長（本部画面の操作：開始・結果入力・順位の確定・進行の調整）</div>
   <p class="lead">試合のコール・開始・結果入力を行います。本部が入力した結果は、進行表・組合せ表・監督ポータルにすぐ反映されます。</p>
   <div class="page"><b>担当ページ</b>運営ポータル →「本部 進行管理」（本部パスワードでログイン）<a class="plink" href="https://skkr-d.github.io/iwate-indoor/staff.html" target="_blank" rel="noopener">運営ポータルを開く ↗</a></div>
 
@@ -382,8 +389,9 @@ ul.check small{color:var(--muted);display:block}
 
 <!-- ============ 記録・掲示係 ============ -->
 <section class="part" id="record"><div class="wrap">
-  <div class="ptitle"><span class="tag">記録</span><h2>記録・掲示係</h2></div>
-  <p class="lead">スコアシートの配布・回収と、組合せ表・進行表の掲示を担当します。</p>
+  <div class="ptitle"><span class="tag">記録</span><h2>記録・掲示</h2></div>
+  <div class="who-line"><b>担当</b>　進行記録係（7:35〜8:00は受付。開場の掲示と、8:00からの掲示・スコアシート）</div>
+  <p class="lead">スコアシートの配布・回収と、組合せ表・進行表・選手変更一覧の掲示を担当します。</p>
   <div class="page"><b>担当ページ</b>運営ポータル →「スコアシート印刷」「組合せ（結果入り）」「組合せ（白紙）」「進行表」「進行表の二次元コード」<a class="plink" href="https://skkr-d.github.io/iwate-indoor/staff.html" target="_blank" rel="noopener">運営ポータルを開く ↗</a></div>
 
   <h3>スコアシート</h3>
@@ -409,12 +417,13 @@ ul.check small{color:var(--muted);display:block}
 
 <!-- ============ コート係 ============ -->
 <section class="part" id="court"><div class="wrap">
-  <div class="ptitle"><span class="tag">コート</span><h2>コート係（審判員・コート主任）</h2></div>
+  <div class="ptitle"><span class="tag">コート</span><h2>審判（コート主任）</h2></div>
+  <div class="who-line"><b>担当</b>　審判委員4人。審判委員長・副委員長が休憩の割り振りと準決勝・決勝の配置を決める</div>
   <p class="lead">審判員4人がコート主任としてＡ・Ｂコートに2人ずつ入り、選手審判の確認と進行を行います。終わったらスコアシートをすぐ本部へ戻します。シートが早く戻るほど、次の試合のコールが早くなります。</p>
 
   <h3>試合の進め方</h3>
   <ol class="steps">
-    <li>記録・掲示係からスコアシートを受け取る。右上の試合番号・コートが合っているか確認する。</li>
+    <li>進行記録係からスコアシートを受け取る。右上の試合番号・コートが合っているか確認する。</li>
     <li>審判の選手（正審・副審）がそろっているか確認し、シートを渡す。審判は進行表のカードの「審判：」に出る。</li>
     <li>選手名・所属をシートで確認する。団体戦は、本部が印刷したシートならマッチごとの選手名が入っている。</li>
     <li>試合を行う。<b>個人戦は7ゲーム、団体戦は5ゲーム</b>。</li>

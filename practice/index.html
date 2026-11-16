@@ -94,7 +94,7 @@ td a{color:var(--main);font-weight:700;white-space:nowrap}
 
 <section>
   <h2><span class="no">3</span>相手の役になる（監督・競技委員長）</h2>
-  <div class="lead">受付係の練習では、ここで監督役として受付票を開き、その受付コード（または二次元コード）を受付の画面で読み取ります。団体戦の日は、受付が済んだチームの受付票から「オーダー提出」もできます。</div>
+  <div class="lead">受付の練習では、ここで監督役として受付票を開き、その受付コード（または二次元コード）を受付の画面で読み取ります。団体戦の日は、受付が済んだチームの受付票から「オーダー提出」もできます。</div>
   <div class="roles" style="margin-bottom:10px">
     <div class="role"><h3>競技委員長の役</h3><a href="admin.html" target="_blank">管理画面 → 「選手変更」タブで許可・却下 <small>（パスワード renshu）</small></a></div>
     <div class="role"><h3>練習カード（手順）</h3><a href="cards.html" target="_blank">係ごとの練習カードを開く <small>（印刷して手元に置けます）</small></a></div>
@@ -164,9 +164,9 @@ function renderRoles() {
   var i;
   for (i = 0; i < vb.length; i++) vb[i].className = vb[i].getAttribute('data-v') === venue ? 'on' : '';
   var h = '';
-  h += '<div class="role"><h3>受付係</h3><a href="reception.html" target="_blank">当日受付 <small>（区分は「' + name + '」を選ぶ）</small></a></div>';
-  h += '<div class="role"><h3>本部・進行係</h3><a href="control.html?div=' + d + '" target="_blank">本部 進行管理（' + name + '）</a><a href="progress.html?div=' + d + '" target="_blank">進行表（観客・監督が見る画面） <small>結果の反映を確かめる</small></a></div>';
-  h += '<div class="role"><h3>記録・掲示係</h3><a href="scoresheet.html?div=' + d + '" target="_blank">スコアシート印刷</a><a href="bracket.html?div=' + d + '" target="_blank">組合せ（結果入り）</a><a href="bracket.html?div=' + d + '&amp;mode=blank" target="_blank">組合せ（白紙・記入用）</a><a href="changes.html?div=' + d + '" target="_blank">選手変更一覧（掲示用）</a></div>';
+  h += '<div class="role"><h3>受付<small>（進行記録係・審判委員長）</small></h3><a href="reception.html" target="_blank">当日受付 <small>（区分は「' + name + '」を選ぶ）</small></a></div>';
+  h += '<div class="role"><h3>本部・進行<small>（競技委員長・進行記録委員長）</small></h3><a href="control.html?div=' + d + '" target="_blank">本部 進行管理（' + name + '）</a><a href="progress.html?div=' + d + '" target="_blank">進行表（観客・監督が見る画面） <small>結果の反映を確かめる</small></a></div>';
+  h += '<div class="role"><h3>記録・掲示<small>（進行記録係）</small></h3><a href="scoresheet.html?div=' + d + '" target="_blank">スコアシート印刷</a><a href="bracket.html?div=' + d + '" target="_blank">組合せ（結果入り）</a><a href="bracket.html?div=' + d + '&amp;mode=blank" target="_blank">組合せ（白紙・記入用）</a><a href="changes.html?div=' + d + '" target="_blank">選手変更一覧（掲示用）</a></div>';
   h += '<div class="role"><h3>本番と同じ入口</h3><a href="staff.html" target="_blank">運営ポータル（練習用） <small>当日はここから各係の画面を開く</small></a></div>';
   document.getElementById('roles').innerHTML = h;
 }
