@@ -125,9 +125,19 @@ tr.locked td{background:#f4f4f4;color:#777}
   #panel-list{display:block!important;box-shadow:none;padding:0}
   body.print-gift #panel-list{display:none!important}
   body.print-gift #panel-gift{display:block!important;box-shadow:none;padding:0;page:gift}
-  body.print-gift .gift-h{break-after:avoid}
-  body.print-gift .gift-day{break-before:page}
-  body.print-gift .gift-day:first-of-type{break-before:auto}
+  body.print-gift #giftSummary{display:none!important}
+  body.print-gift #panel-gift>h2{display:none}
+  body.print-gift .gift-sec{break-before:page;page-break-before:always;margin:0;border:none;padding:0}
+  body.print-gift .gift-sec:first-child{break-before:auto;page-break-before:auto}
+  body.print-gift .gift-ph{display:block}
+  body.print-gift .gift-sec h3{font-size:15pt;margin:2mm 0 1mm}
+  body.print-gift .gift-h{font-size:13pt;margin:0 0 3mm}
+  body.print-gift .gift-table th{font-size:10pt;padding:2.2mm 2mm}
+  body.print-gift .gift-table td{font-size:11pt;padding:2.6mm 2mm;border-bottom:1px solid #bbb}
+  body.print-gift .gift-table td .g{font-size:9pt}
+  body.print-gift .gift-table td.ck{font-size:14pt;color:#555}
+  body.print-gift .gift-total{font-size:12pt;margin-top:4mm}
+  body.print-gift .gift-note{display:block}
   .gift-table th{background:#1a4a2e!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   #panel-list h2{display:none}
   .list-table th{background:#1a4a2e!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
@@ -135,8 +145,10 @@ tr.locked td{background:#f4f4f4;color:#777}
   @page{size:A4 landscape;margin:10mm}
   @page gift{size:A4 portrait;margin:10mm}
 }
-.gift-day{margin-top:18px}
-.gift-day>h3{font-size:1.02rem;color:var(--main);border-left:5px solid var(--main);padding-left:8px;margin:0 0 6px}
+.gift-sec{margin-top:18px}
+.gift-sec>h3{font-size:1.02rem;color:var(--main);border-left:5px solid var(--main);padding-left:8px;margin:0 0 6px}
+.gift-ph{display:none;font-size:9pt;color:#555;border-bottom:1px solid #999;padding-bottom:1mm;margin-bottom:2mm}
+.gift-note{display:none;font-size:8.5pt;color:#555;margin-top:3mm}
 .gift-h{font-weight:900;margin:12px 0 4px;font-size:.9rem}
 .gift-table td{font-size:.8rem}
 .gift-table td.n,.gift-table th.n{text-align:right;white-space:nowrap}
@@ -811,16 +823,22 @@ function renderGift() {
           '<td class="n">' + (rows[i].ok ? rows[i].n + '人' : '―') + '</td><td><span class="g">' + esc(rows[i].note) + '</span></td><td class="ck">□</td></tr>';
       }
       t += '<tr class="sub"><td></td><td></td><td>小計（' + teams + 'チーム）</td><td class="n">' + sub + '人</td><td></td><td></td></tr></tbody></table>';
-      dayHtml += '<div class="gift-h">' + esc(divName(code)) + '　' + esc(venue) + '</div>' + t;
       parts.push(venue.replace(/（.*/, '') + ' ' + sub + '人');
       dayTotal += sub;
+      var foot = '';
+      if (c === GIFT_DAYS[d].codes.length - 1) {
+        foot = '<div class="gift-total">' + esc(GIFT_DAYS[d].label) + '　合計 ' + dayTotal + '人（' + esc(parts.join('・')) + '）</div>';
+        if (d === GIFT_DAYS.length - 1) foot += '<div class="gift-total">2日間の合計　' + (grand + dayTotal) + '人分（両日に出る選手は、日ごとに数えています）</div>';
+      }
+      /* 印刷は種別ごとに A4 1枚 */
+      dayHtml += '<section class="gift-sec"><div class="gift-ph">' + esc(D.config['大会名'] || '') + '　参加賞（選手数）</div>' +
+        '<h3>' + esc(GIFT_DAYS[d].label) + '</h3><div class="gift-h">' + esc(divName(code)) + '　' + esc(venue) + '</div>' + t + foot +
+        '<div class="gift-note">申込済のチームだけ。' + (code.charAt(1) === 'T' ? '欠員を除いた登録選手の数。' : '1ペア2人で、申込をした学校（支払チーム）にまとめています（合同ペアも申込校に2人分）。') + '監督の分は入りません。作成 ' + esc(new Date().toLocaleString('ja-JP')) + '</div></section>';
       sum += '<div class="sum"><div class="lbl">' + esc(GIFT_DAYS[d].label.replace(/（.）/, '')) + '　' + esc(venue) + '</div><div class="num">' + sub + '人</div><div class="sub">' + teams + 'チーム</div></div>';
     }
-    body += '<div class="gift-day"><h3>' + esc(GIFT_DAYS[d].label) + '</h3>' + dayHtml +
-      '<div class="gift-total">' + esc(GIFT_DAYS[d].label) + '　合計 ' + dayTotal + '人（' + esc(parts.join('・')) + '）</div></div>';
+    body += dayHtml;
     grand += dayTotal;
   }
-  body += '<div class="gift-total" style="margin-top:16px;font-size:1rem">2日間の合計　' + grand + '人分（両日に出る選手は、日ごとに数えています）</div>';
   sum += '<div class="sum"><div class="lbl">2日間の合計</div><div class="num">' + grand + '人分</div><div class="sub">作成 ' + new Date().toLocaleString('ja-JP') + '</div></div>';
   document.getElementById('giftSummary').innerHTML = sum;
   document.getElementById('giftBody').innerHTML = body;
