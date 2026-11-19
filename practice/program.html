@@ -35,6 +35,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:#111;line-
 .pg h3{font-size:.98rem;font-weight:900;color:var(--main);margin:14px 0 6px;border-left:4px solid var(--main);padding-left:8px}
 .pg p{font-size:.88rem}
 .later{border:2px dashed var(--line);border-radius:10px;padding:40px 16px;text-align:center;color:var(--muted);font-size:.95rem}
+body.locked .ctrl,body.locked .toc{display:none}
 .wait{border:2px dashed var(--line);border-radius:10px;padding:30px 16px;text-align:center;color:var(--muted)}
 .scroll{overflow-x:auto}
 table.t{width:100%;border-collapse:collapse;font-size:.84rem}
@@ -179,17 +180,68 @@ var NAME = { MI: '男子個人戦', WI: '女子個人戦', MT: '男子団体戦'
 
 function getJson(q, pv) { return pvFetch(q, pv); }
 
+/* 係員のパスワード（運営ポータル・本部・受付で入れたもの）があれば、公開期間の外でも見られる */
+var STAFF_KEY = 'iwateIndoorStaffPw';
+function staffPw() {
+  try { return localStorage.getItem(STAFF_KEY) || localStorage.getItem('iwateIndoorCtlPw') || localStorage.getItem('recPw') || ''; } catch (e) { return ''; }
+}
+function postJson(body) {
+  return fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) })
+    .then(function (r) { return r.text(); }).then(function (t) { return JSON.parse(t); });
+}
+function loadProgram() {
+  if (PREVIEW) return getJson('action=programData', { action: 'adminPreviewProgram' });
+  var pw = staffPw();
+  if (!pw) return getJson('action=programData', {});
+  return postJson({ action: 'programStaff', pw: pw }).then(function (d) {
+    if (d.status === 'ok') return d;
+    try { if (localStorage.getItem(STAFF_KEY) === pw) localStorage.removeItem(STAFF_KEY); } catch (e) {}
+    return getJson('action=programData', {});
+  });
+}
+
 function load() {
-  var jobs = [getJson('action=programData', { action: 'adminPreviewProgram' })];
-  var i;
-  for (i = 0; i < CODES.length; i++) jobs.push(getJson('action=progress&div=' + CODES[i], { action: 'adminPreview', div: CODES[i] }));
-  return Promise.all(jobs).then(function (rs) {
-    P = rs[0];
-    for (i = 0; i < CODES.length; i++) { rs[i + 1].division.code = CODES[i]; DIV[CODES[i]] = rs[i + 1]; }
-    render();
+  return loadProgram().then(function (prog) {
+    if (prog.locked) { P = null; renderLocked(prog); return; }
+    var jobs = [];
+    var i;
+    for (i = 0; i < CODES.length; i++) jobs.push(getJson('action=progress&div=' + CODES[i], { action: 'adminPreview', div: CODES[i] }));
+    return Promise.all(jobs).then(function (rs) {
+      P = prog;
+      for (i = 0; i < CODES.length; i++) { rs[i].division.code = CODES[i]; DIV[CODES[i]] = rs[i]; }
+      render();
+    });
   }).catch(function (err) {
     document.getElementById('status').textContent = '読み込めませんでした（' + err.message + '）。自動で再試行します。';
   });
+}
+
+/* 公開期間の外：お知らせと、運営用のパスワード欄だけ出す */
+function renderLocked(d) {
+  document.body.classList.add('locked');
+  if (d.tournament) document.getElementById('hdSub').textContent = d.tournament;
+  var msg = d.ended ? '大会プログラムの公開は終了しました（' + esc(d.to) + 'まで）。'
+    : '大会プログラムは、<b>' + esc(d.from) + '〜' + esc(d.to) + '</b> に公開します。';
+  document.getElementById('book').innerHTML = '<div class="pg"><div class="wait" style="line-height:1.9">' + msg +
+    '<br><small>進行表・組合せ・結果は、大会トップページからいつでも見られます。</small></div>' +
+    '<div class="lockStaff" style="margin-top:18px;font-size:.85rem;color:var(--muted);text-align:center">運営の方は、パスワードを入れるといつでも見られます。<br>' +
+    '<input id="lkPw" type="password" autocomplete="current-password" placeholder="パスワード" style="margin-top:6px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:1rem;width:12em">' +
+    ' <button onclick="staffLogin()" style="padding:8px 14px;border:none;border-radius:8px;background:var(--main);color:#fff;font-weight:700;font-size:.95rem">表示</button>' +
+    '<div id="lkMsg" style="color:var(--red);margin-top:6px"></div></div></div>';
+  document.getElementById('status').textContent = '';
+  var box = document.getElementById('lkPw');
+  if (box) box.addEventListener('keydown', function (e) { if (e.key === 'Enter') staffLogin(); });
+}
+
+function staffLogin() {
+  var pw = (document.getElementById('lkPw') || {}).value || '';
+  if (!pw) return;
+  document.getElementById('lkMsg').textContent = '確認しています...';
+  postJson({ action: 'programStaff', pw: pw }).then(function (d) {
+    if (d.status !== 'ok') { document.getElementById('lkMsg').textContent = d.message || 'パスワードが違います。'; return; }
+    try { localStorage.setItem(STAFF_KEY, pw); } catch (e) {}
+    load();
+  }).catch(function (e) { document.getElementById('lkMsg').textContent = '通信できませんでした（' + e.message + '）'; });
 }
 
 /* 白紙用は表示のたびに元データを複製してから消す */
@@ -437,6 +489,7 @@ function historyPage() {
 
 /* ============================================================ */
 function render() {
+  document.body.classList.remove('locked');
   var y = window.scrollY;
   document.getElementById('hdSub').textContent = P.info.tournament;
   var h = coverPage() + contentsPage() + officialsPage() + youkouPages() + notesPage();
@@ -472,7 +525,7 @@ function setMode(blank) {
 renderToc();
 setMode(BLANK_MODE);
 load();
-setInterval(function () { if (!BLANK_MODE && document.visibilityState === 'visible') load(); }, 60000);
+setInterval(function () { if (!BLANK_MODE && document.visibilityState === 'visible' && !document.getElementById('lkPw')) load(); }, 60000);
 </script>
 </body>
 </html>
