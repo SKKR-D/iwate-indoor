@@ -143,11 +143,11 @@ function needPairs() { return D.players.length >= 6 ? 3 : 2; }
 
 function matchCard() {
   var m = D.match;
-  var h = '<div class="card match"><div class="rd">第' + m.no + '試合　' + esc(m.round) + '　' + esc(m.court) + '</div>';
+  var h = '<div class="card match"><div class="rd">' + esc(m.nl || ('第' + m.no + '試合')) + '　' + esc(m.round) + '</div>';
   h += '<div class="vs">' + esc(D.team.abbr) + '<br><small>対</small>' + esc(m.opp.label) + (m.opp.full ? '<small>' + esc(m.opp.full) + '</small>' : '') + '</div>';
   h += '<div class="times">';
   h += '<div class="' + (m.deadlinePassed && !m.myOrder ? 'warn' : '') + '"><div class="l">オーダー締切</div><div class="v">' + esc(m.deadline || '-') + '</div></div>';
-  /* 時刻がまだないときは言葉（例「前の試合の決着から15分後」）を小さく出す */
+  /* 時刻がまだないときは言葉（例「前の試合が終わり次第」「本部の放送で」）を小さく出す */
   h += '<div><div class="l">コート集合</div><div class="v">' + (m.gather ? esc(m.gather) : (m.gatherNote ? '<span class="vnote">' + esc(m.gatherNote) + '</span>' : '-')) + '</div></div>';
   h += '<div><div class="l">開始予定</div><div class="v">' + esc(m.plan || '-') + '</div></div>';
   h += '</div>';
@@ -184,7 +184,7 @@ function history() {
   var i, x;
   for (i = 0; i < D.history.length; i++) {
     x = D.history[i];
-    h += '<div><span>第' + x.no + '試合 ' + esc(x.round) + '　対 ' + esc(x.opp) + '</span><span class="' + (x.win ? 'w' : 'l') + '">' + (x.win ? '○' : '●') + ' ' + esc(x.score) + '</span></div>';
+    h += '<div><span>' + esc(x.nl || ('第' + x.no + '試合')) + ' ' + esc(x.round) + '　対 ' + esc(x.opp) + '</span><span class="' + (x.win ? 'w' : 'l') + '">' + (x.win ? '○' : '●') + ' ' + esc(x.score) + '</span></div>';
   }
   return h + '</div></div>';
 }
@@ -196,7 +196,7 @@ function dutyCard() {
   var i, x;
   for (i = 0; i < ds.length; i++) {
     x = ds[i];
-    h += '<div class="it"><span><b>第' + x.no + '試合</b> ' + esc(x.round) + '　' + esc(x.court) + 'コート</span><span>' +
+    h += '<div class="it"><span><b>' + esc(x.court) + 'コート第' + x.no + '試合</b> ' + esc(x.round) + '</span><span>' +
       (x.state === '試合中' ? '試合中' : x.state === '呼出' ? '呼出中' : '開始予定 ' + esc(x.plan || '-')) + '</span></div>';
   }
   h += '<div class="muted" style="margin-top:8px">' + (ds[0].partner ? '選手から1名を出してください（もう1名は' + esc(ds[0].partner) + 'から）。' : '選手から正審・副審を出してください。') + (ds[0].after ? '第' + ds[0].after + '試合の敗者として、続けて同じコートの次の試合の審判をお願いします。' : '前の試合が終わったら、進行表とコートの状況を見てコートに入ってください。') + 'スコアシートはコート主任（審判員）から受け取ります。</div>';

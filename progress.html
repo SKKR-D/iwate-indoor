@@ -196,15 +196,16 @@ function sideHtml(m, s, which) {
   return '<div class="' + cls + '"><div>' + (s.origin && s.decided ? '<span class="org">' + esc(s.origin) + '</span>' : '') + '<span class="nm">' + esc(s.label) + '</span>' + (s.changed ? '<span class="chg">変更</span>' : '') + (s.sub ? '<span class="sb">' + esc(s.sub) + '</span>' : '') + '</div></div>';
 }
 
+function ML(m) { return m.nl || ('第' + m.no + '試合'); }
 function cardHtml(m, showCourt) {
   var cls = 'card' + (m.state === '試合中' ? ' live' : m.state === '呼出' ? ' call' : m.state === '終了' ? ' done' : '');
   var h = '<div class="' + cls + '">';
-  h += '<div class="c-head"><span>' + (showCourt ? '<span class="court-tag">' + (m.two ? 'A・B' : esc(m.court)) + '</span>' : '') + '<span class="no">第' + m.no + '試合</span> <span class="rd">' + esc(m.round) + '</span>' + (m.two ? ' <span class="badge b-two">2面展開</span>' : '') + '</span>';
+  h += '<div class="c-head"><span>' + (showCourt ? '<span class="court-tag">' + (m.two ? 'A・B' : esc(m.court)) + '</span>' : '') + (m.no ? '<span class="no">第' + m.no + '試合</span> ' : '') + '<span class="rd">' + esc(m.round) + '</span>' + (m.two ? ' <span class="badge b-two">2面展開</span>' : '') + '</span>';
   h += '<span>' + stateBadge(m) + ' <span class="tm">' + esc(timeText(m)) + '</span></span></div>';
   h += '<div class="c-body">' + sideHtml(m, m.left, 'L');
   h += '<div class="vs">' + (m.state === '終了' && m.score ? '<span class="score">' + winScore(m.note === '不戦勝' ? m.score : rScore(m.score, m.winner, DATA.division.type === 'team' ? 2 : 4), m.winner) + '</span>' : 'vs') + '</div>';
   h += sideHtml(m, m.right, 'R') + '</div>';
-  /* コート集合（これからの試合だけ）：9:00／前の試合が終わり次第／本部のコールで／前の試合の決着から15分後 など */
+  /* コート集合（これからの試合だけ）：9:00／前の試合が終わり次第／本部のコールで／本部の放送で など */
   if ((m.state === '待機' || m.state === '呼出') && m.note !== '不戦勝' && (m.gather || m.gatherNote)) h += '<div class="gat">コート集合：<b>' + esc(m.gather || m.gatherNote) + '</b></div>';
   if (m.referee && m.state !== '終了' && m.note !== '不戦勝') h += '<div class="refr' + (m.referee.official ? ' off' : (m.referee.decided ? '' : ' tbd')) + '">審判：<b>' + esc(m.referee.label) + '</b>' + (m.referee.sub ? ' <span class="sb" style="font-size:.68rem;color:#888">' + esc(m.referee.sub) + '</span>' : '') + '</div>';
   if (m.team && m.team.open) h += pairsHtml(m);
@@ -319,7 +320,7 @@ function load() {
       var i;
       for (i = 0; i < d.matches.length; i++) {
         if (d.matches[i].state === '終了') done++;
-        if (d.matches[i].state === '試合中') live.push('第' + d.matches[i].no + '試合');
+        if (d.matches[i].state === '試合中') live.push(d.matches[i].nl || ('第' + d.matches[i].no + '試合'));
       }
       document.getElementById('info').innerHTML = '終了 <strong>' + done + '</strong> / ' + d.matches.length + '試合' +
         (live.length ? '　試合中：<strong>' + live.join('・') + '</strong>' : '') +

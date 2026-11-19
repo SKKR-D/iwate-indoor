@@ -276,7 +276,7 @@ function topInfo(g, m, info, y) {
   g.t(15.5, y, info.tournament + '　' + info.divName, { s: 2.8, c: '#333' });
   if (!m) return;
   var tm = m.plan ? '　予定 ' + m.plan : '';
-  g.t(194.5, y, '第' + m.no + '試合　' + zen(m.court) + 'コート' + (m.two ? '（2面展開）' : '') + tm, { s: 3.4, a: 'end', b: true });
+  g.t(194.5, y, (m.two ? 'Ａ・Ｂ' : zen(m.court)) + 'コート　第' + m.no + '試合' + (m.two ? '（2面展開）' : '') + tm, { s: 3.4, a: 'end', b: true });
 }
 
 function warnRow(g, wx, y0, y1, y2) {

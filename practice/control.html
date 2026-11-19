@@ -304,7 +304,7 @@ function cardHtml(m, court) {
   var ready = m.left.decided && m.right.decided;
   var isTeam = DATA.division.type === 'team';
   var h = '<div class="' + cls + '">';
-  h += '<div class="c-head"><span><span class="no">第' + m.no + '試合</span> <span class="rd">' + esc(m.round) + '</span>' + (m.two ? ' <span class="badge b-two">2面展開</span>' : '') + '</span>';
+  h += '<div class="c-head"><span>' + (m.no ? '<span class="no">第' + m.no + '試合</span> ' : '') + '<span class="rd">' + esc(m.round) + '</span>' + (m.two ? ' <span class="badge b-two">2面展開</span>' : '') + '</span>';
   h += '<span>' + stateBadge(m) + ' <span class="tm">' + esc(timeText(m)) + '</span></span></div>';
   h += '<div class="c-body">' + sideHtml(m, m.left, 'L') + '<div class="vs">' + (m.state === '終了' && m.score ? '<span class="score">' + esc(m.score) + '</span>' : 'vs') + '</div>' + sideHtml(m, m.right, 'R') + '</div>';
   if (m.referee && m.note !== '不戦勝') h += '<div class="refr' + (m.referee.official ? ' off' : (m.referee.decided ? '' : ' tbd')) + '">審判：<b>' + esc(m.referee.label) + '</b>' + (m.referee.sub ? ' <span class="muted">' + esc(m.referee.sub) + '</span>' : '') + '</div>';
@@ -407,7 +407,7 @@ function renderOrder() {
   var used = {};
   var i, j, k;
   for (i = 0; i < need; i++) for (j = 0; j < 2; j++) if (ord.p[i] && ord.p[i][j]) used[ord.p[i][j]] = i + 1;
-  var h = '<h3>第' + m.no + '試合　オーダー入力（本部代理）</h3>';
+  var h = '<h3>' + ML(m) + '　オーダー入力（本部代理）</h3>';
   h += '<div class="seg2"><button class="' + (ord.side === 'L' ? 'on' : '') + '" onclick="setOrdSide(\'L\')">' + esc(m.left.label) + (m.team.orderL ? ' ✓' : '') + '</button><button class="' + (ord.side === 'R' ? 'on' : '') + '" onclick="setOrdSide(\'R\')">' + esc(m.right.label) + (m.team.orderR ? ' ✓' : '') + '</button></div>';
   for (i = 0; i < 3; i++) {
     h += '<div class="prow"><div class="ttl">第' + (i + 1) + 'マッチ</div>';
@@ -470,7 +470,7 @@ function renderPairs() {
   var m = findMatch(pr.id);
   var isR1 = m.stage === 'R1';
   var quick = ['3-0', '3-1', '3-2'];
-  var h = '<h3>第' + m.no + '試合　マッチごとの結果</h3><div class="muted" style="margin-bottom:8px">' + (isR1 ? '1回戦は第3マッチまで行います。' : '2勝した時点で決着（残りは打ち切り）。') + 'ゲーム数は「勝者－敗者」で選びます。不戦勝・リタイアは「3-R」（R＝リタイアメント）。</div>';
+  var h = '<h3>' + ML(m) + '　マッチごとの結果</h3><div class="muted" style="margin-bottom:8px">' + (isR1 ? '1回戦は第3マッチまで行います。' : '2勝した時点で決着（残りは打ち切り）。') + 'ゲーム数は「勝者－敗者」で選びます。不戦勝・リタイアは「3-R」（R＝リタイアメント）。</div>';
   var i, j, r, p;
   var wL = 0, wR = 0;
   for (i = 0; i < 3; i++) {
@@ -552,19 +552,19 @@ function op(id, kind, state) {
 
 function publish(id) {
   var m = findMatch(id);
-  if (!confirm('第' + m.no + '試合のオーダーを公開します。\n両チームの監督と進行表に表示され、監督はオーダーを修正できなくなります。')) return;
+  if (!confirm(ML(m) + 'のオーダーを公開します。\n両チームの監督と進行表に表示され、監督はオーダーを修正できなくなります。')) return;
   op(id, 'publish');
 }
 
 function unpublish(id) {
   var m = findMatch(id);
-  if (!confirm('第' + m.no + '試合のオーダーを非公開に戻します。よろしいですか？')) return;
+  if (!confirm(ML(m) + 'のオーダーを非公開に戻します。よろしいですか？')) return;
   op(id, 'unpublish');
 }
 
 function undo(id) {
   var m = findMatch(id);
-  if (!confirm('第' + m.no + '試合を「待機」に戻します（' + (m.state === '終了' ? '結果も消えます' : '開始時刻を消します') + '）。よろしいですか？')) return;
+  if (!confirm(ML(m) + 'を「待機」に戻します（' + (m.state === '終了' ? '結果も消えます' : '開始時刻を消します') + '）。よろしいですか？')) return;
   op(id, 'state', '待機');
 }
 
@@ -590,7 +590,7 @@ function renderModal() {
   var m = findMatch(res.id);
   var isTeam = DATA.division.type === 'team';
   var quick = isTeam ? ['3-0', '2-1', '2-0'] : ['4-0', '4-1', '4-2', '4-3'];
-  var h = '<h3>第' + m.no + '試合　' + esc(m.round) + '　結果入力</h3>';
+  var h = '<h3>' + ML(m) + '　' + esc(m.round) + '　結果入力</h3>';
   h += '<div class="muted" style="margin-bottom:6px">勝者を選んでください</div><div class="pick">';
   h += '<button class="' + (res.winner === 'L' ? 'on' : '') + '" onclick="setWin(\'L\')">' + esc(m.left.label) + '<small>' + esc(m.left.sub) + '</small></button>';
   h += '<button class="' + (res.winner === 'R' ? 'on' : '') + '" onclick="setWin(\'R\')">' + esc(m.right.label) + '<small>' + esc(m.right.sub) + '</small></button></div>';
@@ -638,13 +638,13 @@ function openTimes(id) {
   var isTeam = DATA.division.type === 'team';
   modalOpen = true;
   var cur = function (v, fixed, note) { return '<div class="tmauto">いまの表示：' + esc(v || note || '-') + (fixed ? '（手入力）' : '（自動）') + '</div>'; };
-  var h = '<h3>⏱ 第' + m.no + '試合（' + esc(m.round) + '）の時刻</h3>' +
+  var h = '<h3>⏱ ' + ML(m) + '（' + esc(m.round) + '）の時刻</h3>' +
     '<div class="tmrow"><label>コート集合</label><input id="tmG" inputmode="numeric" placeholder="例 10:30（空欄＝自動）" value="' + esc(m.gFix) + '"></div>' +
     cur(m.gather, m.gatherFixed, m.gatherNote);
   if (isTeam) h += '<div class="tmrow"><label>オーダー締切</label><input id="tmD" inputmode="numeric" placeholder="例 10:25（空欄＝自動）" value="' + esc(m.dFix) + '"></div>' +
     cur(m.team && m.team.deadline, m.team && m.team.dlFixed, '');
   h += '<div class="muted" style="margin:6px 0 12px;line-height:1.6">空欄にして保存すると自動に戻ります。<br>自動：各コートの1試合目は ' + esc((DATA.config && DATA.config.gather1) || '9:00') + '。' +
-    (isTeam ? '2試合目以降は前の試合の決着から' + esc((DATA.config && DATA.config.gatherMin) || '15') + '分後。締切は1回戦が ' + esc((DATA.config && DATA.config.r1Deadline) || '8:40') + '、2回戦以降は勝ち上がりの決着から' + esc((DATA.config && DATA.config.orderMin) || '10') + '分後。'
+    (isTeam ? '2試合目から準々決勝までは「前の試合が終わり次第」、準決勝・決勝は「本部の放送で」（時刻を決めたらここで入力）。締切は1回戦が ' + esc((DATA.config && DATA.config.r1Deadline) || '8:40') + '、2回戦以降は勝ち上がりの決着から' + esc((DATA.config && DATA.config.orderMin) || '10') + '分後。'
       : '2試合目以降は「前の試合が終わり次第」、決勝トーナメントの各コート最初の試合は「本部のコールで」。') +
     '<br>手入力した時刻は、監督ポータル・進行表にもそのまま出ます。</div>' +
     '<div class="mbtns"><button class="btn btn-out" onclick="closeModal()">やめる</button><button class="btn" onclick="saveTimes(\'' + esc(id) + '\')">保存</button></div>';
@@ -678,23 +678,24 @@ function hmJa(hm) {
 
 function teamSay(side) { return side.full || side.label; }
 
+function ML(m) { return m.nl || ('第' + m.no + '試合'); }
 function announceText(m) {
   if (!m || m.state !== '終了' || !m.winner) return '';
   var w = m.winner === 'L' ? m.left : m.right;
-  if (m.stage === 'F') return '決勝戦（第' + m.no + '試合）は、' + teamSay(w) + 'の優勝です。';
-  var t = '第' + m.no + '試合（' + m.round + '）は、' + teamSay(w) + 'の勝ちです。';
+  if (m.stage === 'F') return '決勝戦（' + ML(m) + '）は、' + teamSay(w) + 'の優勝です。';
+  var t = ML(m) + '（' + m.round + '）は、' + teamSay(w) + 'の勝ちです。';
   var nx = null;
   var i, x;
   for (i = 0; i < DATA.matches.length; i++) {
     x = DATA.matches[i];
     if (x.id === m.id || x.state === '終了') continue;
-    if ((x.left && x.left.id === w.id) || (x.right && x.right.id === w.id)) { if (!nx || x.no < nx.no) nx = x; }
+    if ((x.left && x.left.id === w.id) || (x.right && x.right.id === w.id)) { if (!nx || x.seq < nx.seq) nx = x; }
   }
   if (!nx) return t;
   var opp = nx.left.id === w.id ? nx.right : nx.left;
-  if (!opp.decided) return t + teamSay(w) + 'の次の試合は第' + nx.no + '試合（' + nx.round + '）です。対戦相手は' + opp.label + 'です。';
-  if (nx.team && nx.team.both) return t + '次の第' + nx.no + '試合（' + nx.round + '）は、' + teamSay(nx.left) + '対' + teamSay(nx.right) + 'です。';
-  return t + '次の第' + nx.no + '試合（' + nx.round + '）、' + teamSay(nx.left) + '対' + teamSay(nx.right) + 'の' +
+  if (!opp.decided) return t + teamSay(w) + 'の次の試合は' + ML(nx) + '（' + nx.round + '）です。対戦相手は' + opp.label + 'です。';
+  if (nx.team && nx.team.both) return t + '次の' + ML(nx) + '（' + nx.round + '）は、' + teamSay(nx.left) + '対' + teamSay(nx.right) + 'です。';
+  return t + '次の' + ML(nx) + '（' + nx.round + '）、' + teamSay(nx.left) + '対' + teamSay(nx.right) + 'の' +
     (nx.team && nx.team.deadline ? 'オーダー締切は' + hmJa(nx.team.deadline) + 'です。' : 'オーダーを提出してください。') +
     '両チームの監督は、監督ポータルからオーダーを提出してください。';
 }
@@ -704,7 +705,7 @@ function showAnnounce(id) {
   var t = announceText(m);
   if (!t) return;
   modalOpen = true;
-  document.getElementById('modal').innerHTML = '<h3>📢 放送文（第' + m.no + '試合の結果）</h3><div class="ann" id="annText">' + esc(t) + '</div>' +
+  document.getElementById('modal').innerHTML = '<h3>📢 放送文（' + ML(m) + 'の結果）</h3><div class="ann" id="annText">' + esc(t) + '</div>' +
     '<div class="ann-note">このまま読み上げてください。放送するのは、表彰・団体戦のオーダー締切・遅れや変更だけです（試合と審判は、選手が進行表を見て自分でコートに入ります。監督のスマホには、オーダーのお知らせだけが出ます）。</div>' +
     '<div class="mbtns"><button class="btn btn-out" onclick="copyAnnounce()">コピー</button><button class="btn" onclick="closeModal()">閉じる</button></div>';
   document.getElementById('overlay').className = 'overlay show';

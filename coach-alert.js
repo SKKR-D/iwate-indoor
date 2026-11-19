@@ -163,10 +163,10 @@ function caEventsPortal(D) {
   var m = D.match;
   var nowMin = caMin(D.now);
   if (m && D.reception && m.oppDecided && !m.myOrder && D.view === 'order') {
-    ev.push({ id: 'order:' + m.id, kind: 'info', title: '第' + m.no + '試合（' + m.round + '）のオーダーを出してください',
+    ev.push({ id: 'order:' + m.id, kind: 'info', title: (m.nl || ('第' + m.no + '試合')) + '（' + m.round + '）のオーダーを出してください',
       text: '対戦相手：' + ((m.opp && (m.opp.full || m.opp.label)) || '') + '\nオーダーの締切：' + (m.deadline || '-') + '（' + (m.court || '') + '）' });
     var left = caMin(m.deadline) - nowMin;
-    if (m.deadline && left <= 5 && left >= 0) ev.push({ id: 'dl5:' + m.id, kind: 'call', title: 'オーダーの締切まで、あと' + left + '分です', text: '第' + m.no + '試合（' + m.round + '）のオーダーがまだ提出されていません。締切：' + m.deadline });
+    if (m.deadline && left <= 5 && left >= 0) ev.push({ id: 'dl5:' + m.id, kind: 'call', title: 'オーダーの締切まで、あと' + left + '分です', text: (m.nl || ('第' + m.no + '試合')) + '（' + m.round + '）のオーダーがまだ提出されていません。締切：' + m.deadline });
   }
   return ev;
 }
