@@ -123,11 +123,28 @@ tr.locked td{background:#f4f4f4;color:#777}
   body{background:#fff}
   .main{padding:0;max-width:none}
   #panel-list{display:block!important;box-shadow:none;padding:0}
+  body.print-gift #panel-list{display:none!important}
+  body.print-gift #panel-gift{display:block!important;box-shadow:none;padding:0;page:gift}
+  body.print-gift .gift-h{break-after:avoid}
+  body.print-gift .gift-day{break-before:page}
+  body.print-gift .gift-day:first-of-type{break-before:auto}
+  .gift-table th{background:#1a4a2e!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   #panel-list h2{display:none}
   .list-table th{background:#1a4a2e!important;color:#fff!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
   .list-table .no-print{display:none}
   @page{size:A4 landscape;margin:10mm}
+  @page gift{size:A4 portrait;margin:10mm}
 }
+.gift-day{margin-top:18px}
+.gift-day>h3{font-size:1.02rem;color:var(--main);border-left:5px solid var(--main);padding-left:8px;margin:0 0 6px}
+.gift-h{font-weight:900;margin:12px 0 4px;font-size:.9rem}
+.gift-table td{font-size:.8rem}
+.gift-table td.n,.gift-table th.n{text-align:right;white-space:nowrap}
+.gift-table td.ck{width:3.2em;text-align:center;color:#999}
+.gift-table tr.sub td{font-weight:900;background:var(--main-light);border-top:2px solid var(--main)}
+.gift-table tr.unapplied td{color:#aaa}
+.gift-table .g{font-size:.7rem;color:var(--text-light)}
+.gift-total{margin-top:8px;font-weight:900;color:var(--main);font-size:.92rem}
 .draw-only{display:none}
 .role-draw .tabs .tab:not([data-tab="draw"]){display:none}
 .role-draw .admin-only{display:none !important}
@@ -170,6 +187,7 @@ tr.locked td{background:#f4f4f4;color:#777}
   <nav class="tabs">
     <button class="tab active" data-tab="status" onclick="showTab('status')">申込状況・リンク</button>
     <button class="tab" data-tab="list" onclick="showTab('list')">申込一覧・PDF</button>
+    <button class="tab" data-tab="gift" onclick="showTab('gift')">参加賞（選手数）</button>
     <button class="tab" data-tab="draw" onclick="showTab('draw')">組合せ・進行表</button>
     <button class="tab" data-tab="change" onclick="showTab('change')">選手変更</button>
     <button class="tab" data-tab="team" onclick="showTab('team')">団体戦 出場指定</button>
@@ -224,6 +242,17 @@ tr.locked td{background:#f4f4f4;color:#777}
       </div>
       <div class="list-title" id="listTitle"></div>
       <div class="scroll"><table class="list-table" id="listTable"></table></div>
+    </section>
+
+    <!-- ===== 参加賞（選手数） ===== -->
+    <section class="panel" id="panel-gift">
+      <h2>参加賞（選手数）</h2>
+      <div class="lead">参加賞の準備用に、日ごと・会場ごと・チームごとの選手数を数えます。<b>申込済のチームだけ</b>を数えます。団体戦は欠員を除いた登録選手の数、個人戦は1ペア2人で、<b>申込をした学校（支払チーム）</b>にまとめます（合同ペアも、その学校の監督に2人分を渡す）。欠員報告・選手変更があれば、開いた時点の数になります。監督の分は入りません。</div>
+      <div class="row">
+        <button class="btn btn-out btn-sm" onclick="printGift()">🖨 印刷・PDF</button>
+      </div>
+      <div class="summary" id="giftSummary"></div>
+      <div id="giftBody"></div>
     </section>
 
     <!-- ===== 組合せ・進行表 ===== -->
@@ -427,6 +456,7 @@ function reload() {
 function renderAll() {
   renderStatus();
   renderList();
+  renderGift();
   renderChange();
   renderTeamPick();
   renderPairs();
@@ -726,6 +756,82 @@ function districtCompare(a, b) {
   if (ib < 0) ib = 99;
   return ia - ib;
 }
+
+/* ========== 参加賞（選手数） ========== */
+var GIFT_DAYS = [
+  { label: '11月28日（土）個人戦', codes: [['MI', '男子会場（雫石）'], ['WI', '女子会場（紫波）']] },
+  { label: '11月29日（日）団体戦', codes: [['MT', '男子会場（雫石）'], ['WT', '女子会場（紫波）']] }
+];
+
+/* 区分ごと：チーム（申込の単位）ごとの選手数 */
+function giftRows(code) {
+  var type = D.divisions[code] ? D.divisions[code].type : (code.charAt(1) === 'T' ? 'team' : 'indiv');
+  var entries = entriesOf(code).sort(function (a, b) { return districtCompare(a.district, b.district) || a.teamName.localeCompare(b.teamName, 'ja'); });
+  var pairs = type === 'indiv' ? pairsOf(code) : [];
+  var rows = [];
+  var i, j, e, n, note, pc, joint, vac;
+  for (i = 0; i < entries.length; i++) {
+    e = entries[i];
+    var ok = e.state === '申込済';
+    n = 0; note = '';
+    if (type === 'team') {
+      vac = 0;
+      for (j = 0; j < (e.players || []).length; j++) {
+        if (!e.players[j]) continue;
+        if (e.players[j].vacant) vac++; else if (e.players[j].name) n++;
+      }
+      note = '登録選手 ' + n + '人' + (vac ? '（欠員 ' + vac + '）' : '');
+    } else {
+      pc = 0; joint = 0;
+      for (j = 0; j < pairs.length; j++) if (pairs[j].payer === e.teamName) { pc++; if (pairs[j].joint) joint++; }
+      n = pc * 2;
+      note = pc + 'ペア' + (joint ? '（うち合同 ' + joint + '）' : '');
+    }
+    rows.push({ team: e.teamName, district: e.district, n: ok ? n : 0, note: ok ? note : '未申込（数えていません）', ok: ok });
+  }
+  return rows;
+}
+
+function renderGift() {
+  var sum = '', body = '';
+  var grand = 0;
+  var d, c, i, rows, sub, dayTotal, teams;
+  for (d = 0; d < GIFT_DAYS.length; d++) {
+    dayTotal = 0;
+    var dayHtml = '';
+    var parts = [];
+    for (c = 0; c < GIFT_DAYS[d].codes.length; c++) {
+      var code = GIFT_DAYS[d].codes[c][0], venue = GIFT_DAYS[d].codes[c][1];
+      rows = giftRows(code);
+      sub = 0; teams = 0;
+      var t = '<table class="gift-table"><thead><tr><th>No.</th><th>地区</th><th>チーム（申込をした学校）</th><th class="n">選手数</th><th>内訳</th><th>確認</th></tr></thead><tbody>';
+      for (i = 0; i < rows.length; i++) {
+        if (rows[i].ok) { sub += rows[i].n; teams++; }
+        t += '<tr class="' + (rows[i].ok ? '' : 'unapplied') + '"><td>' + (i + 1) + '</td><td>' + esc(rows[i].district) + '</td><td><strong>' + esc(rows[i].team) + '</strong></td>' +
+          '<td class="n">' + (rows[i].ok ? rows[i].n + '人' : '―') + '</td><td><span class="g">' + esc(rows[i].note) + '</span></td><td class="ck">□</td></tr>';
+      }
+      t += '<tr class="sub"><td></td><td></td><td>小計（' + teams + 'チーム）</td><td class="n">' + sub + '人</td><td></td><td></td></tr></tbody></table>';
+      dayHtml += '<div class="gift-h">' + esc(divName(code)) + '　' + esc(venue) + '</div>' + t;
+      parts.push(venue.replace(/（.*/, '') + ' ' + sub + '人');
+      dayTotal += sub;
+      sum += '<div class="sum"><div class="lbl">' + esc(GIFT_DAYS[d].label.replace(/（.）/, '')) + '　' + esc(venue) + '</div><div class="num">' + sub + '人</div><div class="sub">' + teams + 'チーム</div></div>';
+    }
+    body += '<div class="gift-day"><h3>' + esc(GIFT_DAYS[d].label) + '</h3>' + dayHtml +
+      '<div class="gift-total">' + esc(GIFT_DAYS[d].label) + '　合計 ' + dayTotal + '人（' + esc(parts.join('・')) + '）</div></div>';
+    grand += dayTotal;
+  }
+  body += '<div class="gift-total" style="margin-top:16px;font-size:1rem">2日間の合計　' + grand + '人分（両日に出る選手は、日ごとに数えています）</div>';
+  sum += '<div class="sum"><div class="lbl">2日間の合計</div><div class="num">' + grand + '人分</div><div class="sub">作成 ' + new Date().toLocaleString('ja-JP') + '</div></div>';
+  document.getElementById('giftSummary').innerHTML = sum;
+  document.getElementById('giftBody').innerHTML = body;
+}
+
+function printGift() {
+  renderGift();
+  document.body.classList.add('print-gift');
+  setTimeout(function () { window.print(); }, 50);
+}
+window.addEventListener('afterprint', function () { document.body.classList.remove('print-gift'); });
 
 var listDiv = 'MT';
 
