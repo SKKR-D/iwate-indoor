@@ -159,7 +159,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
   <div class="bar"><div class="info" id="info"></div></div>
   <div id="board"></div>
   <div class="panel" id="rankPanel" style="display:none">
-    <h3>予選リーグの順位（1位・2位を確定すると決勝トーナメントの対戦が決まります。A・Bブロックの3位は決勝トーナメント1回戦の初戦の審判です）</h3>
+    <h3>予選リーグの順位（1位・2位を確定すると決勝トーナメントの対戦が決まります。3位まで選ぶと4位が決まります。B・Dブロックの4位は決勝トーナメント1回戦の初戦の審判です）</h3>
     <div class="ranks" id="ranks"></div>
   </div>
   <div class="panel">
@@ -172,7 +172,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
       <div><label>個人 次戦まで（分）</label><input id="cGapI" inputmode="numeric"></div>
       <button class="btn" onclick="saveConfig()">保存して再計算</button>
     </div>
-    <div class="muted" style="margin-top:6px">団体戦の1試合は、1面進行＝5ゲーム×3、2面展開＝5ゲーム×2で見積もります。団体戦の「次戦まで」は、オーダー提出（10分）とコート集合（15分）を見込んだ間隔です。</div>
+    <div class="muted" style="margin-top:6px">団体戦の1試合は、1面進行＝5ゲーム×3、2面展開＝5ゲーム×2で見積もります。「次戦まで」は、勝ち上がったチーム・ペアが次の試合までに取る休みです（今大会は団体戦も0分＝休みなし）。休みを入れるときは、ここで分数を入れて保存し、放送で知らせます。</div>
   </div>
 </main>
 
@@ -281,7 +281,7 @@ function apply(d) {
 /* ========== 表示 ========== */
 function stateBadge(m) {
   if (m.state === '試合中') return '<span class="badge b-live">試合中</span>';
-  if (m.state === '呼出') return '<span class="badge b-call">コール</span>';
+  if (m.state === '呼出') return '<span class="badge b-call">呼出中</span>';
   if (m.state === '終了') return '<span class="badge b-done">終了</span>';
   return '<span class="badge b-wait">待機</span>';
 }
@@ -705,7 +705,7 @@ function showAnnounce(id) {
   if (!t) return;
   modalOpen = true;
   document.getElementById('modal').innerHTML = '<h3>📢 放送文（第' + m.no + '試合の結果）</h3><div class="ann" id="annText">' + esc(t) + '</div>' +
-    '<div class="ann-note">このまま読み上げてください。試合のコール・審判・表彰も放送でお知らせします（監督のスマホには、オーダーのお知らせだけが出ます）。</div>' +
+    '<div class="ann-note">このまま読み上げてください。放送するのは、表彰・団体戦のオーダー締切・遅れや変更だけです（試合と審判は、選手が進行表を見て自分でコートに入ります。監督のスマホには、オーダーのお知らせだけが出ます）。</div>' +
     '<div class="mbtns"><button class="btn btn-out" onclick="copyAnnounce()">コピー</button><button class="btn" onclick="closeModal()">閉じる</button></div>';
   document.getElementById('overlay').className = 'overlay show';
 }
@@ -737,7 +737,7 @@ function renderRanks() {
     html += '<div class="rk"><h4>' + bl[i] + 'ブロック</h4><table>';
     opts1 = '<option value="">1位を選択</option>';
     opts2 = '<option value="">2位を選択</option>';
-    opts3 = '<option value="">' + (bl[i] === 'A' || bl[i] === 'B' ? '3位を選択（1回戦の審判）' : '3位を選択') + '</option>';
+    opts3 = '<option value="">' + (bl[i] === 'B' || bl[i] === 'D' ? '3位を選択（残りの4位が1回戦の審判）' : '3位を選択') + '</option>';
     for (j = 0; j < DATA.blocks[bl[i]].length; j++) {
       p = DATA.blocks[bl[i]][j];
       t = rows[p.id];
@@ -874,7 +874,7 @@ function saveRank(blk) {
   var el3 = document.getElementById('r3_' + blk);
   var third = el3 ? el3.value : '';
   if (!first || !second) { toast('1位と2位を選んでください', true); return; }
-  if (el3 && !third && DATA.blocks[blk].length >= 3) { toast('3位も選んでください' + (blk === 'A' || blk === 'B' ? '（決勝トーナメント1回戦の審判）' : '（4位は残りのペアに決まります）'), true); return; }
+  if (el3 && !third && DATA.blocks[blk].length >= 3) { toast('3位も選んでください' + (blk === 'B' || blk === 'D' ? '（残りの4位が決勝トーナメント1回戦の審判）' : '（4位は残りのペアに決まります）'), true); return; }
   busy = true;
   api({ action: 'ctlRanks', block: blk, first: first, second: second, third: third }).then(function (d) {
     busy = false;

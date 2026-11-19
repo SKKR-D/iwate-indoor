@@ -100,7 +100,7 @@ function render(d) {
   }
   if (d.type === 'team') {
     html += d.reception
-      ? '<a class="portal-btn" href="portal.html?t=' + encodeURIComponent(token) + '">📝 オーダー提出（監督用）</a><div class="portal-note">監督ポータルで、次の対戦相手・オーダーの締切・相手チームの選手変更を確認できます。試合のコール・審判・表彰は会場の放送でお知らせします。</div>'
+      ? '<a class="portal-btn" href="portal.html?t=' + encodeURIComponent(token) + '">📝 オーダー提出（監督用）</a><div class="portal-note">監督ポータルで、次の対戦相手・オーダーの締切・相手チームの選手変更を確認できます。試合・審判は、進行表とコートの状況を見て自分たちでコートに入ります（放送は最小限）。</div>'
       : '<div class="portal-note">受付が済むと、ここに「オーダー提出（監督用）」ボタンが表示されます。</div>';
   }
   /* 変更申請は、申請できる期間（当日の受付終了まで）だけ出す */

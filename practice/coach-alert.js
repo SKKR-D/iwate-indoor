@@ -3,7 +3,7 @@
    監督へのお知らせ（団体戦のオーダーだけ・画面を開いている間）
    - 監督ポータル（団体戦）で使う
    - 出すのは 2 つだけ：①次の対戦相手とオーダーの締切が決まったとき ②締切の5分前（まだ出していないとき）
-   - 試合のコール・審判・表彰は会場の放送で知らせる（ここでは出さない）
+   - 試合・審判は進行表を見て選手が自分でコートに入る。放送は表彰・オーダー締切・遅れや変更だけ（ここでは出さない）
    - 画面に大きく出し、「確認しました」を押すまで残す。音は「音も鳴らす」を選んだ端末だけ、出たときに1回
      （音・振動は端末やマナーモードで鳴らないことがあるので、約束はしない）
    - 確認したお知らせは、その端末に覚えて二度は出さない
@@ -30,7 +30,7 @@ function caScope(token) {
 /* 画面の上に出す、お知らせの説明（小さく） */
 function caBoxHtml() {
   return '<div class="ca-box"><b>📣 オーダーのお知らせ</b>　次の対戦相手と締切が決まったとき・締切5分前に、<b>この画面</b>に大きく出します（開いているときだけ）。' +
-    '試合のコール・審判・表彰は<b>会場の放送</b>でお知らせします。' +
+    '試合・審判は、進行表とコートの状況を見て<b>自分たちでコートに入ります</b>（放送は表彰・遅れや変更のときなど最小限）。' +
     (CA.on
       ? '<span class="ca-snd">🔔 音：オン <button type="button" class="ca-mini" onclick="caTest()">音を試す</button> <button type="button" class="ca-mini" onclick="caSound(false)">音を消す</button></span>'
       : '<span class="ca-snd"><button type="button" class="ca-mini" onclick="caSound(true)">🔔 音も鳴らす</button><small>（マナーモードでは鳴らないことがあります）</small></span>') +
@@ -171,7 +171,7 @@ function caEventsPortal(D) {
   return ev;
 }
 
-/* 受付票（個人戦）：お知らせは出さない（コール・審判・表彰は放送）。古い画面のために残す */
+/* 受付票（個人戦）：お知らせは出さない（試合・審判は進行表で確かめる）。古い画面のために残す */
 function caEventsTicket(d) { return []; }
 
 function caMin(hm) { var m = String(hm || '').match(/(\d{1,2}):(\d{2})/); return m ? +m[1] * 60 + +m[2] : 0; }

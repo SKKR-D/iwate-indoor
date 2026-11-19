@@ -82,6 +82,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .blk td.n{text-align:center;width:40px}
 .rank1{color:var(--red);font-weight:900}
 .empty{text-align:center;color:var(--text-light);padding:40px 10px;font-size:.88rem}
+.rules{max-width:760px;margin:22px auto 0;padding:14px 16px 10px;background:#fff;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.08);font-size:.8rem;line-height:1.65}
+.rules h3{font-size:.86rem;color:var(--main,#0b6e64);margin:4px 0 4px}
+.rules ol{margin:0 0 8px 1.4em}
+.rules li{margin:2px 0}
+@media(max-width:800px){.rules{margin:22px 12px 0}}
+@media print{.rules{display:none}}
 .footer{text-align:center;font-size:.7rem;color:var(--text-light);padding:20px}
 @media(max-width:680px){.cols{grid-template-columns:1fr}}
 </style>
@@ -109,6 +115,12 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
   <div id="board"></div>
   <div id="blocks"></div>
 </main>
+<section class="rules">
+  <h3>試合の進め方</h3>
+  <ol><li>予定時刻は目安です。最新の予定・コート・審判は、会場掲示の二次元コードから進行表で確かめてください（自動で更新されます）。</li><li>進行表とコートの状況を見て、前の試合が終わったら自分たちでコートに入ってください。放送での呼び出しは最小限です。コートや順番が変わったときも、進行表に出ます。</li><li>進行表で左（上）に書かれているペア・チームが、審判台から見て左側のベンチに入ります。</li><li>次の試合に入っている選手は、前の試合が終わる前からベンチ付近で待機し、ボール拾いをしてください。</li><li>試合が終わったら、勝ったペア（団体戦は勝ったチーム）が、勝者サインをしたスコアシートをすぐ本部へ届けてください。届いた時点で結果が進行表に入り、次の試合に進みます。</li><li>審判は進行表の「審判」欄の割当てで行います。審判に当たっている選手も、進行表を見て自分でコートに入ってください。</li></ol>
+  <h3>会場使用について</h3>
+  <ol><li>水分補給は、シートの上で行ってください。</li><li>ゴミは持ち帰ってください（特に弁当類）。</li><li>本部以外のコンセントは使用しないでください。</li><li>アリーナ以外で、ラケットとボールを使った練習はしないでください。</li><li>監督証は、必ず返却してください。</li></ol>
+</section>
 <div class="footer">予定時刻は目安です。進行状況により変わります。30秒ごとに自動更新します。</div>
 
 <script src="preview.js"></script>
@@ -145,7 +157,7 @@ function setView(v) {
 
 function stateBadge(m) {
   if (m.state === '試合中') return '<span class="badge b-live">試合中</span>';
-  if (m.state === '呼出') return '<span class="badge b-call">コール</span>';
+  if (m.state === '呼出') return '<span class="badge b-call">呼出中</span>';
   if (m.state === '終了') return '<span class="badge b-done">終了</span>';
   return '<span class="badge b-wait">待機</span>';
 }
