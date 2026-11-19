@@ -82,8 +82,8 @@ select:focus{border-color:var(--main);outline:none}
         <div class="drow"><span>女子（紫波）</span><a class="btn btn-out sm" href="progress.html?div=WT">進行表</a><a class="btn btn-out sm" href="bracket.html?div=WT">組合せ・結果</a></div>
       </div>
     </div>
-    <div class="vbtns" id="progBtn" style="margin-top:12px" hidden><a class="btn btn-out" href="program.html">📖 大会プログラム</a></div>
-    <p class="note" id="progNote" hidden>大会プログラムは、<strong>11月28日（土）8:00〜11月29日（日）23:00</strong> に公開します。</p>
+    <div class="vbtns" style="margin-top:12px"><a class="btn btn-out" href="program.html">📖 大会プログラム</a></div>
+    <p class="note" id="progNote"></p>
     <p class="note"><strong>組合せは11月24日（火）掲載予定です。</strong>掲載までは「組合せ・結果」「進行表」に「まだ発表されていません」と表示されます。</p>
   </div>
 
@@ -132,11 +132,12 @@ var PROGRAM_TO = new Date('2026-11-29T23:00:00+09:00');
   for (i = 0; i < b.length; i++) b[i].hidden = after;
   var af = document.querySelectorAll('.card.after');
   for (i = 0; i < af.length; i++) af[i].hidden = !after;
-  /* 大会プログラムは 11/28 8:00（受付終了）〜 11/29 23:00 だけ。確認用：?view=program */
+  /* 大会プログラム：組合せの公開から一部、11/28 8:00（受付終了）〜 11/29 23:00 は全ページ、そのあとは結果と栄光の記録 */
   var now = new Date();
-  var progOpen = view === 'program' || (now >= PROGRAM_FROM && now <= PROGRAM_TO);
-  document.getElementById('progBtn').hidden = !progOpen;
-  document.getElementById('progNote').hidden = progOpen || now > PROGRAM_TO;
+  var note = now < PROGRAM_FROM ? '大会プログラムは、組合せの公開（11月24日予定）から一部を、<strong>11月28日（土）8:00〜11月29日（日）23:00</strong> は全ページを見られます。'
+    : now > PROGRAM_TO ? '大会プログラムは、大会の結果と栄光の記録を載せています。' : '';
+  document.getElementById('progNote').innerHTML = note;
+  document.getElementById('progNote').hidden = !note;
 })();
 </script>
 </body>

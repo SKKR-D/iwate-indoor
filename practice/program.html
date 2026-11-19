@@ -36,6 +36,23 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:#111;line-
 .pg p{font-size:.88rem}
 .later{border:2px dashed var(--line);border-radius:10px;padding:40px 16px;text-align:center;color:var(--muted);font-size:.95rem}
 body.locked .ctrl,body.locked .toc{display:none}
+body.st-pre #mLive,body.st-pre #mBlank,body.st-after #mLive,body.st-after #mBlank{display:none}
+.lockStaff{margin-top:18px;font-size:.85rem;color:var(--muted);text-align:center}
+.lockStaff input{margin-top:6px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:1rem;width:12em}
+.lockStaff button{padding:8px 14px;border:none;border-radius:8px;background:var(--main);color:#fff;font-weight:700;font-size:.95rem}
+#lkMsg{color:var(--red);margin-top:6px}
+.status a{color:inherit}
+.cover{position:relative}
+.cv-pdf{position:absolute;top:10px;right:12px;font-size:.78rem;font-weight:700;color:#fff;background:rgba(0,0,0,.25);padding:3px 9px;border-radius:12px;text-decoration:none;z-index:2}
+h2 small a{text-decoration:none;font-weight:700}
+.pdftip{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
+.pdftip[hidden]{display:none}
+.pdftip .box{background:#fff;border-radius:12px;padding:18px 18px 14px;max-width:420px;font-size:.9rem;line-height:1.7}
+.pdftip p{margin:8px 0}
+.pdftip p.s{font-size:.78rem;color:var(--muted)}
+.pdftip .bt{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
+.pdftip button{padding:8px 16px;border:none;border-radius:8px;background:var(--main);color:#fff;font-weight:700;font-size:.95rem}
+.pdftip button.no{background:#e4e4e4;color:#333}
 .wait{border:2px dashed var(--line);border-radius:10px;padding:30px 16px;text-align:center;color:var(--muted)}
 .scroll{overflow-x:auto}
 table.t{width:100%;border-collapse:collapse;font-size:.84rem}
@@ -120,7 +137,9 @@ ol.notes ol.sub li{padding:1px 0}
   @page{size:A4 portrait;margin:10mm}
   html{font-size:10.5pt}
   body{background:#fff}
-  .bar,.status{display:none}
+  .bar,.status,.pdftip,.cv-pdf,h2 small a{display:none}
+  body.print-one .pg:not(.pt){display:none}
+  body.print-one .pg.pt1{break-before:auto;page-break-before:auto}
   .book{max-width:none;padding:0;margin:0}
   .pg{box-shadow:none;border-radius:0;margin:0;padding:0;break-before:page;page-break-before:always;min-height:0}
   .pg:first-child{break-before:auto;page-break-before:auto}
@@ -158,12 +177,18 @@ ol.notes ol.sub li{padding:1px 0}
     <div class="ctrl">
       <button id="mLive" onclick="setMode(false)">結果入り</button>
       <button id="mBlank" onclick="setMode(true)">白紙（記入用）</button>
-      <button onclick="window.print()">🖨 印刷</button>
+      <button onclick="pdfAll()">📥 全ページPDF</button>
     </div>
   </div>
   <nav class="toc" id="toc"></nav>
 </div></div>
 <div class="status" id="status"></div>
+<div class="pdftip" id="pdfTip" hidden><div class="box">
+  <b><span class="pt-what">全ページ</span>をPDFにします</b>
+  <p>このあと出る印刷の画面で、送信先（プリンター）を<b>「PDFに保存」</b>にして保存してください。</p>
+  <p class="s">iPhone：共有ボタン →「プリント」→ 右上の共有ボタン →「"ファイル"に保存」<br>Android：︙ →「共有」→「印刷」→「PDF形式で保存」</p>
+  <div class="bt"><button onclick="doPrint()">PDFにする</button><button class="no" onclick="closePdfTip()">やめる</button></div>
+</div></div>
 <main class="book" id="book"><div class="pg"><div class="wait">読み込み中...</div></div></main>
 
 <script src="preview.js"></script>
@@ -180,10 +205,13 @@ var NAME = { MI: '男子個人戦', WI: '女子個人戦', MT: '男子団体戦'
 
 function getJson(q, pv) { return pvFetch(q, pv); }
 
-/* 係員のパスワード（運営ポータル・本部・受付で入れたもの）があれば、公開期間の外でも見られる */
-var STAFF_KEY = 'iwateIndoorStaffPw';
+/* 役員・係員のパスワードがあれば、いつでもその時点の全ページ（選手変更一覧も）を見られる */
+var PROG_KEY = 'iwateIndoorProgramPw';
+var STAGE = 'staff';   /* pre＝組合せ公開〜大会前／full＝大会の2日間／after＝大会後／staff＝役員・係員 */
 function staffPw() {
-  try { return localStorage.getItem(STAFF_KEY) || localStorage.getItem('iwateIndoorCtlPw') || localStorage.getItem('recPw') || ''; } catch (e) { return ''; }
+  try {
+    return localStorage.getItem(PROG_KEY) || localStorage.getItem('iwateIndoorStaffPw') || localStorage.getItem('iwateIndoorCtlPw') || localStorage.getItem('recPw') || '';
+  } catch (e) { return ''; }
 }
 function postJson(body) {
   return fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) })
@@ -195,7 +223,7 @@ function loadProgram() {
   if (!pw) return getJson('action=programData', {});
   return postJson({ action: 'programStaff', pw: pw }).then(function (d) {
     if (d.status === 'ok') return d;
-    try { if (localStorage.getItem(STAFF_KEY) === pw) localStorage.removeItem(STAFF_KEY); } catch (e) {}
+    try { if (localStorage.getItem(PROG_KEY) === pw) localStorage.removeItem(PROG_KEY); } catch (e) {}
     return getJson('action=programData', {});
   });
 }
@@ -208,6 +236,7 @@ function load() {
     for (i = 0; i < CODES.length; i++) jobs.push(getJson('action=progress&div=' + CODES[i], { action: 'adminPreview', div: CODES[i] }));
     return Promise.all(jobs).then(function (rs) {
       P = prog;
+      setStage(prog.stage || 'staff');
       for (i = 0; i < CODES.length; i++) { rs[i].division.code = CODES[i]; DIV[CODES[i]] = rs[i]; }
       render();
     });
@@ -216,21 +245,44 @@ function load() {
   });
 }
 
-/* 公開期間の外：お知らせと、運営用のパスワード欄だけ出す */
+function setStage(st) {
+  STAGE = st;
+  document.body.className = document.body.className.replace(/\bst-\w+/g, '').trim() + ' st-' + st;
+  if (st === 'pre' || st === 'after') BLANK_MODE = false;
+  renderToc();
+}
+
+function loginBox(lead) {
+  return '<div class="lockStaff">' + lead + '<br>' +
+    '<input id="lkPw" type="password" autocomplete="current-password" placeholder="パスワード">' +
+    ' <button onclick="staffLogin()">表示</button><div id="lkMsg"></div></div>';
+}
+
+/* 組合せの公開前：お知らせと、役員・係員用のパスワード欄だけ出す */
 function renderLocked(d) {
   document.body.classList.add('locked');
   if (d.tournament) document.getElementById('hdSub').textContent = d.tournament;
-  var msg = d.ended ? '大会プログラムの公開は終了しました（' + esc(d.to) + 'まで）。'
-    : '大会プログラムは、<b>' + esc(d.from) + '〜' + esc(d.to) + '</b> に公開します。';
-  document.getElementById('book').innerHTML = '<div class="pg"><div class="wait" style="line-height:1.9">' + msg +
-    '<br><small>進行表・組合せ・結果は、大会トップページからいつでも見られます。</small></div>' +
-    '<div class="lockStaff" style="margin-top:18px;font-size:.85rem;color:var(--muted);text-align:center">運営の方は、パスワードを入れるといつでも見られます。<br>' +
-    '<input id="lkPw" type="password" autocomplete="current-password" placeholder="パスワード" style="margin-top:6px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font-size:1rem;width:12em">' +
-    ' <button onclick="staffLogin()" style="padding:8px 14px;border:none;border-radius:8px;background:var(--main);color:#fff;font-weight:700;font-size:.95rem">表示</button>' +
-    '<div id="lkMsg" style="color:var(--red);margin-top:6px"></div></div></div>';
+  document.getElementById('book').innerHTML = '<div class="pg"><div class="wait" style="line-height:1.9">' +
+    '大会プログラムは、<b>組合せの公開（11月24日予定）</b>とともに一部を公開します。<br>全ページの公開は <b>' + esc(d.from) + '〜' + esc(d.to) + '</b> です。</div>' +
+    loginBox('役員・係員の方は、パスワードを入れるといつでも全ページを見られます。') + '</div>';
   document.getElementById('status').textContent = '';
+  bindLogin();
+}
+
+/* 公開中のページから役員・係員としてログインする */
+function showLogin() {
+  if (document.getElementById('lkPw')) return;
+  var box = document.createElement('div');
+  box.className = 'pg';
+  box.innerHTML = loginBox('役員・係員のパスワードを入れると、その時点の全ページ（選手変更一覧も）を見られます。');
+  var book = document.getElementById('book');
+  book.insertBefore(box, book.firstChild);
+  window.scrollTo(0, 0);
+  bindLogin();
+}
+function bindLogin() {
   var box = document.getElementById('lkPw');
-  if (box) box.addEventListener('keydown', function (e) { if (e.key === 'Enter') staffLogin(); });
+  if (box) { box.addEventListener('keydown', function (e) { if (e.key === 'Enter') staffLogin(); }); box.focus(); }
 }
 
 function staffLogin() {
@@ -239,12 +291,11 @@ function staffLogin() {
   document.getElementById('lkMsg').textContent = '確認しています...';
   postJson({ action: 'programStaff', pw: pw }).then(function (d) {
     if (d.status !== 'ok') { document.getElementById('lkMsg').textContent = d.message || 'パスワードが違います。'; return; }
-    try { localStorage.setItem(STAFF_KEY, pw); } catch (e) {}
+    try { localStorage.setItem(PROG_KEY, pw); } catch (e) {}
     load();
   }).catch(function (e) { document.getElementById('lkMsg').textContent = '通信できませんでした（' + e.message + '）'; });
 }
 
-/* 白紙用は表示のたびに元データを複製してから消す */
 function dataFor(code) {
   var d = DIV[code];
   return BLANK_MODE ? blankOut(JSON.parse(JSON.stringify(d))) : d;
@@ -253,21 +304,40 @@ function dataFor(code) {
 /* ============================================================
    各ページ
    ============================================================ */
-var SECTIONS = [
-  ['cover', '表紙'], ['contents', '目次・日程'], ['officials', '大会役員・競技役員'], ['youkou', '大会要項'], ['notes', '競技上の注意'],
-  ['br-MI', '男子個人戦 組合せ'], ['br-WI', '女子個人戦 組合せ'], ['br-MT', '男子団体戦 組合せ'], ['br-WT', '女子団体戦 組合せ'],
-  ['pr-MI', '進行表 男子個人戦'], ['pr-WI', '進行表 女子個人戦'], ['pr-MT', '進行表 男子団体戦'], ['pr-WT', '進行表 女子団体戦'],
-  ['pairs', '個人戦 出場ペア一覧'], ['tm-MT', '男子団体戦 出場チーム名簿'], ['tm-WT', '女子団体戦 出場チーム名簿'],
-  ['changes', '選手変更一覧'], ['history', '栄光の記録']
-];
+var TITLES = {
+  cover: '表紙', officials: '大会役員・競技役員', youkou: '大会要項', dress: '服装規定', counter: 'カウンターの見方', notes: '競技上の注意',
+  'br-MI': '男子個人戦 組合せ', 'br-WI': '女子個人戦 組合せ', 'pr-MI': '男子個人戦 進行表', 'pr-WI': '女子個人戦 進行表',
+  'br-MT': '男子団体戦 組合せ', 'br-WT': '女子団体戦 組合せ', 'pr-MT': '男子団体戦 進行表', 'pr-WT': '女子団体戦 進行表',
+  pairs: '個人戦 選手名簿', 'tm-MT': '男子団体戦 選手名簿', 'tm-WT': '女子団体戦 選手名簿', changes: '選手変更一覧', history: '栄光の記録'
+};
+var GAME = ['br-MI', 'br-WI', 'pr-MI', 'pr-WI', 'br-MT', 'br-WT', 'pr-MT', 'pr-WT'];
+/* 公開の段階ごとに出すページ（この順で並ぶ） */
+var ORDER = {
+  pre: ['cover', 'youkou', 'dress', 'counter', 'notes'].concat(GAME, ['history']),
+  full: ['cover', 'officials', 'youkou', 'dress', 'counter', 'notes'].concat(GAME, ['pairs', 'tm-MT', 'tm-WT', 'history']),
+  after: ['br-MI', 'br-WI', 'br-MT', 'br-WT', 'history'],
+  staff: ['cover', 'officials', 'youkou', 'dress', 'counter', 'notes'].concat(GAME, ['pairs', 'tm-MT', 'tm-WT', 'changes', 'history'])
+};
+function sectionsNow() { return ORDER[STAGE] || ORDER.staff; }
+function titleOf(id) {
+  if (STAGE === 'after' && id.indexOf('br-') === 0) return NAME[id.slice(3)] + ' 結果';
+  return TITLES[id];
+}
+
+/* PDF で配る資料（PDF を画像にしたページを並べる）。pages が空なら「後日掲載」 */
+var DOCS = {
+  youkou: { pdf: '../youkou.pdf', pages: ['../doc/youkou-1.png', '../doc/youkou-2.png'] },
+  dress: { pdf: '../doc/fukusou.pdf', pages: [] },
+  counter: { pdf: '../doc/counter.pdf', pages: [] }
+};
 
 function pg(id, title, body, sub) {
-  return '<section class="pg" id="' + id + '">' + (title ? '<h2><span>' + title + '</span>' + (sub ? '<small>' + sub + '</small>' : '') + '</h2>' : '') + body + '</section>';
+  return '<section class="pg" id="' + id + '" data-grp="' + id + '">' + (title ? '<h2><span>' + title + '</span>' + (sub ? '<small>' + sub + '</small>' : '') + '</h2>' : '') + body + '</section>';
 }
 
 function coverPage() {
   var f = P.info;
-  return '<section class="pg cover" id="cover"><div class="cv-top">' +
+  return '<section class="pg cover" id="cover" data-grp="cover"><a class="cv-pdf" href="#" onclick="pdfOne(\'cover\');return false">📄 PDF</a><div class="cv-top">' +
     '<span class="cv-no">PROGRAM</span>' +
     '<div class="cv-title">' + esc(f.tournament).replace('岩手県', '<br>岩手県') + '</div>' +
     '<div class="cv-sub">兼 第38回都道府県対抗全日本中学生ソフトテニス大会 岩手県代表選手二次選考会<br>兼 第35回東北中学校ソフトテニスインドア大会 予選会</div>' +
@@ -278,33 +348,13 @@ function coverPage() {
     '<div class="cv-box"><b>男子会場</b><div>' + esc(f.venueM) + '<br><small>岩手郡雫石町高前田104</small></div></div>' +
     '<div class="cv-box"><b>女子会場</b><div>' + esc(f.venueW) + '<br><small>紫波郡紫波町桜町字下川原100</small></div></div>' +
     '</div><div class="cv-foot"><div class="cv-org"><b>主催</b>　岩手県中学生ソフトテニス連盟<br><b>協賛</b>　ナガセケンコー株式会社　ヨネックス株式会社</div>' +
-    '<div class="cv-qr"><div id="qr"></div><div>最新の組合せ・結果・<br>選手変更は、この<br>二次元コードから</div></div></div></div></section>';
-}
-
-function contentsPage() {
-  var h = '<div class="toc-list">';
-  var i;
-  for (i = 2; i < SECTIONS.length; i++) h += '<a href="#' + SECTIONS[i][0] + '"><span>' + SECTIONS[i][1] + '</span><span></span></a>';
-  h += '</div>';
-  h += '<h3>大会日程</h3><div class="scroll"><table class="t"><thead><tr><th>時刻</th><th>11月28日（土）男女個人戦</th><th>11月29日（日）男女団体戦</th></tr></thead><tbody>' +
-    '<tr><td class="n">7:30</td><td colspan="2">開場</td></tr>' +
-    '<tr><td class="n">7:35〜8:00</td><td colspan="2">受付（参加料の納入）</td></tr>' +
-    '<tr><td class="n">7:45〜</td><td>練習 7:45〜8:30（15分×3ローテ）</td><td>練習 7:45〜8:25（5分×8ローテ）</td></tr>' +
-    '<tr><td class="n">8:25</td><td colspan="2">監督会議</td></tr>' +
-    '<tr><td class="n">8:40</td><td>―</td><td>1回戦オーダー提出の締切</td></tr>' +
-    '<tr><td class="n">8:45〜</td><td colspan="2">開始式</td></tr>' +
-    '<tr><td class="n">9:00〜</td><td colspan="2">競技開始（終了予定 17:00）</td></tr>' +
-    '<tr><td class="n">競技終了後</td><td colspan="2">表彰式</td></tr></tbody></table></div>' +
-    '<p class="foot">両会場とも同じ日程です。各試合の予定時刻は進行表をご覧ください（当日は試合の進み具合に合わせて自動で更新されます）。</p>';
-  h += '<h3>会場</h3><div class="scroll"><table class="t"><tbody>' +
-    '<tr><th>男子会場</th><td>' + esc(P.info.venueM) + '（2面）　〒020-0543 岩手郡雫石町高前田104　TEL 019-692-5030</td></tr>' +
-    '<tr><th>女子会場</th><td>' + esc(P.info.venueW) + '（2面）　〒028-3307 紫波郡紫波町桜町字下川原100　TEL 019-676-2650</td></tr></tbody></table></div>';
-  return pg('contents', '目次・大会日程', h);
+    '<div class="cv-qr"><div id="qr"></div><div>最新の組合せ・<br>結果は、この<br>二次元コードから</div></div></div></div></section>';
 }
 
 function officialsPage() {
   var rows = P.officials || [];
   if (!rows.length) return pg('officials', '大会役員・競技役員', '<div class="later">後日掲載します</div>');
+  var pdf = '<a href="#" onclick="pdfOne(\'officials\');return false">📄 PDF</a>';
   var groups = [], by = {};
   var i, k;
   for (i = 0; i < rows.length; i++) {
@@ -325,13 +375,50 @@ function officialsPage() {
     }
     h += '</div>';
   }
-  return pg('officials', '大会役員・競技役員', h);
+  return pg('officials', '大会役員・競技役員', h, pdf);
 }
 
-function youkouPages() {
-  return '<section class="pg yk" id="youkou"><h2><span>大会要項</span><small><a href="youkou.pdf" target="_blank">PDFで開く</a></small></h2><img src="img/youkou-1.png" alt="大会要項 1ページ"></section>' +
-    '<section class="pg yk"><h2><span>大会要項（2）</span></h2><img src="img/youkou-2.png" alt="大会要項 2ページ"></section>';
+function docPages(id) {
+  var d = DOCS[id];
+  if (!d.pages.length) return pg(id, TITLES[id], '<div class="later">後日掲載します</div>');
+  var h = '';
+  var i;
+  for (i = 0; i < d.pages.length; i++) {
+    h += '<section class="pg yk" data-grp="' + id + '"' + (i ? '' : ' id="' + id + '"') + '><h2><span>' + TITLES[id] + (i ? '（' + (i + 1) + '）' : '') + '</span>' +
+      (i ? '' : '<small><a href="' + d.pdf + '" target="_blank" download>📄 PDF</a></small>') + '</h2>' +
+      '<img src="' + d.pages[i] + '" alt="' + TITLES[id] + ' ' + (i + 1) + 'ページ"></section>';
+  }
+  return h;
 }
+
+/* 1つの資料だけをPDFにする（印刷の画面で「PDFに保存」） */
+function pdfOne(id) {
+  var secs = document.querySelectorAll('.pg[data-grp="' + id + '"]');
+  if (!secs.length) return;
+  var i;
+  for (i = 0; i < secs.length; i++) secs[i].classList.add('pt');
+  secs[0].classList.add('pt1');
+  document.body.classList.add('print-one');
+  showPdfTip(true);
+}
+function pdfAll() { showPdfTip(false); }
+function showPdfTip(one) {
+  var el = document.getElementById('pdfTip');
+  el.querySelector('.pt-what').textContent = one ? 'このページ' : '全ページ' + (STAGE === 'full' || STAGE === 'staff' ? '（' + (BLANK_MODE ? '白紙' : '結果入り') + '）' : '');
+  el.hidden = false;
+}
+function closePdfTip() {
+  document.getElementById('pdfTip').hidden = true;
+  document.body.classList.remove('print-one');
+  var secs = document.querySelectorAll('.pg.pt');
+  var i;
+  for (i = 0; i < secs.length; i++) secs[i].classList.remove('pt', 'pt1');
+}
+function doPrint() {
+  document.getElementById('pdfTip').hidden = true;
+  setTimeout(function () { window.print(); }, 50);
+}
+window.addEventListener('afterprint', closePdfTip);
 
 function notesPage() {
   var h = '<ol class="notes">' +
@@ -355,7 +442,7 @@ function notesPage() {
 function bracketPage(code) {
   var d = dataFor(code);
   var body = d.matches.length ? '<div class="br">' + (code.charAt(1) === 'T' ? teamPage(d) : indivPage(d)) + '</div>' : '<div class="wait">' + NAME[code] + 'の組合せは、11月24日（火）に掲載します。</div>';
-  return '<section class="pg" id="br-' + code + '">' + (d.matches.length ? '' : '<h2><span>' + NAME[code] + ' 組合せ</span></h2>') + body + '</section>';
+  return '<section class="pg" id="br-' + code + '" data-grp="br-' + code + '">' + (d.matches.length ? '' : '<h2><span>' + NAME[code] + ' 組合せ</span></h2>') + body + '</section>';
 }
 
 function sideText(s, m, which) {
@@ -413,7 +500,7 @@ function pairsPage() {
     }
     h += '</tbody></table></div>';
   }
-  return pg('pairs', '個人戦 出場ペア一覧', h);
+  return pg('pairs', '個人戦 選手名簿', h);
 }
 
 function pairCell(p, k) {
@@ -424,7 +511,7 @@ function pairCell(p, k) {
 
 function teamsPage(code) {
   var list = (P.teams[code] || []).slice().sort(function (a, b) { return slotKey(a.slot) < slotKey(b.slot) ? -1 : slotKey(a.slot) > slotKey(b.slot) ? 1 : (dOrd(a.district) - dOrd(b.district) || String(a.name).localeCompare(String(b.name), 'ja')); });
-  if (!list.length) return pg('tm-' + code, NAME[code] + ' 出場チーム名簿', '<div class="wait">出場チームは後日掲載します。</div>');
+  if (!list.length) return pg('tm-' + code, NAME[code] + ' 選手名簿', '<div class="wait">出場チームは後日掲載します。</div>');
   var h = '<div class="teams">';
   var i, j, t, p;
   for (i = 0; i < list.length; i++) {
@@ -441,7 +528,7 @@ function teamsPage(code) {
     h += '</ol></div>';
   }
   h += '</div><p class="foot">左上の数字は組合せ番号、「監」は監督（ベンチ入り指導者）です。</p>';
-  return pg('tm-' + code, NAME[code] + ' 出場チーム名簿', h, list.length + 'チーム');
+  return pg('tm-' + code, NAME[code] + ' 選手名簿', h, list.length + 'チーム');
 }
 
 function changesPage() {
@@ -488,29 +575,48 @@ function historyPage() {
 }
 
 /* ============================================================ */
+function makeSection(id) {
+  var c = id.slice(3);
+  if (id === 'cover') return coverPage();
+  if (id === 'officials') return officialsPage();
+  if (DOCS[id]) return docPages(id);
+  if (id === 'notes') return notesPage();
+  if (id === 'pairs') return pairsPage();
+  if (id === 'changes') return changesPage();
+  if (id === 'history') return historyPage();
+  if (id.indexOf('br-') === 0) return bracketPage(c);
+  if (id.indexOf('pr-') === 0) return progressPage(c);
+  if (id.indexOf('tm-') === 0) return teamsPage(c);
+  return '';
+}
+
 function render() {
   document.body.classList.remove('locked');
   var y = window.scrollY;
   document.getElementById('hdSub').textContent = P.info.tournament;
-  var h = coverPage() + contentsPage() + officialsPage() + youkouPages() + notesPage();
+  var list = sectionsNow();
+  var h = '';
   var i;
-  for (i = 0; i < CODES.length; i++) h += bracketPage(CODES[i]);
-  for (i = 0; i < CODES.length; i++) h += progressPage(CODES[i]);
-  h += pairsPage() + teamsPage('MT') + teamsPage('WT') + changesPage() + historyPage();
+  for (i = 0; i < list.length; i++) h += makeSection(list[i]);
   document.getElementById('book').innerHTML = h;
   window.scrollTo(0, y);
   var qr = document.getElementById('qr');
   var url = (P.info.site || location.href.replace(/[^\/]*$/, '')) + 'program.html';
   if (qr && typeof QRCode === 'function') new QRCode(qr, { text: url, width: 192, height: 192, correctLevel: QRCode.CorrectLevel.M });
   var now = new Date();
-  document.getElementById('status').textContent = (BLANK_MODE ? '白紙（記入用）の表示です。結果・選手変更は入りません。' : '結果入りの表示です（1分ごとに自動更新）。') +
-    '　' + now.getHours() + ':' + ('0' + now.getMinutes()).slice(-2) + ' 時点。「印刷」でA4冊子の形で印刷できます。';
+  var t = now.getHours() + ':' + ('0' + now.getMinutes()).slice(-2) + ' 時点。';
+  var msg = STAGE === 'pre' ? '大会前の公開です（大会役員・選手名簿は ' + (P.from || '大会当日') + ' から）。'
+    : STAGE === 'after' ? '大会は終了しました。結果と栄光の記録を載せています。'
+    : (BLANK_MODE ? '白紙（記入用）の表示です。結果・選手変更は入りません。' : '結果入りの表示です（1分ごとに自動更新）。');
+  document.getElementById('status').innerHTML = esc(msg + '　' + t + '「📥 全ページPDF」で、今の表示のまま全ページを1つのPDFにできます。') +
+    (STAGE === 'staff' ? '　<b>役員・係員の表示</b>' : '　<a href="#" onclick="showLogin();return false">役員・係員の方</a>');
 }
 
 function renderToc() {
   var h = '';
+  var list = sectionsNow();
   var i;
-  for (i = 1; i < SECTIONS.length; i++) h += '<a href="#' + SECTIONS[i][0] + '">' + SECTIONS[i][1] + '</a>';
+  for (i = 0; i < list.length; i++) if (list[i] !== 'cover') h += '<a href="#' + list[i] + '">' + titleOf(list[i]) + '</a>';
   document.getElementById('toc').innerHTML = h;
 }
 
@@ -522,7 +628,6 @@ function setMode(blank) {
   if (P) render();
 }
 
-renderToc();
 setMode(BLANK_MODE);
 load();
 setInterval(function () { if (!BLANK_MODE && document.visibilityState === 'visible' && !document.getElementById('lkPw')) load(); }, 60000);
