@@ -28,6 +28,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:#111;line-
 .pg{background:#fff;border-radius:8px;box-shadow:0 1px 8px rgba(0,0,0,.08);padding:22px 22px;margin-bottom:16px;position:relative}
 .pg h2{font-size:1.2rem;font-weight:900;color:var(--deep);border-bottom:3px solid var(--main);padding-bottom:4px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .pg h2 small{font-size:.72rem;font-weight:500;color:var(--muted)}
+.pg h2.hcap{display:none}
 .pg h3{font-size:.98rem;font-weight:900;color:var(--main);margin:14px 0 6px;border-left:4px solid var(--main);padding-left:8px}
 .pg p{font-size:.88rem}
 .later{border:2px dashed var(--line);border-radius:10px;padding:40px 16px;text-align:center;color:var(--muted);font-size:.95rem}
@@ -160,6 +161,20 @@ ol.notes ol.sub li{padding:1px 0}
   #notes ol.notes>li{padding:3px 0 3px 28px}
   #notes ol.notes>li::before{top:4px}
   table.t th,table.t td{padding:2.5px 4px}
+  #history>h2{display:none}
+  #history .pg h2.hcap,#history h2.hcap{display:flex;margin-bottom:3mm}
+  #history .hpg+.hpg{break-before:page;page-break-before:always}
+  #history h3{break-after:avoid;page-break-after:avoid;margin:0 0 1.5mm}
+  .scroll{overflow:visible;padding-right:1px}
+  #history table.ht{font-size:8.3pt}
+  #history .hk-i table.ht th,#history .hk-i table.ht td{padding:3.4px 4px;line-height:1.35}
+  #history .hteam{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:5mm;align-items:start}
+  #history .hteam table.ht{table-layout:fixed;width:100%;font-size:8.6pt}
+  #history .hteam table.ht th:nth-child(1){width:8%}
+  #history .hteam table.ht th:nth-child(2){width:11%}
+  #history .hteam table.ht th,#history .hteam table.ht td{padding:2.2px 2.5px;white-space:nowrap;overflow:hidden}
+  #history .hteam table.ht td{height:8mm}
+  #history .scroll table.t{min-width:0}
   .teams{grid-template-columns:repeat(4,1fr);gap:5px}
   .tm{font-size:8pt}
   tr{break-inside:avoid}
@@ -560,8 +575,14 @@ function changesPage() {
   return pg('changes', '選手変更一覧', h);
 }
 
+/* 回 → 年度の表記（第1・2回＝昭和、第3〜32回＝平成、第33回〜＝令和。1桁は全角） */
+function histYear_(n) {
+  var z = function (v) { return v < 10 ? String.fromCharCode(0xFF10 + v) : String(v); };
+  return n <= 2 ? 'S' + (n + 61) : n <= 32 ? 'H' + z(n - 2) : 'R' + z(n - 32);
+}
+
 function historyPage() {
-  var rows = P.history || [];
+  var rows = (P.history || []).slice();
   if (!rows.length) return pg('history', '栄光の記録', '<div class="later">後日掲載します</div>');
   var kinds = [], by = {};
   var i, k;
@@ -570,18 +591,34 @@ function historyPage() {
     if (!by[k]) { by[k] = []; kinds.push(k); }
     by[k].push(rows[i]);
   }
-  var h = '';
+  /* 今大会の回は、シートに行がなくても空欄の行を出す（結果はあとでシートに入れる） */
+  var m = /第\s*(\d+)\s*回/.exec((P.info && P.info.tournament) || '');
+  var cur = m ? parseInt(m[1], 10) : 0;
+  var j;
+  if (cur) {
+    for (i = 0; i < kinds.length; i++) {
+      var has = false;
+      for (j = 0; j < by[kinds[i]].length; j++) if (histNo_(by[kinds[i]][j]['回']) === cur) has = true;
+      if (!has) by[kinds[i]].push({ '回': String(cur), '年度': histYear_(cur), '種別': kinds[i] });
+    }
+  }
+  /* 印刷：個人戦は種別ごとに1ページ、団体戦は男女を左右に並べて1ページ。どのページにも「栄光の記録」 */
+  var cap = '<h2 class="hcap"><span>栄光の記録</span></h2>';
+  var indiv = '', team = '';
   for (i = 0; i < kinds.length; i++) {
     var list = by[kinds[i]].sort(function (a, b) { return histNo_(a['回']) - histNo_(b['回']); });  /* 上が古い回 */
-    h += '<h3>' + esc(kinds[i]) + '</h3><div class="scroll"><table class="t"><thead><tr><th class="c">回</th><th>年度</th><th>優勝</th><th>準優勝</th><th>3位</th><th>3位</th></tr></thead><tbody>';
-    var j, r;
+    var isTeam = kinds[i].indexOf('団体') >= 0;
+    var t = '<div class="hk ' + (isTeam ? 'hk-t' : 'hk-i') + '"><h3>' + esc(kinds[i]) + '</h3><div class="scroll"><table class="t ht"><thead><tr><th class="c">回</th><th class="c">年度</th><th>優勝</th><th>準優勝</th><th>3位</th><th>3位</th></tr></thead><tbody>';
+    var r;
     for (j = 0; j < list.length; j++) {
       r = list[j];
-      h += '<tr><td class="c n">' + esc(r['回']) + '</td><td class="n">' + esc(r['年度']) + '</td><td>' + esc(r['優勝']) + '</td><td>' + esc(r['準優勝']) + '</td><td>' + esc(r['3位']) + '</td><td>' + esc(r['3位（2）']) + '</td></tr>';
+      t += '<tr><td class="c n">' + esc(r['回']) + '</td><td class="c n">' + esc(r['年度']) + '</td><td>' + esc(r['優勝'] || '') + '</td><td>' + esc(r['準優勝'] || '') + '</td><td>' + esc(r['3位'] || '') + '</td><td>' + esc(r['3位（2）'] || '') + '</td></tr>';
     }
-    h += '</tbody></table></div>';
+    t += '</tbody></table></div></div>';
+    if (isTeam) team += t; else indiv += '<div class="hpg">' + cap + t + '</div>';
   }
-  h += '<p class="foot">過去の大会の記録を掲載しています。掲載について申し出がある場合は、連盟（競技委員長）までご連絡ください。</p>';
+  var note = '<p class="foot">過去の大会の記録を掲載しています。掲載について申し出がある場合は、岩手県中学生ソフトテニス連盟までご連絡ください。</p>';
+  var h = indiv + (team ? '<div class="hpg">' + cap + '<div class="hteam">' + team + '</div>' + note + '</div>' : note);
   return pg('history', '栄光の記録', h);
 }
 /* 回の並べ替え用（全角数字の「１」なども数として扱う） */
