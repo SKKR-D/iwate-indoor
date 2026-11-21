@@ -116,7 +116,13 @@ ol.notes ol.sub li{padding:1px 0}
 .tm li.co{background:#f6f8f6;font-weight:700}
 .tm li.co span:first-child{color:var(--main)}
 /* 栄光の記録・役員 */
-.off{display:grid;grid-template-columns:1fr 1fr;gap:0 18px}
+.ofg{margin-bottom:6px}
+.ofg h3{margin-top:12px}
+.ofr{display:flex;gap:14px;align-items:baseline;padding:5px 2px;border-bottom:1px solid var(--line)}
+.ofr .role{flex:none;width:8.5em;text-align:justify;text-align-last:justify;font-weight:700;color:var(--main);font-size:.9rem}
+.ofr .names{display:flex;flex-wrap:wrap;gap:2px 0;flex:1}
+.ofr .nm{display:inline-block;min-width:7.2em;font-size:.95rem;white-space:nowrap;padding-right:.6em}
+.ofr .nm small{display:block;font-size:.7rem;color:var(--muted)}
 .foot{font-size:.74rem;color:var(--muted);margin-top:10px}
 @media (max-width:640px){
   .pg{padding:16px 12px}
@@ -124,7 +130,9 @@ ol.notes ol.sub li{padding:1px 0}
   .cv-word{font-size:1.7rem;letter-spacing:.2em;padding-left:.2em}
   .scroll table.t{min-width:600px}
   .prog td.vs,.prog td.ref,.prog td.n{white-space:nowrap}
-  .cv-grid,.off{grid-template-columns:1fr}
+  .cv-grid{grid-template-columns:1fr}
+  .ofr .role{width:7em;font-size:.82rem}
+  .ofr .nm{min-width:6.4em;font-size:.9rem}
   .teams{grid-template-columns:repeat(2,1fr)}
   .toc-list{columns:1}
 }
@@ -323,8 +331,8 @@ function titleOf(id) {
 /* PDF で配る資料（PDF を画像にしたページを並べる）。pages が空なら「後日掲載」 */
 var DOCS = {
   youkou: { pdf: 'youkou.pdf', pages: ['doc/youkou-1.png', 'doc/youkou-2.png'] },
-  dress: { pdf: 'doc/fukusou.pdf', pages: [] },
-  counter: { pdf: 'doc/counter.pdf', pages: [] }
+  dress: { pdf: 'doc/fukusou.pdf', pages: ['doc/fukusou-1.png'] },
+  counter: { pdf: 'doc/counter.pdf', pages: ['doc/counter-1.png'] }
 };
 
 function pg(id, title, body, sub) {
@@ -349,28 +357,34 @@ function coverPage() {
 
 function officialsPage() {
   var rows = P.officials || [];
+  var pdf = '<a href="doc/officials.pdf" target="_blank" download>📄 PDF</a>';
   if (!rows.length) return pg('officials', '大会役員・競技役員', '<div class="later">後日掲載します</div>');
-  var pdf = '<a href="#" onclick="pdfOne(\'officials\');return false">📄 PDF</a>';
+  /* 区分ごとに見出し、同じ役職が続く人は1行にまとめる（役職は均等割り、氏名はそろえて並べる） */
   var groups = [], by = {};
-  var i, k;
+  var i, k, g, r;
   for (i = 0; i < rows.length; i++) {
     k = rows[i]['区分'] || '役員';
     if (!by[k]) { by[k] = []; groups.push(k); }
-    by[k].push(rows[i]);
+    g = by[k];
+    r = rows[i];
+    if (g.length && g[g.length - 1].role === r['役職']) g[g.length - 1].names.push(r);
+    else g.push({ role: r['役職'], names: [r] });
   }
   var h = '';
+  var j, n;
   for (i = 0; i < groups.length; i++) {
-    h += '<h3>' + esc(groups[i]) + '</h3><div class="off">';
-    var half = Math.ceil(by[groups[i]].length / 2);
-    var cols = [by[groups[i]].slice(0, half), by[groups[i]].slice(half)];
-    var c, j;
-    for (c = 0; c < 2; c++) {
-      h += '<table class="t"><tbody>';
-      for (j = 0; j < cols[c].length; j++) h += '<tr><th>' + esc(cols[c][j]['役職']) + '</th><td>' + esc(cols[c][j]['氏名']) + '</td><td class="sub">' + esc(cols[c][j]['所属']) + '</td></tr>';
-      h += '</tbody></table>';
+    h += '<div class="ofg"><h3>' + esc(groups[i]) + '</h3>';
+    for (j = 0; j < by[groups[i]].length; j++) {
+      g = by[groups[i]][j];
+      h += '<div class="ofr"><span class="role">' + esc(g.role) + '</span><span class="names">';
+      for (n = 0; n < g.names.length; n++) {
+        h += '<span class="nm">' + esc(g.names[n]['氏名']) + (g.names[n]['所属'] ? '<small>' + esc(g.names[n]['所属']) + '</small>' : '') + '</span>';
+      }
+      h += '</span></div>';
     }
     h += '</div>';
   }
+  h += '<p class="foot">式次第は、「📄 PDF」（大会役員・競技役員と同じページ）に載っています。</p>';
   return pg('officials', '大会役員・競技役員', h, pdf);
 }
 
