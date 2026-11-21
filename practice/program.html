@@ -105,6 +105,23 @@ ol.notes ol.sub li{padding:1px 0}
 .prog .win{font-weight:900}
 .prog .sub{color:var(--muted);font-size:.72rem}
 .prog td.ref{font-size:.74rem;color:#444}
+.pcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+.pch{font-weight:900;color:#fff;background:var(--main);padding:4px 10px;border-radius:6px 6px 0 0;font-size:.9rem}
+table.prog2{width:100%;border-collapse:collapse;font-size:.8rem}
+table.prog2 th{background:var(--soft);color:var(--deep);font-size:.7rem;padding:3px 5px;border:1px solid var(--line);text-align:left;white-space:nowrap}
+table.prog2 td{padding:4px 5px;border:1px solid #d6ded8;vertical-align:top}
+.prog2 td.no{white-space:nowrap;width:5.6em}
+.prog2 td.no b{display:block;font-size:.82rem}
+.prog2 td.no .st{display:block;font-size:.74rem;color:#444}
+.prog2 td.vs .rd{display:block;font-size:.68rem;color:var(--muted)}
+.prog2 td.vs div{line-height:1.45}
+.prog2 td.rf{width:9.5em;font-size:.72rem;color:#444}
+.prog2 td.rf .ref{display:block}
+.prog2 td.rf .rs{display:block;font-size:.85rem;color:#111;margin-top:2px}
+.prog2 tr.done td{color:#555}
+.prog2 .win{font-weight:900}
+.prog2 .sub{color:var(--muted);font-size:.68rem}
+@media(max-width:700px){.pcols{grid-template-columns:1fr}}
 .court{display:inline-block;min-width:20px;text-align:center;border-radius:5px;background:var(--main);color:#fff;font-weight:900;font-size:.72rem}
 /* チーム名簿 */
 .teams{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
@@ -183,6 +200,24 @@ ol.notes ol.sub li{padding:1px 0}
   .tm{font-size:8pt}
   tr{break-inside:avoid}
   table.prog{font-size:7.8pt}
+  .pcols{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;gap:4mm}
+  .pch{font-size:9pt;padding:1.2mm 3mm;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  table.prog2{font-size:7.6pt}
+  table.prog2 th{font-size:7pt;padding:1px 3px}
+  table.prog2 td{padding:1.4px 3px;line-height:1.3}
+  .prog2 td.no b{font-size:7.6pt}
+  .prog2 td.no .st,.prog2 td.rf{font-size:6.9pt}
+  .prog2 td.vs .rd{font-size:6.4pt}
+  .prog2 td.rf .rs{font-size:7.8pt}
+  .prog2 tr{break-inside:avoid}
+  .prog2 td.rf{width:27%}
+  .prog2 td.no{width:15%}
+  .pcols.roomy table.prog2{font-size:9pt}
+  .pcols.roomy table.prog2 td{padding:2.6mm 2mm;line-height:1.4}
+  .pcols.roomy .prog2 td.no b{font-size:9pt}
+  .pcols.roomy .prog2 td.no .st,.pcols.roomy .prog2 td.rf{font-size:8pt}
+  .pcols.roomy .prog2 td.vs .rd{font-size:7.4pt}
+  .pcols.roomy .prog2 td.rf .rs{font-size:9.5pt}
   table.prog th,table.prog td{padding:1.5px 4px;line-height:1.35}
   table.prog td.vs,table.prog td.ref{white-space:nowrap}
   table.prog td.vs div{display:inline}
@@ -483,25 +518,38 @@ function sideText(s, m, which) {
 function progressPage(code) {
   var d = dataFor(code);
   if (!d.matches.length) return pg('pr-' + code, '進行表　' + NAME[code], '<div class="wait">進行表は、組合せと同じく11月24日（火）に掲載します。</div>');
-  var ms = d.matches.slice().sort(function (a, b) { return (a.court < b.court ? -1 : a.court > b.court ? 1 : 0) || a.seq - b.seq; });
-  var h = '<div class="scroll"><table class="t prog"><thead><tr><th class="c">No.</th><th class="c">コート</th><th>予定</th><th>回戦</th><th>対戦</th><th>審判</th><th>結果</th></tr></thead><tbody>';
-  var i, m, res;
+  /* Aコートと Bコートを左右2列に並べる（スマートフォンでは上下）。2面展開の試合は両方の列に出す */
+  var ms = d.matches.slice().sort(function (a, b) { return a.seq - b.seq; });
+  var cols = { A: [], B: [] };
+  var i, m;
   for (i = 0; i < ms.length; i++) {
     m = ms[i];
     if (m.note === '不戦勝') continue;
-    res = '';
+    if (m.two) { cols.A.push(m); cols.B.push(m); } else (cols[m.court] || cols.A).push(m);
+  }
+  var row = function (m) {
+    var res = '';
     if (!BLANK_MODE) {
       if (m.state === '終了') res = esc(m.score || '');
       else if (m.state === '試合中') res = '<span style="color:var(--red)">試合中</span>';
       else if (m.state === '呼出') res = '<span style="color:#7a5d00">呼出中</span>';
     }
-    h += '<tr class="' + (!BLANK_MODE && m.state === '終了' ? 'done' : '') + '"><td class="c n">' + m.no + '</td><td class="c"><span class="court">' + (m.two ? 'A・B' : esc(m.court)) + '</span></td>' +
-      '<td class="st">' + esc(BLANK_MODE ? (m.plan || '') : (m.start || m.plan || '')) + '</td><td class="n">' + esc(m.round) + '</td>' +
-      '<td class="vs"><div>' + sideText(m.left, m, 'L') + '</div><div>' + sideText(m.right, m, 'R') + '</div></td>' +
-      '<td class="ref">' + (m.referee ? esc(m.referee.label) + (m.referee.sub ? ' <span class="sub">' + esc(m.referee.sub) + '</span>' : '') : '') + '</td>' +
-      '<td class="rs">' + res + '</td></tr>';
+    return '<tr class="' + (!BLANK_MODE && m.state === '終了' ? 'done' : '') + '">' +
+      '<td class="no"><b>' + (m.no ? '第' + m.no + '試合' : '') + '</b><span class="st">' + esc(BLANK_MODE ? (m.plan || '') : (m.start || m.plan || '')) + '</span></td>' +
+      '<td class="vs"><span class="rd">' + esc(m.round) + (m.two ? '（2面展開）' : '') + '</span><div>' + sideText(m.left, m, 'L') + '</div><div>' + sideText(m.right, m, 'R') + '</div></td>' +
+      '<td class="rf"><span class="ref">' + (m.referee ? esc(m.referee.label) + (m.referee.sub ? ' <span class="sub">' + esc(m.referee.sub) + '</span>' : '') : '') + '</span>' +
+      (res ? '<b class="rs">' + res + '</b>' : '') + '</td></tr>';
+  };
+  var roomy = Math.max(cols.A.length, cols.B.length) <= 10;
+  var h = '<div class="pcols' + (roomy ? ' roomy' : '') + '">';
+  var c;
+  for (c = 0; c < 2; c++) {
+    var key = c ? 'B' : 'A';
+    h += '<div class="pcol"><div class="pch">' + key + 'コート</div><table class="t prog2"><thead><tr><th>試合・予定</th><th>回戦・対戦</th><th>審判・結果</th></tr></thead><tbody>';
+    for (i = 0; i < cols[key].length; i++) h += row(cols[key][i]);
+    h += '</tbody></table></div>';
   }
-  h += '</tbody></table></div><p class="foot">' + esc(d.date) + '　' + esc(d.venue) + '　予定時刻は目安です。当日の最新の時刻・コートは会場掲示の進行表（二次元コード）で確認してください。</p>';
+  h += '</div><p class="foot">' + esc(d.date) + '　' + esc(d.venue) + '　予定時刻は目安です。当日の最新の時刻・コートは会場掲示の進行表（二次元コード）で確認してください。</p>';
   return pg('pr-' + code, '進行表　' + NAME[code], h, BLANK_MODE ? '' : '終了 ' + d.matches.filter(function (x) { return x.state === '終了' && x.note !== '不戦勝'; }).length + '試合');
 }
 
