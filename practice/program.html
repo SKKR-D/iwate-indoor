@@ -8,7 +8,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>大会プログラム｜第40回岩手県中学校インドアソフトテニス大会</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Serif+JP:wght@700;900&family=Playfair+Display:ital,wght@1,700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -45,6 +45,39 @@ body.st-pre #mLive,body.st-pre #mBlank,body.st-after #mLive,body.st-after #mBlan
 .status a{color:inherit}
 .cover{position:relative}
 .cv-pdf{position:absolute;top:10px;right:12px;font-size:.78rem;font-weight:700;color:#fff;background:rgba(0,0,0,.25);padding:3px 9px;border-radius:12px;text-decoration:none;z-index:2}
+.cover{padding:0;overflow:hidden}
+.cv-hero{position:relative;container-type:inline-size;aspect-ratio:1144/1385;overflow:hidden;color:#fff;background:#0b1a2e}
+.cv-ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cv-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,14,30,.62) 0%,rgba(5,14,30,0) 20%,rgba(5,14,30,0) 56%,rgba(4,20,36,.5) 72%,rgba(3,12,26,.9) 100%)}
+.cv-no{position:absolute;left:5cqw;top:3.6cqw;font-family:'Noto Serif JP',serif;font-weight:900;line-height:1;text-shadow:0 .3cqw 1.4cqw rgba(0,0,0,.6)}
+.cv-no span{font-size:5.2cqw;vertical-align:.4em}
+.cv-no b{font-size:16cqw;color:#f3d36b;margin:0 .4cqw;letter-spacing:-.02em}
+.cv-lbl{position:absolute;right:5cqw;top:5cqw;text-align:right;text-shadow:0 .3cqw 1.2cqw rgba(0,0,0,.6)}
+.cv-lbl small{display:block;font-size:2.1cqw;letter-spacing:.5em;font-weight:700;opacity:.9}
+.cv-lbl b{display:inline-block;font-family:'Noto Serif JP',serif;font-weight:900;font-size:5.2cqw;letter-spacing:.12em;border-bottom:.5cqw solid #f3d36b;padding-bottom:.6cqw;margin-top:.8cqw}
+.cv-who{position:absolute;right:0;top:27%;width:50cqw;padding:1.6cqw 5cqw 1.6cqw 0;background:linear-gradient(to left,rgba(5,14,30,.6),rgba(5,14,30,.35) 70%,rgba(5,14,30,0));text-align:right;font-size:max(2.25cqw,9px);line-height:1.6;text-shadow:0 0 .9cqw rgba(0,0,0,.9),0 0 .3cqw rgba(0,0,0,.9)}
+.cv-who .k{font-size:max(1.7cqw,7px);letter-spacing:.4em;opacity:.85}
+.cv-who .pn{font-family:'Noto Serif JP',serif;font-weight:900;font-size:5.6cqw;line-height:1.25;letter-spacing:.06em}
+.cv-who .pn small{font-size:2.4cqw;margin-left:.6cqw;letter-spacing:0}
+.cv-who .ach{display:inline-block;border:.3cqw solid #f3d36b;color:#f3d36b;font-weight:900;padding:.2cqw 1.4cqw;margin:.8cqw 0 .4cqw}
+.cv-ttl{position:absolute;left:5cqw;right:5cqw;bottom:4.2cqw}
+.cv-pre{font-size:4.6cqw;font-weight:900;letter-spacing:.14em;text-shadow:0 .3cqw 1cqw rgba(0,0,0,.7)}
+.cv-main{font-weight:900;font-size:10.6cqw;line-height:1.12;letter-spacing:-.01em;margin-top:.6cqw;color:#fff;-webkit-text-stroke:.5cqw #0b3d2c;paint-order:stroke fill;text-shadow:.7cqw .7cqw 0 #19a974,0 0 2.4cqw rgba(0,0,0,.55)}
+.cv-main .ac{color:#f3d36b}
+.cv-script{position:absolute;right:0;bottom:23.5cqw;font-family:'Playfair Display','Times New Roman',serif;font-style:italic;font-weight:700;font-size:7cqw;color:#f3d36b;transform:rotate(-6deg);transform-origin:right bottom;text-shadow:0 .3cqw 1.2cqw rgba(0,0,0,.7);white-space:nowrap;opacity:.96}
+.cv-sub{font-size:max(1.85cqw,8.5px);line-height:1.6;margin-top:1.8cqw;opacity:.92;text-shadow:0 0 .6cqw rgba(0,0,0,.9)}
+.cv-info{padding:14px 20px 16px}
+.cv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.cv-box{border-left:3px solid var(--main);padding:1px 0 1px 10px}
+.cv-box b{display:block;color:var(--main);font-size:.74rem}
+.cv-box div{font-size:.9rem;font-weight:700;line-height:1.45}
+.cv-box div small{display:block;font-weight:500;color:var(--muted);font-size:.72rem}
+.cv-foot{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-top:12px;flex-wrap:wrap}
+.cv-org{font-size:.82rem;line-height:1.8}
+.cv-org b{color:var(--main)}
+.cv-qr{display:flex;gap:10px;align-items:center;font-size:.72rem;color:var(--muted);line-height:1.5}
+.cv-qr #qr{width:84px;height:84px;flex:none}
+.cv-qr #qr img,.cv-qr #qr canvas{width:84px!important;height:84px!important}
 h2 small a{text-decoration:none;font-weight:700}
 .pdftip{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:50;display:flex;align-items:center;justify-content:center;padding:16px}
 .pdftip[hidden]{display:none}
@@ -64,24 +97,6 @@ table.t td.n{white-space:nowrap}
 .chg{white-space:nowrap;display:inline-block;font-size:.62rem;font-weight:900;color:#fff;background:var(--red);border-radius:4px;padding:0 4px;margin-left:3px;vertical-align:1px}
 .was{display:block;font-size:.68rem;color:var(--red)}
 /* 表紙 */
-.cover{padding:0;overflow:hidden}
-.cv-top{background:linear-gradient(160deg,var(--deep),var(--main) 70%,#2c6a45);color:#fff;padding:46px 28px 34px;text-align:center}
-.cv-no{display:inline-block;border:1.5px solid rgba(255,255,255,.6);border-radius:20px;padding:2px 16px;font-size:.8rem;letter-spacing:.2em}
-.cv-title{font-family:'Noto Serif JP',serif;font-weight:900;font-size:2.05rem;line-height:1.35;margin:16px 0 10px;letter-spacing:.04em}
-.cv-sub{font-size:.8rem;opacity:.92;line-height:1.7}
-.cv-word{font-family:'Noto Serif JP',serif;font-size:3rem;letter-spacing:.5em;color:#f3d36b;margin-top:14px;padding-left:.5em}
-.cv-body{padding:24px 28px 26px}
-.cv-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.cv-box{border:1.5px solid var(--line);border-radius:10px;padding:12px 14px}
-.cv-box b{display:block;color:var(--main);font-size:.8rem;margin-bottom:4px}
-.cv-box div{font-size:.95rem;font-weight:700;line-height:1.6}
-.cv-box div small{font-weight:500;color:var(--muted);font-size:.78rem}
-.cv-foot{display:flex;gap:16px;align-items:center;justify-content:space-between;margin-top:18px;flex-wrap:wrap}
-.cv-org{font-size:.85rem;line-height:1.8}
-.cv-org b{color:var(--main)}
-.cv-qr{display:flex;gap:10px;align-items:center;font-size:.74rem;color:var(--muted);line-height:1.5}
-.cv-qr #qr{width:96px;height:96px;flex:none}
-.cv-qr #qr img,.cv-qr #qr canvas{width:96px!important;height:96px!important}
 /* 目次 */
 .toc-list{columns:2;column-gap:24px;font-size:.88rem;margin-bottom:6px}
 .toc-list a{display:flex;justify-content:space-between;border-bottom:1px dotted #bbb;color:#111;text-decoration:none;padding:3px 0;break-inside:avoid}
@@ -148,14 +163,12 @@ table.prog2 td{padding:4px 5px;border:1px solid #d6ded8;vertical-align:top}
 .foot{font-size:.74rem;color:var(--muted);margin-top:10px}
 @media (max-width:640px){
   .pg{padding:16px 12px}
-  .cv-title{font-size:1.5rem}
-  .cv-word{font-size:1.7rem;letter-spacing:.2em;padding-left:.2em}
   .scroll table.t{min-width:600px}
   .prog td.vs,.prog td.ref,.prog td.n{white-space:nowrap}
-  .cv-grid{grid-template-columns:1fr}
   .ofr .role{width:7em;font-size:.82rem}
   .ofr .nm{min-width:6.4em;font-size:.9rem}
   .teams{grid-template-columns:repeat(2,1fr)}
+  .cv-grid{grid-template-columns:repeat(2,1fr)}
   .toc-list{columns:1}
 }
 /* ---- 印刷：1ページ＝A4 1枚 ---- */
@@ -164,16 +177,17 @@ table.prog2 td{padding:4px 5px;border:1px solid #d6ded8;vertical-align:top}
   html{font-size:10.5pt}
   body{background:#fff}
   .bar,.status,.pdftip,.cv-pdf,h2 small a{display:none}
+  .cover{height:277mm;display:flex;flex-direction:column}
+  .cover,.cover *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .cv-hero{flex:none}
+  .cv-info{flex:1;padding:5mm 1mm 0;display:flex;flex-direction:column;justify-content:space-between}
+  .cv-box div{font-size:10pt}
+  .cv-qr #qr,.cv-qr #qr img,.cv-qr #qr canvas{width:22mm!important;height:22mm!important}
   body.print-one .pg:not(.pt){display:none}
   body.print-one .pg.pt1{break-before:auto;page-break-before:auto}
   .book{max-width:none;padding:0;margin:0}
   .pg{box-shadow:none;border-radius:0;margin:0;padding:0;break-before:page;page-break-before:always;min-height:0}
   .pg:first-child{break-before:auto;page-break-before:auto}
-  .cover{height:277mm;display:flex;flex-direction:column}
-  .cv-top{padding:70px 28px 50px}
-  .cv-title{font-size:26pt}
-  .cv-word{font-size:40pt}
-  .cv-body{flex:1;display:flex;flex-direction:column;justify-content:space-between}
   .br svg{max-height:268mm;width:auto;max-width:100%;margin:0 auto}
   .yk img{max-height:270mm;width:auto;max-width:100%;margin:0 auto;border:none}
   .yk h2{display:none}
@@ -393,18 +407,27 @@ function pg(id, title, body, sub) {
   return '<section class="pg" id="' + id + '" data-grp="' + id + '">' + (title ? '<h2><span>' + title + '</span>' + (sub ? '<small>' + sub + '</small>' : '') + '</h2>' : '') + body + '</section>';
 }
 
+/* 表紙：写真の上にタイトルと選手紹介を重ねる */
 function coverPage() {
   var f = P.info;
-  return '<section class="pg cover" id="cover" data-grp="cover"><a class="cv-pdf" href="#" onclick="pdfOne(\'cover\');return false">📄 PDF</a><div class="cv-top">' +
-    '<span class="cv-no">PROGRAM</span>' +
-    '<div class="cv-title">' + esc(f.tournament).replace('岩手県', '<br>岩手県') + '</div>' +
-    '<div class="cv-sub">兼 第38回都道府県対抗全日本中学生ソフトテニス大会 岩手県代表選手二次選考会<br>兼 第35回東北中学校ソフトテニスインドア大会 予選会</div>' +
-    '<div class="cv-word">大会プログラム</div></div>' +
-    '<div class="cv-body"><div class="cv-grid">' +
-    '<div class="cv-box"><b>個人戦</b><div>' + esc(f.indivDate) + '<br><small>男女各16ペア</small></div></div>' +
-    '<div class="cv-box"><b>団体戦</b><div>' + esc(f.teamDate) + '<br><small>男女各16チーム</small></div></div>' +
-    '<div class="cv-box"><b>男子会場</b><div>' + esc(f.venueM) + '<br><small>岩手郡雫石町高前田104</small></div></div>' +
-    '<div class="cv-box"><b>女子会場</b><div>' + esc(f.venueW) + '<br><small>紫波郡紫波町桜町字下川原100</small></div></div>' +
+  var no = (String(f.tournament).match(/第(\d+)回/) || [])[1] || '';
+  return '<section class="pg cover" id="cover" data-grp="cover"><a class="cv-pdf" href="#" onclick="pdfOne(\'cover\');return false">📄 PDF</a>' +
+    '<div class="cv-hero"><img class="cv-ph" src="../doc/cover-photo.jpg" alt="高橋偲選手"><div class="cv-shade"></div>' +
+    (no ? '<div class="cv-no"><span>第</span><b>' + no + '</b><span>回</span></div>' : '') +
+    '<div class="cv-lbl"><small>PROGRAM</small><b>大会プログラム</b></div>' +
+    '<div class="cv-who"><div class="k">COVER</div><div class="pn">高橋　偲<small>選手</small></div>' +
+    '<div>どんぐり北広島ソフトテニスクラブ</div>' +
+    '<div>第80回全日本ソフトテニス大会</div><div class="ach">優勝（２連覇）</div>' +
+    '<div>奥州市立胆沢中学校<br>（奥州市立南都田中学校）出身</div></div>' +
+    '<div class="cv-ttl"><div class="cv-script">Indoor Soft Tennis</div>' +
+    '<div class="cv-pre">岩手県中学校</div>' +
+    '<div class="cv-main"><span class="ac">インドア</span><br>ソフトテニス大会</div>' +
+    '<div class="cv-sub">兼 第38回都道府県対抗全日本中学生ソフトテニス大会 岩手県代表選手二次選考会<br>兼 第35回東北中学校ソフトテニスインドア大会 予選会</div></div></div>' +
+    '<div class="cv-info"><div class="cv-grid">' +
+    '<div class="cv-box"><b>個人戦</b><div>' + esc(f.indivDate) + '<small>男女各16ペア</small></div></div>' +
+    '<div class="cv-box"><b>団体戦</b><div>' + esc(f.teamDate) + '<small>男女各16チーム</small></div></div>' +
+    '<div class="cv-box"><b>男子会場</b><div>' + esc(f.venueM) + '<small>岩手郡雫石町高前田104</small></div></div>' +
+    '<div class="cv-box"><b>女子会場</b><div>' + esc(f.venueW) + '<small>紫波郡紫波町桜町字下川原100</small></div></div>' +
     '</div><div class="cv-foot"><div class="cv-org"><b>主催</b>　岩手県中学生ソフトテニス連盟<br><b>協賛</b>　ナガセケンコー株式会社　ヨネックス株式会社</div>' +
     '<div class="cv-qr"><div id="qr"></div><div>最新の組合せ・<br>結果は、この<br>二次元コードから</div></div></div></div></section>';
 }
