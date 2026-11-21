@@ -562,7 +562,7 @@ function historyPage() {
   }
   var h = '';
   for (i = 0; i < kinds.length; i++) {
-    var list = by[kinds[i]].sort(function (a, b) { return (parseInt(b['回'], 10) || 0) - (parseInt(a['回'], 10) || 0); });
+    var list = by[kinds[i]].sort(function (a, b) { return histNo_(a['回']) - histNo_(b['回']); });  /* 上が古い回 */
     h += '<h3>' + esc(kinds[i]) + '</h3><div class="scroll"><table class="t"><thead><tr><th class="c">回</th><th>年度</th><th>優勝</th><th>準優勝</th><th>3位</th><th>3位</th></tr></thead><tbody>';
     var j, r;
     for (j = 0; j < list.length; j++) {
@@ -571,7 +571,13 @@ function historyPage() {
     }
     h += '</tbody></table></div>';
   }
+  h += '<p class="foot">過去の大会の記録を掲載しています。掲載について申し出がある場合は、連盟（競技委員長）までご連絡ください。</p>';
   return pg('history', '栄光の記録', h);
+}
+/* 回の並べ替え用（全角数字の「１」なども数として扱う） */
+function histNo_(v) {
+  var t = String(v == null ? '' : v).replace(/[０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); });
+  return parseInt(t, 10) || 0;
 }
 
 /* ============================================================ */
