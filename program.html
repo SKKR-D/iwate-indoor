@@ -558,7 +558,7 @@ function historyPage() {
   }
   var h = '';
   for (i = 0; i < kinds.length; i++) {
-    var list = by[kinds[i]].sort(function (a, b) { return histNo_(b['回']) - histNo_(a['回']); });
+    var list = by[kinds[i]].sort(function (a, b) { return histNo_(a['回']) - histNo_(b['回']); });  /* 上が古い回 */
     h += '<h3>' + esc(kinds[i]) + '</h3><div class="scroll"><table class="t"><thead><tr><th class="c">回</th><th>年度</th><th>優勝</th><th>準優勝</th><th>3位</th><th>3位</th></tr></thead><tbody>';
     var j, r;
     for (j = 0; j < list.length; j++) {
