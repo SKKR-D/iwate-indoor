@@ -388,6 +388,7 @@ tr.locked td{background:#f4f4f4;color:#777}
 
 <div class="toast" id="toast"></div>
 
+<script src="excel-export.js"></script>
 <script>
 /* ★ GASをデプロイしたらURLを貼り付ける */
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
@@ -973,7 +974,8 @@ function loadDraw() {
   var pub = site + 'progress.html?div=' + drawDiv;
   document.getElementById('drawLinks').innerHTML = '<a class="btn btn-out btn-sm" href="control.html?div=' + drawDiv + '" target="_blank">🛠 本部 進行管理を開く</a>' +
     '<a class="btn btn-out btn-sm" href="progress.html?div=' + drawDiv + '" target="_blank">📺 公開進行表を開く</a>' +
-    '<button class="btn btn-out btn-sm" onclick="copyText(\'' + esc(pub) + '\')">📋 公開URLをコピー</button>';
+    '<button class="btn btn-out btn-sm" onclick="copyText(\'' + esc(pub) + '\')">📋 公開URLをコピー</button>' +
+    '<button class="btn btn-out btn-sm" onclick="excelExport()" title="4区分の組合せ・結果と団体戦の選手名簿を、今の最新の内容で1つのExcelファイルにします">📊 Excelで保存（組合せ・結果）</button>';
   document.getElementById('pasteHint').innerHTML = D.divisions[drawDiv].type === 'team'
     ? '1行に「枠番号　チーム名（または略称）」。例：<code>1　水沢南中</code>（枠番号がない場合は上から1,2,3…）'
     : 'ブロック見出し（Aブロック 等）の下に「番号　選手A・選手B　所属」の行。添付いただいた組合せ表の範囲をそのままコピーして貼り付けられます。';
@@ -1124,6 +1126,12 @@ function importPaste() {
   }
   renderDraw();
   document.getElementById('pasteResult').innerHTML = ok + '件を枠に反映しました。' + (ng.length ? '<br><span class="flag">照合できなかった行：' + esc(ng.join(' ／ ')) + '</span>' : '') + '<br>内容を確認して「組合せを保存」を押してください。';
+}
+
+/* 組合せ・結果をExcelで保存（excel-export.js）。公開前は保存した組合せ案、公開後は結果入り */
+function excelExport() {
+  toast('Excelを作っています…（10秒ほどかかります）');
+  exportDrawExcel(api, function (name) { toast('Excelを保存しました：' + name); }, function (err) { toast(err.message || 'Excelを作れませんでした', true); });
 }
 
 /* プレビュー：パスワードをこの端末に預けてから、非公開の表示で開く（保存した組合せ案が出る） */
