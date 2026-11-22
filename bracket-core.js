@@ -109,9 +109,15 @@ function teamPage(d) {
   var mid = function (a, b) { return (a + b) / 2; };
 
   /* チーム名（略称・字間をそろえる）（地区） */
+  var anyFew = false;
   var slot = function (no, s, y, right) {
-    var nx = right ? W - 6 : 6;
-    g.text(nx, y + 6, no, { size: 13, anchor: right ? 'end' : 'start', color: '#333' });
+    var nx = right ? W - 14 : 14;
+    /* 選手が５名以下のチームは番号を○で囲む（第３マッチが欠員＝不戦敗） */
+    if (s && s.decided && s.few) {
+      anyFew = true;
+      g.raw('<circle cx="' + nx + '" cy="' + (y + 1.5) + '" r="10" fill="none" stroke="#222" stroke-width="1.2"/>');
+    }
+    g.text(nx, y + 6, no, { size: 13, anchor: 'middle', color: '#333' });
     if (!s || !s.decided) return;
     var base = right ? 526 : 26;
     g.text(base, y + 6, s.label, { size: 16, spread: 108 });
@@ -188,6 +194,8 @@ function teamPage(d) {
     g.num(cx + 18, ySF - 7, fs[1], fm.winner === 'R', 12);
   }
   if (fm && fm.state === '試合中') g.text(cx, ySF + 16, '決勝 試合中', { size: 10, anchor: 'middle', color: RED });
+
+  if (anyFew) g.text(6, slotY(7) + 32, '○で囲んだ番号：選手が５名以下のチーム（第３マッチは欠員のため不戦敗）', { size: 10, color: '#333' });
 
   /* 準決勝・決勝の詳細 */
   var yD = slotY(7) + 46;
@@ -468,13 +476,13 @@ function indivPage(d) {
 
   /* 結果 */
   var sf1 = M[code + '-SF-1'], sf2 = M[code + '-SF-2'];
-  var rows = [['第１位', fm, 'win'], ['第２位', fm, 'lose'], ['第３位', sf1, 'lose'], ['第３位', sf2, 'lose']];
+  var rows = [['優勝', fm, 'win'], ['準優勝', fm, 'lose'], ['第３位', sf1, 'lose'], ['第３位', sf2, 'lose']];
   var yR = bottom + 34;
   g.hr(70, 740, yR, 1);
   for (i = 0; i < rows.length; i++) {
     var who = placeOf(rows[i][1], rows[i][2]);
     var yy = yR + 25 + i * 36;
-    g.text(80, yy, rows[i][0], { size: 14, bold: true });
+    g.text(80, yy, rows[i][0], { size: 14, bold: true, spread: 56 });
     if (who) {
       var nms = who.names && who.names.length ? who.names : [who.label, ''];
       var col = i === 0 ? RED : INK;
