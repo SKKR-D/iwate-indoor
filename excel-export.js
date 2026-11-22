@@ -496,6 +496,9 @@ function xlBuild(data) {
     xlFillTeam(ws, D.WT, data.program, false, { base: 29 });
     for (i = 0; i < teams.length; i++) xlFillTeam(wb.getWorksheet(teams[i][0] + '_結果'), D[teams[i][1]], data.program, true);
     for (i = 0; i < teams.length; i++) if (D[teams[i][1]] && D[teams[i][1]].division) xlRosterSheet(wb, D[teams[i][1]], data.program, teams[i][0] + '_選手名簿');
+    /* ExcelJS は sheetPr の中を pageSetUpPr→outlinePr の順で書くが、Excel は逆の順でないと
+       「修復」でシートの中身を消してしまう。outlinePr は要らないので消しておく */
+    wb.eachSheet(function (sh) { if (sh.properties) delete sh.properties.outlineProperties; });
     wb.creator = '岩手県中学生ソフトテニス連盟';
     return wb.xlsx.writeBuffer();
   });
