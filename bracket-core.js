@@ -83,11 +83,15 @@ Svg.prototype.num = function (x, y, n, circled, size) {
   if (circled) this.h.push('<circle cx="' + x + '" cy="' + (y - size * 0.36) + '" r="' + (size * 0.62) + '" fill="none" stroke="' + RED + '" stroke-width="1"/>');
   this.text(x, y, n, { size: size, anchor: 'middle', color: RED });
 };
+/* BR_CROP（数値）があれば、上の見出し（大会名・期日・場所）を描かず、その分を切り取る（大会プログラムで使う） */
+function brCrop() { return typeof BR_CROP === 'number' ? BR_CROP : 0; }
 Svg.prototype.out = function (h) {
-  return '<svg viewBox="0 0 ' + W + ' ' + h + '" xmlns="http://www.w3.org/2000/svg" font-family="Noto Sans JP, sans-serif">' + this.h.join('') + '</svg>';
+  var c = brCrop();
+  return '<svg viewBox="0 ' + c + ' ' + W + ' ' + (h - c) + '" xmlns="http://www.w3.org/2000/svg" font-family="Noto Sans JP, sans-serif">' + this.h.join('') + '</svg>';
 };
 
 function header(g, d, y) {
+  if (brCrop()) return;
   g.text(W / 2, y, d.tournament + '　' + d.division.name, { size: 19, bold: true, anchor: 'middle' });
   g.text(500, y + 22, '期日：' + (d.date || ''), { size: 11 });
   g.text(500, y + 38, '場所：' + (d.venue || ''), { size: 11 });
