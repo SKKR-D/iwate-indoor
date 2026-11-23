@@ -209,6 +209,9 @@ table.prog2 td{padding:4px 5px;border:1px solid #d6ded8;vertical-align:top}
 .tm{border:1.2px solid var(--line);border-radius:6px;overflow:hidden;font-size:.78rem;break-inside:avoid}
 .tm .h{background:var(--soft);padding:4px 6px;font-weight:900;color:var(--deep);display:flex;justify-content:space-between;gap:4px}
 .tm .h small{font-weight:500;color:var(--muted);font-size:.66rem}
+/* 組合せの番号の札（進行表と同じ形） */
+.slot{display:inline-block;min-width:2.15em;padding:0 .25em;border:1.3px solid var(--deep);border-radius:3px;background:#fff;color:var(--deep);font-weight:900;text-align:center;line-height:1.4;letter-spacing:.02em;white-space:nowrap}
+.tm .h .slot{margin-right:5px;font-size:.92em}
 .tm ol{list-style:none}
 .tm li{display:flex;justify-content:space-between;gap:4px;padding:1px 6px;border-top:1px solid #eef1ee}
 .tm li span:first-child{color:var(--muted);width:1.3em;flex:none}
@@ -967,7 +970,7 @@ function pairsPage() {
     h += '<div class="scroll"><table class="t"><thead><tr><th class="c">枠</th><th>選手</th><th class="c">学年</th><th>所属</th><th>選手</th><th class="c">学年</th><th>所属</th><th>監督</th></tr></thead><tbody>';
     for (i = 0; i < list.length; i++) {
       p = list[i];
-      h += '<tr><td class="c n">' + (p.slot ? esc(p.slot.charAt(0) + '－' + p.slot.slice(1)) : '') + '</td>' + pairCell(p, 'a') + pairCell(p, 'b') + '<td>' + esc(p.coach || '') + '</td></tr>';
+      h += '<tr><td class="c n">' + (p.slot ? '<span class="slot">' + esc(p.slot) + '</span>' : '') + '</td>' + pairCell(p, 'a') + pairCell(p, 'b') + '<td>' + esc(p.coach || '') + '</td></tr>';
     }
     h += '</tbody></table></div>';
   }
@@ -987,7 +990,7 @@ function teamsPage(code) {
   var i, j, t, p;
   for (i = 0; i < list.length; i++) {
     t = list[i];
-    h += '<div class="tm"><div class="h"><span>' + (t.slot ? esc(t.slot) + '　' : '') + esc(t.name) + '</span><small>' + esc(t.district) + '</small></div><ol>';
+    h += '<div class="tm"><div class="h"><span>' + (t.slot ? '<span class="slot">' + esc(t.slot) + '</span>' : '') + esc(t.name) + '</span><small>' + esc(t.district) + '</small></div><ol>';
     if (t.applied) h += '<li class="co"><span>監</span><span class="nm">' + esc(t.coach || '') + '</span><span></span></li>';
     if (!t.applied) h += '<li class="v"><span></span><span class="nm">（申込前）</span></li>';
     else for (j = 0; j < t.players.length; j++) {
@@ -998,7 +1001,7 @@ function teamsPage(code) {
     }
     h += '</ol></div>';
   }
-  h += '</div><p class="foot">左上の数字は組合せ番号、「監」は監督（ベンチ入り指導者）です。</p>';
+  h += '</div><p class="foot">左上の四角の数字は組合せ番号（進行表と同じ番号）、「監」は監督（ベンチ入り指導者）です。</p>';
   return pg('tm-' + code, NAME[code] + ' 選手名簿', h, list.length + 'チーム');
 }
 
