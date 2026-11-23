@@ -282,6 +282,8 @@ function emblem() {
 }
 
 document.getElementById('pwInput').value = store('iwViewPw');
+/* 前回のパスワード（役員の二次元コードから来たときも、ここに入っている）があれば、そのまま表示する */
+if (store('iwViewPw')) login();
 </script>
 </body>
 </html>
