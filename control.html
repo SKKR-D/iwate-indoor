@@ -371,13 +371,25 @@ function teamInfo(m) {
     }
     h += '</div>';
   }
+  var xs = x3Side(m);
+  if (xs) h += '<div style="margin-top:4px;font-size:.82rem">第３マッチ（' + esc(xs === 'L' ? m.right.label : m.left.label) + 'は２ペア）：' +
+    (t.x3 === 'yes' ? '<b class="ng">行う（勝敗に関係しない試合）</b>' : t.x3 === 'no' ? '<b>行わない</b>' : '<span class="muted">' + esc(xs === 'L' ? m.left.label : m.right.label) + 'が未選択</span>') + '</div>';
   if (t.need === 'points') h += '<div class="ng" style="margin-top:4px">勝ち数・得失ゲーム差が同じです。「マッチ結果」から得失ポイント差を入力してください。</div>';
   if (t.need === 'rep') h += '<div class="ng" style="margin-top:4px">得失ポイント差も同じです。代表戦の勝者を入力してください。</div>';
   return h + '</div>';
 }
 
+/* 第３マッチ（勝敗に関係しない試合）を選ぶチーム：1回戦で３ペア（6名以上）のチームが２ペア（5名以下）のチームと当たるとき */
+function x3Side(m) {
+  var t = m.team;
+  if (!t || m.stage !== 'R1' || !t.playersL || !t.playersR || !t.playersL.length || !t.playersR.length) return '';
+  if (t.playersL.length >= 6 && t.playersR.length < 6) return 'L';
+  if (t.playersR.length >= 6 && t.playersL.length < 6) return 'R';
+  return '';
+}
+
 /* オーダーの代理入力 */
-var ord = { id: '', side: 'L', p: [['', ''], ['', ''], ['', '']] };
+var ord = { id: '', side: 'L', p: [['', ''], ['', ''], ['', '']], x3: '' };
 
 function openOrder(id) {
   var m = findMatch(id);
@@ -394,6 +406,7 @@ function loadOrderDraft() {
   var i;
   for (i = 0; i < 3; i++) cur.push(m.team.pairs[i][ord.side === 'L' ? 'l' : 'r'] || ['', '']);
   ord.p = JSON.parse(JSON.stringify(cur));
+  ord.x3 = x3Side(m) === ord.side ? (m.team.x3 || '') : '';
 }
 
 function renderOrder() {
@@ -420,6 +433,9 @@ function renderOrder() {
     }
     h += '</div>';
   }
+  if (x3Side(m) === ord.side) {
+    h += '<div class="prow"><div class="ttl">第３マッチ（相手は２ペア）</div><select class="osel" onchange="ord.x3=this.value"><option value=""' + (ord.x3 ? '' : ' selected') + '>未選択</option><option value="yes"' + (ord.x3 === 'yes' ? ' selected' : '') + '>行う（勝敗に関係しない試合）</option><option value="no"' + (ord.x3 === 'no' ? ' selected' : '') + '>行わない</option></select></div>';
+  }
   h += '<div class="muted" style="margin-bottom:8px">紙のオーダー票を受け取ったときや、提出後の訂正に使います（公開した後も、本部は変更できます）。</div>';
   h += '<div class="mbtns"><button class="btn btn-out" onclick="closeModal()">やめる</button><button class="btn" onclick="saveOrder()">このオーダーで登録</button></div>';
   document.getElementById('modal').innerHTML = h;
@@ -433,7 +449,7 @@ function saveOrder() {
   var players = ord.side === 'L' ? m.team.playersL : m.team.playersR;
   var need = players.length >= 6 ? 3 : 2;
   busy = true;
-  api({ action: 'ctlOrder', matchId: ord.id, side: ord.side, pairs: ord.p.slice(0, need) }).then(function (d) {
+  api({ action: 'ctlOrder', matchId: ord.id, side: ord.side, pairs: ord.p.slice(0, need), x3: x3Side(m) === ord.side ? ord.x3 : '' }).then(function (d) {
     busy = false;
     closeModal();
     apply(d);
