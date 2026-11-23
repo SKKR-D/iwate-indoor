@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="robots" content="noindex">
+<title>記録写真の撮影｜県インドア大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--deep:#123522;--main:#1a4a2e;--gold:#b8902a;--soft:#eef3ef;--line:#c9d6cc;--muted:#5d6b62;--ng:#b3261e;--bg:#f4f6f4}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:#1d1d1d;line-height:1.6;padding-bottom:150px}
+header{background:var(--deep);color:#fff;padding:12px 16px}
+header small{display:block;font-size:.72rem;opacity:.8}
+header b{font-size:1.1rem;letter-spacing:.06em}
+main{max-width:640px;margin:0 auto;padding:14px}
+.card{background:#fff;border-radius:12px;padding:14px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.card h2{font-size:.86rem;color:var(--main);margin-bottom:8px;display:flex;align-items:center;gap:8px}
+.card h2 .no{display:inline-flex;width:22px;height:22px;border-radius:50%;background:var(--main);color:#fff;font-size:.75rem;align-items:center;justify-content:center}
+.seg{display:grid;gap:8px}
+.seg.c2{grid-template-columns:1fr 1fr}
+.seg button{font-family:inherit;font-size:1rem;font-weight:700;padding:13px 6px;border-radius:10px;border:2px solid var(--line);background:#fff;color:var(--deep);cursor:pointer;line-height:1.3}
+.seg button small{display:block;font-size:.68rem;font-weight:500;color:var(--muted)}
+.seg button.on{background:var(--main);border-color:var(--main);color:#fff}
+.seg button.on small{color:#dfe9e2}
+input[type=text],input[type=password]{width:100%;font-family:inherit;font-size:1rem;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px}
+label.f{display:block;font-size:.78rem;color:var(--muted);margin:10px 0 4px}
+.hint{font-size:.76rem;color:var(--muted);margin-top:6px}
+.btn{display:block;width:100%;font-family:inherit;font-size:1.02rem;font-weight:900;padding:14px;border-radius:12px;border:none;cursor:pointer;letter-spacing:.04em}
+.btn.main{background:var(--main);color:#fff}
+.btn.gold{background:var(--gold);color:#fff}
+.btn.sub{background:#fff;color:var(--deep);border:2px solid var(--line)}
+.btn:disabled{opacity:.45;cursor:default}
+.shoot{position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.96);border-top:1px solid var(--line);padding:10px 14px calc(10px + env(safe-area-inset-bottom))}
+.shoot .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:1.4fr 1fr;gap:8px}
+.shoot .now{max-width:640px;margin:0 auto 6px;font-size:.78rem;color:var(--deep);font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hide{display:none!important}
+.err{color:var(--ng);font-size:.84rem;margin-top:8px}
+/* 確認 */
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.sheet .box{background:#fff;width:100%;max-width:640px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:16px}
+.sheet h3{font-size:1.05rem;color:var(--deep);margin-bottom:6px}
+.thumbs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}
+.thumbs .t{position:relative;border-radius:8px;overflow:hidden;background:#ddd;aspect-ratio:1/1}
+.thumbs .t img{width:100%;height:100%;object-fit:cover;display:block}
+.thumbs .t .st{position:absolute;right:4px;bottom:4px;background:rgba(0,0,0,.65);color:#fff;font-size:.7rem;padding:1px 6px;border-radius:8px}
+.thumbs .t .st.ok{background:#1f7a3d}
+.thumbs .t .st.ng{background:var(--ng)}
+.thumbs.one{grid-template-columns:1fr}
+.thumbs.one .t{aspect-ratio:auto}
+.thumbs.one .t img{height:auto;max-height:46vh;object-fit:contain;background:#111}
+.kv{font-size:.84rem;background:var(--soft);border-radius:8px;padding:8px 10px;line-height:1.7}
+.kv b{color:var(--deep)}
+.kv code{font-family:inherit;font-size:.78rem;word-break:break-all;color:#333}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.log{font-size:.8rem;line-height:1.7}
+.log div{border-bottom:1px solid #eee;padding:4px 0;word-break:break-all}
+.log .p{color:var(--gold);font-weight:700}
+.toast{position:fixed;left:50%;top:14px;transform:translateX(-50%);background:#1d1d1d;color:#fff;padding:9px 16px;border-radius:20px;font-size:.86rem;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;max-width:92vw}
+.toast.show{opacity:1}
+.toast.error{background:var(--ng)}
+.press{font-size:.74rem;color:var(--gold);font-weight:700}
+</style>
+</head>
+<body>
+<header><small id="tname">第40回岩手県中学校インドアソフトテニス大会</small><b>📷 記録写真の撮影</b></header>
+<main>
+  <div class="card" id="loginCard">
+    <h2>係員のパスワード</h2>
+    <input type="password" id="pwInput" placeholder="受付・本部などのパスワード" onkeydown="if(event.key==='Enter')login()">
+    <label class="f">撮った人の名前（写真の説明に残ります）</label>
+    <input type="text" id="byInput" placeholder="例：坂倉">
+    <div style="margin-top:12px"><button class="btn main" onclick="login()">はじめる</button></div>
+    <div class="err" id="loginErr"></div>
+  </div>
+
+  <div id="app" class="hide">
+    <div class="card">
+      <h2><span class="no">1</span>性別</h2>
+      <div class="seg c2" id="segGender"></div>
+    </div>
+    <div class="card">
+      <h2><span class="no">2</span>種目</h2>
+      <div class="seg c2" id="segKind"></div>
+    </div>
+    <div class="card">
+      <h2><span class="no">3</span>場面</h2>
+      <div class="seg c2" id="segScene"></div>
+    </div>
+    <div class="card hide" id="winCard">
+      <h2><span class="no">4</span>入賞の区分</h2>
+      <div class="seg c2" id="segSlot"></div>
+      <div id="teamBox" class="hide">
+        <label class="f">チーム名（結果から自動で入ります。違っていたら直してください）</label>
+        <input type="text" id="teamInput" list="teamList" oninput="drawNow()">
+        <datalist id="teamList"></datalist>
+      </div>
+      <div class="hint" id="pressHint"></div>
+    </div>
+    <div class="card">
+      <h2>この端末で保存した写真</h2>
+      <div class="log" id="log"><div style="color:var(--muted)">まだありません</div></div>
+    </div>
+  </div>
+</main>
+
+<div class="shoot hide" id="shootBar">
+  <div class="now" id="nowLabel"></div>
+  <div class="in">
+    <button class="btn main" onclick="pick(true)">📷 カメラで撮る</button>
+    <button class="btn sub" onclick="pick(false)">🖼 写真を選ぶ</button>
+  </div>
+</div>
+<input type="file" id="camInput" accept="image/*" capture="environment" class="hide" onchange="picked(this)">
+<input type="file" id="libInput" accept="image/*" multiple class="hide" onchange="picked(this)">
+
+<div class="sheet hide" id="sheet">
+  <div class="box">
+    <h3 id="sheetTitle">この写真を保存しますか？</h3>
+    <div class="thumbs" id="thumbs"></div>
+    <div class="kv" id="sheetKv"></div>
+    <div class="row2" id="sheetBtns">
+      <button class="btn sub" onclick="closeSheet()">やめる</button>
+      <button class="btn main" id="saveBtn" onclick="saveAll()">保存する</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
+var pw = '';
+var INFO = null;
+var SEL = { gender: '', kind: '', scene: '', slot: '' };
+var QUEUE = [];   /* { full, view, thumb, status } */
+var busy = false;
+
+function store(key, val) {
+  try {
+    if (val === undefined) return localStorage.getItem(key) || '';
+    if (val === null) localStorage.removeItem(key); else localStorage.setItem(key, val);
+  } catch (e) { return ''; }
+  return '';
+}
+function esc(s) {
+  if (s === undefined || s === null) return '';
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+function toast(msg, isErr) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr ? ' error' : '');
+  setTimeout(function () { t.className = 'toast'; }, isErr ? 5000 : 2500);
+}
+function api(body) {
+  body.pw = pw;
+  return fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) })
+    .then(function (res) { return res.text(); })
+    .then(function (text) {
+      var d;
+      try { d = JSON.parse(text); } catch (e) { throw new Error('サーバーの応答を読み取れません: ' + text.substring(0, 100)); }
+      if (d.status !== 'ok') { var err = new Error(d.message || 'エラー'); err.code = d.code; throw err; }
+      return d;
+    });
+}
+
+/* ========== ログイン ========== */
+function login() {
+  pw = document.getElementById('pwInput').value;
+  document.getElementById('loginErr').textContent = '';
+  api({ action: 'photoLogin' }).then(function (d) {
+    if (d.role !== 'staff') throw new Error('写真の保存は、受付・本部などの係員のパスワードで行ってください。');
+    store('iwPhotoPw', pw);
+    store('iwPhotoBy', document.getElementById('byInput').value.trim());
+    return loadInfo();
+  }).then(function () {
+    document.getElementById('loginCard').className = 'card hide';
+    document.getElementById('app').className = '';
+    document.getElementById('shootBar').className = 'shoot';
+  }).catch(function (err) { document.getElementById('loginErr').textContent = err.message; });
+}
+function loadInfo() {
+  return api({ action: 'photoInfo' }).then(function (d) {
+    INFO = d;
+    document.getElementById('tname').textContent = d.tournament;
+    var last = {};
+    try { last = JSON.parse(store('iwPhotoSel') || '{}'); } catch (e) { last = {}; }
+    SEL.gender = last.gender || '男';
+    SEL.kind = last.kind || defaultKind();
+    SEL.scene = last.scene || 'open';
+    SEL.slot = '';
+    drawAll();
+  });
+}
+/* 11/29 以降は団体戦、それまでは個人戦を最初に選んでおく */
+function defaultKind() {
+  var d = new Date();
+  return (d.getMonth() === 10 && d.getDate() >= 29) || d.getMonth() === 11 ? 'team' : 'indiv';
+}
+
+/* ========== 選択 ========== */
+function seg(id, items, cur, fn) {
+  var h = '', i;
+  for (i = 0; i < items.length; i++) {
+    h += '<button type="button" class="' + (items[i].v === cur ? 'on' : '') + '" onclick="' + fn + '(\'' + items[i].v + '\')">' + esc(items[i].t) + (items[i].s ? '<small>' + esc(items[i].s) + '</small>' : '') + '</button>';
+  }
+  document.getElementById(id).innerHTML = h;
+}
+function divCode() {
+  var c;
+  for (c in INFO.divs) if (INFO.divs[c].gender === SEL.gender && INFO.divs[c].type === SEL.kind) return c;
+  return '';
+}
+function sceneLabel(sc) { var s = INFO.scenes[sc || SEL.scene]; return s ? s[SEL.kind] : ''; }
+function slots() { return (INFO.slots && INFO.slots[SEL.kind]) || []; }
+function curSlot() { var l = slots(), i; for (i = 0; i < l.length; i++) if (l[i].key === SEL.slot) return l[i]; return null; }
+
+function drawAll() {
+  seg('segGender', [{ v: '男', t: '男子' }, { v: '女', t: '女子' }], SEL.gender, 'setGender');
+  seg('segKind', [{ v: 'indiv', t: '個人戦', s: '11月28日' }, { v: 'team', t: '団体戦', s: '11月29日' }], SEL.kind, 'setKind');
+  var sc = [], i, k;
+  for (i = 0; i < INFO.sceneOrder.length; i++) { k = INFO.sceneOrder[i]; sc.push({ v: k, t: INFO.scenes[k][SEL.kind] }); }
+  seg('segScene', sc, SEL.scene, 'setScene');
+  var win = SEL.scene === 'win';
+  document.getElementById('winCard').className = 'card' + (win ? '' : ' hide');
+  if (win) {
+    var ls = slots();
+    if (ls.length === 1) SEL.slot = ls[0].key;   /* 個人戦は「入賞ペア」を自動で選ぶ */
+    if (!curSlot()) SEL.slot = '';
+    var items = [];
+    for (i = 0; i < ls.length; i++) items.push({ v: ls[i].key, t: ls[i].label });
+    seg('segSlot', items, SEL.slot, 'setSlot');
+    var s = curSlot();
+    document.getElementById('teamBox').className = s && s.needTeam ? '' : 'hide';
+    var dl = '', d = INFO.divs[divCode()] || { teams: [] };
+    for (i = 0; i < d.teams.length; i++) dl += '<option value="' + esc(d.teams[i]) + '">';
+    document.getElementById('teamList').innerHTML = dl;
+  }
+  store('iwPhotoSel', JSON.stringify({ gender: SEL.gender, kind: SEL.kind, scene: SEL.scene }));
+  drawNow();
+}
+function setGender(v) { SEL.gender = v; SEL.slot = ''; drawAll(); }
+function setKind(v) { SEL.kind = v; SEL.slot = ''; drawAll(); }
+function setScene(v) { SEL.scene = v; SEL.slot = ''; drawAll(); }
+function setSlot(v) {
+  SEL.slot = v;
+  var s = curSlot();
+  /* 結果からチーム名を入れておく（3位は①②の順） */
+  if (s && s.needTeam) {
+    var pl = (INFO.divs[divCode()] || {}).placings || {};
+    var t = '';
+    if (s.place === '優勝') t = pl.win || '';
+    else if (s.place === '準優勝') t = pl.second || '';
+    else if (/3位/.test(s.place)) { var n = parseInt(String(s.key).replace(/\D/g, ''), 10) || 1; t = (pl.third || [])[n - 1] || ''; }
+    document.getElementById('teamInput').value = t;
+  }
+  drawAll();
+}
+function divName() { var d = INFO.divs[divCode()]; return d ? d.name : ''; }
+function nowText() {
+  var t = divName() + '　' + sceneLabel();
+  var s = curSlot();
+  if (SEL.scene === 'win') t += s ? '　' + s.label + (s.needTeam ? '　' + (document.getElementById('teamInput').value.trim() || '（チーム名）') : '') : '　（入賞の区分を選んでください）';
+  return t;
+}
+function drawNow() {
+  document.getElementById('nowLabel').textContent = '保存先：' + nowText();
+  var s = curSlot();
+  document.getElementById('pressHint').innerHTML = s ? '<span class="press">報道・HP用にも「' + esc(pressName()) + '」で入ります。</span>同じ区分で撮り直すと、前の写真と入れ替わります。' : '';
+}
+function safe(s) { return String(s || '').replace(/[\\\/:*?"<>|\s　]/g, '').substring(0, 30); }
+function pressName() {
+  var s = curSlot();
+  if (!s) return '';
+  return divName() + '_' + s.place + (s.needTeam ? '_' + (safe(document.getElementById('teamInput').value) || '〇〇') : '') + '.jpg';
+}
+function fileNameSample() {
+  var d = new Date();
+  var p2 = function (n) { return ('0' + n).slice(-2); };
+  var s = curSlot();
+  return divName() + '_' + safe(sceneLabel()) + (s ? '_' + s.place + (s.needTeam ? '_' + safe(document.getElementById('teamInput').value) : '') : '') + '_' + p2(d.getMonth() + 1) + p2(d.getDate()) + '-' + p2(d.getHours()) + p2(d.getMinutes()) + '_（番号）.jpg';
+}
+function readyCheck() {
+  if (SEL.scene === 'win') {
+    var s = curSlot();
+    if (!s) { toast('入賞の区分を選んでください', true); return false; }
+    if (s.needTeam && !safe(document.getElementById('teamInput').value)) { toast('チーム名を入れてください', true); return false; }
+  }
+  return true;
+}
+
+/* ========== 撮影・選択 ========== */
+function pick(cam) {
+  if (!readyCheck()) return;
+  var el = document.getElementById(cam ? 'camInput' : 'libInput');
+  el.value = '';
+  el.click();
+}
+/* 長辺 max px の JPEG にする（向きは写真の情報どおり） */
+function shrink(file, max, q) {
+  var draw = function (src, w, h) {
+    var r = Math.min(1, max / Math.max(w, h));
+    var c = document.createElement('canvas');
+    c.width = Math.round(w * r); c.height = Math.round(h * r);
+    c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', q);
+  };
+  if (window.createImageBitmap) {
+    return createImageBitmap(file, { imageOrientation: 'from-image' }).then(function (bmp) { var u = draw(bmp, bmp.width, bmp.height); if (bmp.close) bmp.close(); return u; })
+      .catch(function () { return viaImg(); });
+  }
+  return viaImg();
+  function viaImg() {
+    return new Promise(function (ok, ng) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () { var u = draw(img, img.naturalWidth, img.naturalHeight); URL.revokeObjectURL(url); ok(u); };
+      img.onerror = function () { URL.revokeObjectURL(url); ng(new Error('写真を読み込めません')); };
+      img.src = url;
+    });
+  }
+}
+function picked(input) {
+  var files = Array.prototype.slice.call(input.files || []);
+  if (!files.length) return;
+  if (SEL.scene === 'win' && files.length > 1) { toast('入賞者の写真は１枚ずつ選んでください（最後の１枚を使います）'); files = files.slice(-1); }
+  if (files.length > 20) { toast('一度に選べるのは20枚までです'); files = files.slice(0, 20); }
+  QUEUE = [];
+  toast('写真を準備しています…');
+  var chain = Promise.resolve();
+  files.forEach(function (f) {
+    chain = chain.then(function () {
+      return shrink(f, 1920, 0.85).then(function (full) {
+        return shrink(f, 1080, 0.8).then(function (view) { QUEUE.push({ full: full, view: view, status: '' }); });
+      }).catch(function (e) { toast(e.message, true); });
+    });
+  });
+  chain.then(function () { if (QUEUE.length) openSheet(); });
+}
+
+/* ========== 確認・保存 ========== */
+function openSheet() {
+  var one = QUEUE.length === 1;
+  document.getElementById('sheetTitle').textContent = one ? 'この写真を保存しますか？' : 'この' + QUEUE.length + '枚を保存しますか？';
+  drawThumbs();
+  var kv = '<b>保存先</b>　' + esc(nowText()) + '<br><b>ファイル名</b>　<code>' + esc(fileNameSample()) + '</code>';
+  if (curSlot()) kv += '<br><b>報道・HP用</b>　<code>' + esc(pressName()) + '</code>';
+  document.getElementById('sheetKv').innerHTML = kv;
+  document.getElementById('saveBtn').disabled = false;
+  document.getElementById('saveBtn').textContent = '保存する';
+  document.getElementById('sheet').className = 'sheet';
+}
+function drawThumbs() {
+  var h = '', i, q;
+  for (i = 0; i < QUEUE.length; i++) {
+    q = QUEUE[i];
+    h += '<div class="t"><img src="' + q.view + '" alt="">' + (q.status ? '<span class="st ' + (q.status === '保存済' ? 'ok' : q.status === '失敗' ? 'ng' : '') + '">' + esc(q.status) + '</span>' : '') + '</div>';
+  }
+  var el = document.getElementById('thumbs');
+  el.className = 'thumbs' + (QUEUE.length === 1 ? ' one' : '');
+  el.innerHTML = h;
+}
+function closeSheet() {
+  if (busy) return;
+  document.getElementById('sheet').className = 'sheet hide';
+  QUEUE = [];
+}
+function saveAll() {
+  if (busy) return;
+  if (!readyCheck()) return;
+  busy = true;
+  var btn = document.getElementById('saveBtn');
+  btn.disabled = true;
+  var s = curSlot();
+  var team = s && s.needTeam ? document.getElementById('teamInput').value.trim() : '';
+  var base = { action: 'photoUpload', gender: SEL.gender, kind: SEL.kind, scene: SEL.scene, slot: SEL.slot, team: team, by: store('iwPhotoBy') };
+  var ok = 0, ng = 0;
+  var chain = Promise.resolve();
+  QUEUE.forEach(function (q, i) {
+    if (q.status === '保存済') return;
+    chain = chain.then(function () {
+      q.status = '送信中';
+      btn.textContent = '保存中…（' + (i + 1) + '／' + QUEUE.length + '）';
+      drawThumbs();
+      return send(base, q).then(function (r) {
+        q.status = '保存済'; ok++;
+        addLog(r.name, r.press);
+      }).catch(function (e) { q.status = '失敗'; q.err = e.message; ng++; });
+    }).then(drawThumbs);
+  });
+  chain.then(function () {
+    busy = false;
+    if (ng) {
+      btn.disabled = false;
+      btn.textContent = '失敗した' + ng + '枚をもう一度送る';
+      toast('保存できなかった写真があります：' + (QUEUE.filter(function (q) { return q.err; })[0] || {}).err, true);
+    } else {
+      toast('✓ ' + ok + '枚保存しました');
+      setTimeout(closeSheet, 700);
+    }
+  });
+}
+function send(base, q) {
+  var body = {}, k;
+  for (k in base) body[k] = base[k];
+  body.data = q.full.split(',')[1];
+  body.view = q.view.split(',')[1];
+  return api(body);
+}
+function addLog(name, press) {
+  var el = document.getElementById('log');
+  if (el.textContent === 'まだありません') el.innerHTML = '';
+  var d = document.createElement('div');
+  d.innerHTML = '✓ ' + esc(name) + (press ? '<br><span class="p">報道・HP用：' + esc(press) + '</span>' : '');
+  el.insertBefore(d, el.firstChild);
+}
+
+/* 前回のパスワード・名前 */
+(function () {
+  document.getElementById('pwInput').value = store('iwPhotoPw');
+  document.getElementById('byInput').value = store('iwPhotoBy');
+})();
+</script>
+</body>
+</html>
