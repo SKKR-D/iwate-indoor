@@ -10,6 +10,7 @@
 <meta name="robots" content="noindex">
 <title>当日受付｜県インドア大会</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -80,6 +81,14 @@ label{display:block;font-size:.8rem;font-weight:700;color:var(--text-light);marg
 .toast.show{opacity:1}
 .toast.error{background:var(--red)}
 .loading{text-align:center;padding:20px;color:var(--text-light);font-size:.85rem}
+.coachbox{background:#fff3cd;border:2px solid #e0b100;border-radius:10px;padding:10px 12px;margin-bottom:12px;font-size:.84rem;line-height:1.6;color:#5a4500}
+.coachbox b{color:#7a4a00}
+.btn-coach{background:#fff;color:#7a4a00;border:2px solid #e0b100}
+.btn-coach.hl{background:#e0b100;color:#fff}
+.cqr{display:flex;justify-content:center;margin:6px 0 12px}
+.cqr img,.cqr canvas{width:240px;height:240px}
+.cqr-note{font-size:.84rem;line-height:1.7;margin-bottom:12px}
+.cqr-url{font-size:.7rem;color:#888;word-break:break-all;margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -374,8 +383,10 @@ function renderResult() {
   html += reqBox(d.requests);
   if (d.payers && d.payers.length > 1) html += '<div class="members">領収書の宛名：' + esc(d.payers.join(' 様、')) + ' 様</div>';
   html += '<div class="members">' + (d.coach ? '監督：' + esc(d.coach) + '<br>' : '') + esc(d.members.join('　')) + '<br>申込責任者：' + esc(d.applicantName) + '　' + esc(d.applicantPhone) + '</div>';
+  html += coachNote(d);
   html += '<div class="stack">';
   if (d.reception === '受付済') {
+    html += coachBtn(d);
     html += '<button class="btn btn-main" onclick="closeSheet()">閉じる</button>';
     html += '<button class="btn btn-red" onclick="cancelReception()">受付を取り消す</button>';
   } else {
@@ -384,6 +395,29 @@ function renderResult() {
   }
   html += '</div>';
   showSheet(d, html);
+}
+
+/* 監督用の受付票：申込責任者と監督が違うときは目立たせる。監督がリンクを持っていないとき、二次元コードを読み取ってもらう */
+function coachNote(d) {
+  if (!d.coachDiff || !d.coachDiff.length) return '';
+  return '<div class="coachbox">⚠ <b>申込責任者と監督が違います</b>（監督：' + esc(d.coachDiff.join('、')) + '）<br>' +
+    '受付票のリンクは申込責任者に届いています。監督がリンクを持っていなければ、下の「監督用の受付票を表示」で二次元コードを読み取ってもらってください。</div>';
+}
+function coachBtn(d) {
+  if (!d.ticket) return '';
+  return '<button class="btn btn-coach' + (d.coachDiff && d.coachDiff.length ? ' hl' : '') + '" onclick="showCoachQr()">📱 監督用の受付票を表示（二次元コード）</button>';
+}
+function showCoachQr() {
+  var d = current;
+  var html = '<div class="cqr" id="cqr"></div>' +
+    '<div class="cqr-note">監督のスマートフォンのカメラで読み取ってもらってください。開いた受付票から、' + (d.div && d.div.charAt(1) === 'T' ? '<b>オーダー提出</b>・' : '') + '選手・監督の変更申請・進行表の確認ができます。<br>このコードはチーム専用です。そのチームの監督にだけ見せてください。</div>' +
+    '<div class="cqr-url">' + esc(d.ticket) + '</div>' +
+    '<div class="stack"><button class="btn btn-main" onclick="closeSheet()">閉じる（次の受付へ）</button><button class="btn btn-out" onclick="renderResult()">受付の画面に戻る</button></div>';
+  showSheet(d, html);
+  try {
+    if (typeof QRCode === 'function') new QRCode(document.getElementById('cqr'), { text: d.ticket, width: 240, height: 240, correctLevel: QRCode.CorrectLevel.M });
+    else document.getElementById('cqr').innerHTML = '<div class="alert warn">二次元コードを表示できません。下のアドレスを監督に伝えてください。</div>';
+  } catch (e) { document.getElementById('cqr').textContent = '二次元コードを表示できません。'; }
 }
 
 /* 変更申請（申請中・許可・却下）。「変更どうなりました？」と聞かれたときに答えられるように */
@@ -413,9 +447,12 @@ function confirmReception() {
     html += r.mailError
       ? '<div class="alert warn">領収書メールを送れませんでした（' + esc(r.mailError) + '）。受付は完了しています。管理画面から再送できます。</div>'
       : '<div class="members" style="text-align:center">領収書（PDF）を申込責任者にメールで送りました。</div>';
-    html += '<button class="btn btn-main" onclick="closeSheet()">次の受付へ</button>';
+    var diff = current.coachDiff && current.coachDiff.length;
+    html += coachNote(current);
+    html += '<div class="stack">' + coachBtn(current) + '<button class="btn btn-main" onclick="closeSheet()">次の受付へ</button></div>';
     showSheet(current, html);
-    if (!r.mailError) setTimeout(function () { if (document.getElementById('overlay').className.indexOf('show') >= 0 && current && current.code === r.entry.code) closeSheet(); }, 3500);
+    /* 申込責任者と監督が違うときは、二次元コードを見せられるように自動では閉じない */
+    if (!r.mailError && !diff) setTimeout(function () { if (document.getElementById('overlay').className.indexOf('show') >= 0 && current && current.code === r.entry.code && !document.getElementById('cqr')) closeSheet(); }, 3500);
   }).catch(function (err) {
     if (err.code === 'already' && err.data && err.data.entry) {
       updateLocal(err.data.entry);
