@@ -67,7 +67,7 @@ label.f{display:block;font-size:.78rem;color:var(--muted);margin:10px 0 4px}
 <main>
   <div class="card" id="loginCard">
     <h2>係員のパスワード</h2>
-    <input type="password" id="pwInput" placeholder="受付・本部などのパスワード" onkeydown="if(event.key==='Enter')login()">
+    <input type="password" id="pwInput" placeholder="役員・係員のパスワード" onkeydown="if(event.key==='Enter')login()">
     <label class="f">撮った人の名前（写真の説明に残ります）</label>
     <input type="text" id="byInput" placeholder="例：坂倉">
     <div style="margin-top:12px"><button class="btn main" onclick="login()">はじめる</button></div>
@@ -169,7 +169,7 @@ function login() {
   pw = document.getElementById('pwInput').value;
   document.getElementById('loginErr').textContent = '';
   api({ action: 'photoLogin' }).then(function (d) {
-    if (d.role !== 'staff') throw new Error('写真の保存は、受付・本部などの係員のパスワードで行ってください。');
+    if (d.role !== 'staff') throw new Error('写真の保存は、役員または係員のパスワードで行ってください。');
     store('iwPhotoPw', pw);
     store('iwPhotoBy', document.getElementById('byInput').value.trim());
     return loadInfo();
