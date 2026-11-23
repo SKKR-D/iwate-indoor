@@ -34,7 +34,48 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .views button{border:none;background:#fff;color:var(--main);padding:6px 12px;font-family:inherit;font-weight:700;font-size:.8rem;cursor:pointer}
 .views button.on{background:var(--main);color:#fff}
 .cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.col h2{font-size:.95rem;font-weight:900;color:#fff;background:var(--main);border-radius:8px;padding:6px 10px;margin-bottom:8px;text-align:center}
+.col h2{font-size:.95rem;font-weight:900;color:#fff;background:var(--main);border-radius:8px;padding:6px 10px;margin-bottom:8px;text-align:center;position:sticky;top:var(--hh,0px);z-index:20;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.18)}
+.col h2 small{display:block;font-size:.72rem;font-weight:700;opacity:.95;margin-top:1px;letter-spacing:.02em}
+.col h2 small b{color:#ffd9d4}
+.col h2 small i{font-style:normal;color:#f3d36b}
+/* 組合せの番号の札（プログラムの選手名簿と同じ番号） */
+.slot{display:inline-flex;align-items:center;justify-content:center;min-width:2.15em;height:1.6em;padding:0 .28em;border:1.6px solid var(--main);border-radius:4px;background:#fff;color:var(--main);font-weight:900;font-size:.84rem;line-height:1;letter-spacing:.02em;vertical-align:middle;white-space:nowrap}
+.slot.few{border-radius:999px}
+.slot.w{background:var(--main);color:#fff}
+.slot.l{opacity:.42}
+.slot.me{box-shadow:0 0 0 2.5px var(--gold)}
+.side .slot{margin-right:6px;font-size:.76rem}
+.refr .slot{font-size:.7rem;margin:0 2px}
+.mineSel{display:flex;flex-wrap:wrap;gap:6px;align-items:center;width:100%}
+.mineSel select{flex:1 1 180px;min-width:0;font-family:inherit;font-size:.84rem;padding:6px 8px;border:2px solid var(--main);border-radius:8px;background:#fff;color:var(--text)}
+.mineSel button{font-family:inherit;font-size:.78rem;font-weight:700;padding:6px 10px;border-radius:8px;border:2px solid var(--main);background:#fff;color:var(--main);cursor:pointer}
+.mineSel button.on{background:var(--main);color:#fff}
+.card.mine{border-color:var(--gold);background:#fffbea}
+.ahead{padding:3px 10px;font-size:.74rem;font-weight:900;color:#7a5d00;background:#fff3cd;border-top:1px dashed #ecd9a0}
+.note2{font-size:.72rem;color:var(--text-light);margin:-2px 0 8px}
+/* スマホ縦：コート別を２列のまま、番号の札で詰めて出す */
+.cmp .cols{grid-template-columns:1fr 1fr;gap:6px}
+.cmp .col h2{font-size:.86rem;padding:5px 4px;margin-bottom:6px}
+.cmp .col h2 small{font-size:.66rem}
+.cc{margin-bottom:6px;cursor:pointer}
+.cc .h{display:flex;justify-content:space-between;align-items:center;gap:3px;padding:3px 6px;background:#fafaf6;border-bottom:1px solid var(--line);font-size:.68rem}
+.cc .h .no{font-weight:900;color:var(--main);font-size:.8rem}
+.cc .h .rd{color:var(--text-light)}
+.cc .h .badge{padding:1px 6px;font-size:.62rem}
+.cc .v{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:3px 5px;padding:6px 4px 5px}
+.cc .v .vs2{font-size:.66rem;color:#aaa}
+.cc .v .sc{font-weight:900;font-size:.86rem;color:var(--main)}
+.cc .v .tx{font-size:.7rem;color:#888;font-weight:500}
+.cc .v .nm2{font-size:.74rem;font-weight:700}
+.cc .f{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2px 4px;padding:2px 6px 4px;font-size:.66rem;color:#555;border-top:1px dashed #e3e3e3}
+.cc .f .slot{font-size:.62rem;height:1.5em;min-width:2em;margin-left:2px}
+.cc .ahead{padding:2px 6px;font-size:.66rem}
+.cc .more{border-top:1px solid var(--line);background:#fff;font-size:.74rem}
+.cc .more .side .nm{font-size:.8rem}
+.cc .more .side .sb{display:block;margin-left:0}
+.cc .more .c-body{padding:4px 6px}
+.cc .more .tp{grid-template-columns:1.2em 1fr 2.6em 1fr;padding:4px 6px 6px;font-size:.66rem}
+.cc .more .refr,.cc .more .gat{padding:3px 6px;font-size:.68rem}
 .card{background:#fff;border-radius:var(--radius);border:1.5px solid var(--line);margin-bottom:8px;overflow:hidden}
 .card.live{border-color:var(--red);box-shadow:0 0 0 2px rgba(179,48,48,.25)}
 .card.call{border-color:var(--gold);box-shadow:0 0 0 2px rgba(200,160,32,.3)}
@@ -95,6 +136,8 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 @media print{.rules{display:none}}
 .footer{text-align:center;font-size:.7rem;color:var(--text-light);padding:20px}
 @media(max-width:680px){.cols{grid-template-columns:1fr}}
+/* 横向きのスマホなど、画面の高さが低いときは見出しを固定しない（コート名の帯だけ固定） */
+@media(max-height:520px){.header{position:static}}
 .x3n{margin-top:4px;font-size:.74rem;color:#a52a1a;font-weight:700}
 </style>
 </head>
@@ -116,6 +159,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
     <div class="views">
       <button id="vCourt" onclick="setView('court')">コート別</button>
       <button id="vTime" onclick="setView('time')">時刻順</button>
+    </div>
+    <div class="mineSel" id="mineSel" style="display:none">
+      <select id="mineTeam" onchange="setMine(this.value)"></select>
+      <button type="button" id="onlyBtn" onclick="setOnly()" style="display:none">このチームだけ</button>
     </div>
   </div>
   <div id="board"></div>
@@ -139,6 +186,13 @@ var params = new URLSearchParams(location.search);
 var divCode = params.get('div') || 'MI';
 var view = '';
 var DATA = null;
+var MINE = '';          /* 色を付けるチーム（端末に記憶） */
+var ONLY = false;       /* そのチームの試合だけ出す */
+var OPEN = {};          /* スマホの２列表示で、押して開いたカード */
+var SLOT_OF = {};       /* id → 組合せの番号 */
+var TEAMS_OF = {};      /* id → 所属チーム（個人戦は２人の所属） */
+var AHEAD = {};         /* 試合id → 同じコートで前に残っている試合の数 */
+var JUMPED = false;     /* スマホの２列表示で、最初の１回だけ進んでいる位置まで送る */
 
 function esc(s) {
   if (s === undefined || s === null) return '';
@@ -155,7 +209,7 @@ function store(key, val) {
 
 function setView(v) {
   view = v;
-  store('progressView', v);
+  store('progressView2', v);
   document.getElementById('vCourt').className = v === 'court' ? 'on' : '';
   document.getElementById('vTime').className = v === 'time' ? 'on' : '';
   render();
@@ -195,28 +249,196 @@ function timeText(m) {
   return m.plan ? '予定 ' + m.plan : '';
 }
 
+/* 組合せの番号の札。w＝勝ち、l＝負け、me＝選んだチーム */
+function slotOf(x) { return x ? (x.slot || SLOT_OF[x.id] || '') : ''; }
+function isMineId(id) {
+  if (!MINE || !id) return false;
+  var ts = TEAMS_OF[id] || [];
+  var i;
+  for (i = 0; i < ts.length; i++) if (ts[i] === MINE) return true;
+  return false;
+}
+function slotTag(no, id, cls, few) {
+  if (!no) return '';
+  return '<span class="slot' + (few ? ' few' : '') + (cls ? ' ' + cls : '') + (isMineId(id) ? ' me' : '') + '">' + esc(no) + '</span>';
+}
+function sideCls(m, which) { return m.state === '終了' && m.winner ? (m.winner === which ? 'w' : 'l') : ''; }
+
 function sideHtml(m, s, which) {
   var cls = 'side';
   if (!s.decided) cls += ' tbd';
   else if (m.state === '終了' && m.winner) cls += m.winner === which ? ' win' : ' lose';
-  return '<div class="' + cls + '"><div>' + (s.origin && s.decided ? '<span class="org">' + esc(s.origin) + '</span>' : '') + '<span class="nm">' + esc(s.label) + '</span>' + (s.changed ? '<span class="chg">変更</span>' : '') + (s.sub ? '<span class="sb">' + esc(s.sub) + '</span>' : '') + '</div></div>';
+  return '<div class="' + cls + '"><div>' + (s.decided ? slotTag(slotOf(s), s.id, '', s.few) : '') + (s.origin && s.decided ? '<span class="org">' + esc(s.origin) + '</span>' : '') + '<span class="nm">' + esc(s.label) + '</span>' + (s.changed ? '<span class="chg">変更</span>' : '') + (s.sub ? '<span class="sb">' + esc(s.sub) + '</span>' : '') + '</div></div>';
 }
 
 function ML(m) { return m.nl || ('第' + m.no + '試合'); }
+function stateCls(m) { return m.state === '試合中' ? ' live' : m.state === '呼出' ? ' call' : m.state === '終了' ? ' done' : ''; }
+function scoreHtml(m) { return winScore(m.note === '不戦勝' ? m.score : rScore(m.score, m.winner, DATA.division.type === 'team' ? 2 : 4), m.winner); }
+function refSlots(r) {
+  if (!r || !r.decided) return '';
+  if (r.ids) return slotTag((r.slots || [])[0] || SLOT_OF[r.ids[0]], r.ids[0]) + slotTag((r.slots || [])[1] || SLOT_OF[r.ids[1]], r.ids[1]);
+  return slotTag(slotOf(r), r.id);
+}
+function refHtml(m) {
+  if (!m.referee || m.state === '終了' || m.note === '不戦勝') return '';
+  var r = m.referee;
+  return '<div class="refr' + (r.official ? ' off' : (r.decided ? '' : ' tbd')) + '">審判：' + refSlots(r) + '<b>' + esc(r.label) + '</b>' + (r.sub ? ' <span class="sb" style="font-size:.68rem;color:#888">' + esc(r.sub) + '</span>' : '') + '</div>';
+}
+/* 選んだチームの試合（選手・審判） */
+function isMine(m) {
+  if (!MINE) return false;
+  if (m.left.decided && isMineId(m.left.id)) return true;
+  if (m.right.decided && isMineId(m.right.id)) return true;
+  var r = m.referee;
+  if (m.state !== '終了' && r && r.decided && (isMineId(r.id) || (r.ids && (isMineId(r.ids[0]) || isMineId(r.ids[1]))))) return true;
+  return false;
+}
+/* 選んだチームの、まだ始まっていない試合に「このコートで あと○試合」 */
+function aheadHtml(m, cls) {
+  if (!isMine(m) || (m.state !== '待機' && m.state !== '呼出') || m.note === '不戦勝') return '';
+  var n = AHEAD[m.id];
+  if (n === undefined || m.state === '呼出') return '';
+  return '<div class="' + cls + '">' + (n === 0 ? 'このコートの次の試合' : 'このコートで あと' + n + '試合') + '</div>';
+}
 function cardHtml(m, showCourt) {
-  var cls = 'card' + (m.state === '試合中' ? ' live' : m.state === '呼出' ? ' call' : m.state === '終了' ? ' done' : '');
+  var cls = 'card' + stateCls(m) + (isMine(m) ? ' mine' : '');
   var h = '<div class="' + cls + '">';
   h += '<div class="c-head"><span>' + (showCourt ? '<span class="court-tag">' + (m.two ? 'A・B' : esc(m.court)) + '</span>' : '') + (m.no ? '<span class="no">第' + m.no + '試合</span> ' : '') + '<span class="rd">' + esc(m.round) + '</span>' + (m.two ? ' <span class="badge b-two">2面展開</span>' : '') + '</span>';
   h += '<span>' + stateBadge(m) + ' <span class="tm">' + esc(timeText(m)) + '</span></span></div>';
   h += '<div class="c-body">' + sideHtml(m, m.left, 'L');
-  h += '<div class="vs">' + (m.state === '終了' && m.score ? '<span class="score">' + winScore(m.note === '不戦勝' ? m.score : rScore(m.score, m.winner, DATA.division.type === 'team' ? 2 : 4), m.winner) + '</span>' : 'vs') + '</div>';
+  h += '<div class="vs">' + (m.state === '終了' && m.score ? '<span class="score">' + scoreHtml(m) + '</span>' : 'vs') + '</div>';
   h += sideHtml(m, m.right, 'R') + '</div>';
   /* コート集合（これからの試合だけ）：9:00／前の試合が終わり次第／本部のコールで／本部の放送で など */
   if ((m.state === '待機' || m.state === '呼出') && m.note !== '不戦勝' && (m.gather || m.gatherNote)) h += '<div class="gat">コート集合：<b>' + esc(m.gather || m.gatherNote) + '</b></div>';
-  if (m.referee && m.state !== '終了' && m.note !== '不戦勝') h += '<div class="refr' + (m.referee.official ? ' off' : (m.referee.decided ? '' : ' tbd')) + '">審判：<b>' + esc(m.referee.label) + '</b>' + (m.referee.sub ? ' <span class="sb" style="font-size:.68rem;color:#888">' + esc(m.referee.sub) + '</span>' : '') + '</div>';
+  h += refHtml(m);
   if (m.team && m.team.open) h += pairsHtml(m);
+  h += aheadHtml(m, 'ahead');
   h += '</div>';
   return h;
+}
+
+/* ---------- スマホ縦の２列表示（番号の札）。押すと名前などが開く ---------- */
+function shortTxt(s) {
+  return String(s || '').replace(/([A-D])ブロック(\d)位/g, '$1$2位').replace(/コート第(\d+)試合/g, 'コート$1');
+}
+function cSide(m, s, which) {
+  if (!s.decided) return '<span class="tx">' + esc(shortTxt(s.label)) + '</span>';
+  var no = slotOf(s);
+  if (no) return slotTag(no, s.id, sideCls(m, which), s.few);
+  return '<span class="nm2">' + esc(s.label) + '</span>';
+}
+function compactCard(m) {
+  var cls = 'card cc' + stateCls(m) + (isMine(m) ? ' mine' : '');
+  var h = '<div class="' + cls + '" onclick="toggleCard(\'' + esc(m.id) + '\')">';
+  h += '<div class="h"><span>' + (m.no ? '<span class="no">' + m.no + '</span> ' : '') + '<span class="rd">' + esc(m.round) + '</span></span>' + stateBadge(m) + '</div>';
+  var mid = m.state === '終了' && m.score ? '<span class="sc">' + scoreHtml(m) + '</span>' : '<span class="vs2">vs</span>';
+  h += '<div class="v">' + cSide(m, m.left, 'L') + mid + cSide(m, m.right, 'R') + '</div>';
+  var foot = '';
+  if (m.state !== '終了' && m.note !== '不戦勝') {
+    var r = m.referee;
+    if (r) foot += '<span>審判' + (r.decided ? refSlots(r) || ' ' + esc(r.label) : ' ' + esc(shortTxt(r.label))) + '</span>';
+    var tt = m.state === '試合中' ? (m.start ? m.start + '〜' : '') : (m.plan ? m.plan : '');
+    if (tt) foot += '<span>' + esc(tt) + '</span>';
+  }
+  if (foot) h += '<div class="f">' + foot + '</div>';
+  h += aheadHtml(m, 'ahead');
+  if (OPEN[m.id]) {
+    h += '<div class="more"><div class="c-body">' + sideHtml(m, m.left, 'L') + sideHtml(m, m.right, 'R') + '</div>';
+    if ((m.state === '待機' || m.state === '呼出') && m.note !== '不戦勝' && (m.gather || m.gatherNote)) h += '<div class="gat">コート集合：<b>' + esc(m.gather || m.gatherNote) + '</b></div>';
+    h += refHtml(m);
+    if (m.team && m.team.open) h += pairsHtml(m);
+    h += '</div>';
+  }
+  return h + '</div>';
+}
+function toggleCard(id) {
+  if (OPEN[id]) delete OPEN[id]; else OPEN[id] = true;
+  render();
+}
+function narrow() { return window.innerWidth < 680; }
+
+/* コートの見出し：いま試合中・呼出中の試合（なければ次の試合） */
+function courtNow(c) {
+  var ms = DATA.matches, i, m, live = [], call = [], next = '';
+  for (i = 0; i < ms.length; i++) {
+    m = ms[i];
+    if ((m.court !== c && !m.two) || m.note === '不戦勝') continue;
+    if (m.state === '試合中') live.push(m.no);
+    else if (m.state === '呼出') call.push(m.no);
+    else if (m.state === '待機' && !next) next = m.no;
+  }
+  if (live.length || call.length) return (live.length ? '<b>試合中 第' + live.join('・') + '試合</b>' : '') + (live.length && call.length ? '　' : '') + (call.length ? '<i>呼出 第' + call.join('・') + '試合</i>' : '');
+  if (next) return '次 第' + next + '試合';
+  return '終了';
+}
+/* 見出しを押すと、そのコートのいま進んでいる試合の位置へ */
+function jumpCourt(c) {
+  var col = document.getElementById('col' + c);
+  if (!col) return;
+  var cards = col.querySelectorAll('.card'), i, el = null;
+  for (i = 0; i < cards.length; i++) if (!/ done/.test(cards[i].className)) { el = cards[i]; break; }
+  if (!el) el = cards[cards.length - 1];
+  if (!el) return;
+  var h2 = col.querySelector('h2');
+  var top = el.getBoundingClientRect().top + window.pageYOffset - hdrH() - (h2 ? h2.offsetHeight : 0) - 8;
+  window.scrollTo(0, Math.max(0, top));
+}
+function hdrH() {
+  var hd = document.querySelector('.header');
+  return hd && window.getComputedStyle(hd).position === 'sticky' ? hd.offsetHeight : 0;
+}
+
+/* チームを選ぶ（色付け） */
+function setMine(v) {
+  MINE = v;
+  store('progressMine', v);
+  if (!v) { ONLY = false; store('progressOnly', ''); }
+  render();
+}
+function setOnly() {
+  ONLY = !ONLY;
+  store('progressOnly', ONLY ? '1' : '');
+  render();
+}
+/* 番号・所属の表を作る（データが来るたび） */
+function buildMaps() {
+  SLOT_OF = {}; TEAMS_OF = {};
+  var ms = DATA.matches, i, s, k, b, p;
+  var add = function (x) {
+    if (!x || !x.decided || !x.id) return;
+    if (x.slot) SLOT_OF[x.id] = x.slot;
+    if (x.teamsFull && x.teamsFull.length) TEAMS_OF[x.id] = x.teamsFull;
+    else if (x.full && !TEAMS_OF[x.id]) TEAMS_OF[x.id] = [x.full];
+  };
+  if (DATA.blocks) for (b in DATA.blocks) if (DATA.blocks.hasOwnProperty(b)) {
+    for (k = 0; k < DATA.blocks[b].length; k++) {
+      p = DATA.blocks[b][k];
+      SLOT_OF[p.id] = b + p.pos;
+      if (p.teamsFull && p.teamsFull.length) TEAMS_OF[p.id] = p.teamsFull;
+    }
+  }
+  for (i = 0; i < ms.length; i++) { add(ms[i].left); add(ms[i].right); }
+  /* 同じコートで前に残っている試合の数（表示の並び＝コートの順番） */
+  AHEAD = {};
+  var cnt = { A: 0, B: 0 }, m;
+  for (i = 0; i < ms.length; i++) {
+    m = ms[i];
+    if (m.note === '不戦勝') continue;
+    if (m.state !== '終了') AHEAD[m.id] = m.two ? Math.max(cnt.A, cnt.B) : cnt[m.court === 'B' ? 'B' : 'A'];
+    if (m.state !== '終了') { if (m.two) { cnt.A++; cnt.B++; } else cnt[m.court === 'B' ? 'B' : 'A']++; }
+  }
+  /* チームの一覧 */
+  var seen = {}, list = [], id, j;
+  for (id in TEAMS_OF) if (TEAMS_OF.hasOwnProperty(id)) for (j = 0; j < TEAMS_OF[id].length; j++) {
+    s = TEAMS_OF[id][j];
+    if (s && !seen[s]) { seen[s] = 1; list.push(s); }
+  }
+  list.sort(function (x, y) { return String(x).localeCompare(String(y), 'ja'); });
+  var sel = document.getElementById('mineTeam');
+  var h = '<option value="">チームを選ぶ（試合に色が付きます）</option>';
+  for (j = 0; j < list.length; j++) h += '<option value="' + esc(list[j]) + '"' + (list[j] === MINE ? ' selected' : '') + '>' + esc(list[j]) + '</option>';
+  sel.innerHTML = h;
+  document.getElementById('mineSel').style.display = list.length ? '' : 'none';
 }
 
 function pairsHtml(m) {
@@ -249,24 +471,54 @@ function render() {
   }
   var html = '';
   var i;
+  /* 選んだチームが、この区分にいなければ選んでいないことにする（端末の記憶はそのまま） */
+  var known = false, opts = document.getElementById('mineTeam').options;
+  for (i = 0; i < opts.length; i++) if (opts[i].value && opts[i].value === MINE) known = true;
+  if (!known) MINE = '';
+  var only = ONLY && MINE;
+  var ob = document.getElementById('onlyBtn');
+  ob.style.display = MINE ? '' : 'none';
+  ob.className = only ? 'on' : '';
+  ob.textContent = only ? 'すべての試合を出す' : 'このチームだけ';
+  var cmp = view === 'court' && narrow();
+  board.className = cmp ? 'cmp' : '';
+  var anyFew = false;
+  for (i = 0; i < ms.length; i++) if ((ms[i].left.decided && ms[i].left.few) || (ms[i].right.decided && ms[i].right.few)) anyFew = true;
+  if (cmp) html += '<p class="note2">番号はプログラムの選手名簿の番号です。カードを押すと名前が出ます。</p>';
   if (view === 'court') {
     html += '<div class="cols">';
     var courts = ['A', 'B'];
     var c;
     for (c = 0; c < 2; c++) {
-      html += '<div class="col"><h2>' + courts[c] + 'コート</h2>';
-      for (i = 0; i < ms.length; i++) if (ms[i].court === courts[c] || ms[i].two) html += cardHtml(ms[i], false);
+      html += '<div class="col" id="col' + courts[c] + '"><h2 onclick="jumpCourt(\'' + courts[c] + '\')">' + courts[c] + 'コート<small>' + courtNow(courts[c]) + '</small></h2>';
+      for (i = 0; i < ms.length; i++) if ((ms[i].court === courts[c] || ms[i].two) && (!only || isMine(ms[i]))) html += cmp ? compactCard(ms[i]) : cardHtml(ms[i], false);
       html += '</div>';
     }
     html += '</div>';
   } else {
     var sorted = ms.slice().sort(function (a, b) { return planKey(a) - planKey(b) || a.seq - b.seq; });
     html += '<div class="list">';
-    for (i = 0; i < sorted.length; i++) html += cardHtml(sorted[i], true);
+    for (i = 0; i < sorted.length; i++) if (!only || isMine(sorted[i])) html += cardHtml(sorted[i], true);
     html += '</div>';
   }
+  if (anyFew) html += '<p class="note2" style="margin-top:6px">番号の札が丸いチームは、選手が５名以下です（第３マッチは不戦敗）。</p>';
   board.innerHTML = html;
+  document.documentElement.style.setProperty('--hh', hdrH() + 'px');
   renderBlocks();
+  if (cmp && !JUMPED) {
+    JUMPED = true;
+    /* 終わった試合が並んでいるときは、２つのコートのうち先に来る「まだ終わっていない試合」まで送る */
+    var tops = [], cs = ['A', 'B'], k, col, cards, j;
+    for (k = 0; k < 2; k++) {
+      col = document.getElementById('col' + cs[k]);
+      cards = col ? col.querySelectorAll('.card') : [];
+      for (j = 0; j < cards.length; j++) if (!/ done/.test(cards[j].className)) { if (j > 0) tops.push([cards[j].getBoundingClientRect().top, cs[k]]); break; }
+    }
+    if (tops.length === 2 || (tops.length === 1)) {
+      tops.sort(function (x, y) { return x[0] - y[0]; });
+      jumpCourt(tops[0][1]);
+    }
+  }
 }
 
 function planKey(m) {
@@ -309,7 +561,7 @@ function renderBlocks() {
       p = DATA.blocks[bl[i]][j];
       t = rows[p.id];
       rk = DATA.ranks[bl[i] + '1'] === p.id ? 1 : DATA.ranks[bl[i] + '2'] === p.id ? 2 : '';
-      html += '<tr><td class="n">' + p.pos + '</td><td><strong>' + esc(p.label) + '</strong><br><span class="sb" style="font-size:.68rem;color:#666">' + esc(p.sub) + '</span></td>';
+      html += '<tr' + (isMineId(p.id) ? ' style="background:#fffbea"' : '') + '><td class="n">' + slotTag(bl[i] + p.pos, p.id) + '</td><td><strong>' + esc(p.label) + '</strong><br><span class="sb" style="font-size:.68rem;color:#666">' + esc(p.sub) + '</span></td>';
       html += '<td class="n">' + t.w + '-' + t.l + '</td>' + (df ? '<td class="n">' + esc(df.vals[p.id] || '') + '</td>' : '') + '<td class="n ' + (rk === 1 ? 'rank1' : '') + '">' + (rk ? rk + '位' : '') + '</td></tr>';
     }
     html += '</table></div>';
@@ -321,6 +573,7 @@ function load() {
   pvFetch('action=progress&div=' + encodeURIComponent(divCode), { action: 'adminPreview', div: divCode })
     .then(function (d) {
       DATA = d;
+      buildMaps();
       document.getElementById('hdTour').textContent = d.tournament;
       document.getElementById('hdTitle').textContent = d.division.name + '　進行表';
       document.getElementById('hdMeta').textContent = d.date + '　' + d.venue + '（A・Bコート）';
@@ -361,7 +614,18 @@ function load() {
     a.href = 'changes.html?div=' + divCode + (vk ? '&k=' + encodeURIComponent(vk) : '') + (co ? '&t=' + encodeURIComponent(co.t) : '');
     a.style.display = '';
   });
-  setView(store('progressView') || (window.innerWidth < 680 ? 'time' : 'court'));
+  MINE = store('progressMine');
+  ONLY = store('progressOnly') === '1';
+  /* 最初はコート別（スマホは２列の番号表示）。画面の向きや幅が変わったら描き直す */
+  setView(store('progressView2') || 'court');
+  var rsT = null, lastNarrow = narrow();
+  window.addEventListener('resize', function () {
+    clearTimeout(rsT);
+    rsT = setTimeout(function () {
+      document.documentElement.style.setProperty('--hh', hdrH() + 'px');
+      if (narrow() !== lastNarrow) { lastNarrow = narrow(); render(); }
+    }, 200);
+  });
   load();
   setInterval(load, 30000);
 })();
