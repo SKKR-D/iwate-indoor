@@ -44,6 +44,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .pair .t{font-weight:900;color:var(--green-dark);margin-bottom:6px;font-size:.9rem}
 .pair select{width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:1rem;font-family:inherit;margin-bottom:6px;background:#fff}
 .pair.forfeit{background:#f4f4f4;color:#888;text-align:center;font-weight:700}
+.x3{border:2px solid #c0392b;border-radius:10px;padding:10px 12px;margin-bottom:12px;background:#fff6f4;font-size:.88rem;line-height:1.6}
+.x3 .q{font-weight:900;color:#a52a1a;margin-bottom:4px}
+.x3 label{display:flex;align-items:center;gap:8px;padding:8px 10px;margin-top:6px;border:2px solid #e8c9c2;border-radius:8px;background:#fff;font-weight:700;cursor:pointer}
+.x3 label.on{border-color:#c0392b;background:#ffe9e4}
+.x3 input{width:20px;height:20px}
+.x3s{margin-top:8px;padding:8px 10px;border-radius:8px;background:#fff6f4;border:2px solid #e8c9c2;font-size:.86rem;line-height:1.6}
+.x3s b{color:#a52a1a}
 .btn{display:block;width:100%;padding:16px;border-radius:var(--radius);border:none;font-size:1.05rem;font-weight:900;font-family:inherit;cursor:pointer}
 .btn-main{background:var(--green);color:#fff}
 .btn-out{background:#fff;color:var(--green-dark);border:2px solid var(--green)}
@@ -104,6 +111,7 @@ var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOi
 var token = new URLSearchParams(location.search).get('t') || '';
 var D = null;
 var draft = null;
+var draftX3 = '';
 var editing = false;
 var sending = false;
 
@@ -162,6 +170,33 @@ function matchCard() {
   /* 相手チームの選手変更（許可されたもの） */
   if (m.oppDecided) h += crOppHtml(m.oppChanges, m.opp.full || m.opp.label);
   return h + '</div>';
+}
+
+/* 第３マッチ（勝敗に関係しない試合）の表示 */
+function x3Text(v) { return v === 'yes' ? '行う（勝敗に関係しない試合）' : v === 'no' ? '行わない' : ''; }
+function x3Box() {
+  var m = D.match;
+  var h = '<div class="x3"><div class="q">第３マッチを行いますか？</div>' +
+    '相手の「' + esc(m.opp.label) + '」は選手５名以下（２ペア）のチームです。第３マッチは相手の不戦敗（こちらの不戦勝）です。<br>' +
+    '希望すれば、勝敗に関係しない試合として第３マッチを行えます（相手はチーム内でペアを組み直して出ます）。選んだ内容は、試合開始のあいさつでオーダーと一緒に公開されます。';
+  h += '<label class="' + (draftX3 === 'yes' ? 'on' : '') + '"><input type="radio" name="x3" value="yes"' + (draftX3 === 'yes' ? ' checked' : '') + ' onchange="setX3(this.value)">行う（勝敗に関係しない試合）</label>';
+  h += '<label class="' + (draftX3 === 'no' ? 'on' : '') + '"><input type="radio" name="x3" value="no"' + (draftX3 === 'no' ? ' checked' : '') + ' onchange="setX3(this.value)">行わない</label>';
+  return h + '</div>';
+}
+function setX3(v) {
+  draftX3 = v;
+  editing = true;
+  var ls = document.querySelectorAll('.x3 label');
+  var i;
+  for (i = 0; i < ls.length; i++) ls[i].className = ls[i].querySelector('input').value === v ? 'on' : '';
+}
+/* 公開後：両チームに見せる */
+function x3Public() {
+  var m = D.match;
+  if (!m.x3) return '';
+  var mine2 = !m.x3Ask;
+  if (m.x3 === 'yes') return '<div class="x3s">第３マッチ：<b>' + x3Text('yes') + '</b><br>' + (mine2 ? '相手チームの希望で行います。チーム内でペアを組み直して出てください。結果は不戦敗のまま変わりません。' : '相手チームはチーム内でペアを組み直して出ます。結果は不戦勝のまま変わりません。') + '</div>';
+  return '<div class="x3s">第３マッチ：<b>行わない</b>（' + (mine2 ? 'こちらの不戦敗' : 'こちらの不戦勝') + '）</div>';
 }
 
 function orderTable(mine, opp) {
@@ -232,6 +267,7 @@ function render() {
         h += '<div class="msg ok">✅ オーダー提出済み（' + esc(m.myOrderAt) + (m.myOrderBy === '本部' ? '・本部入力' : '') + '）<br>' + (m.oppSubmitted ? '相手チームも提出済みです。試合開始のあいさつで本部が両チームのオーダーを公開します。' : '相手チームの提出を待っています。') + '</div>';
         h += pendingNote();
         h += '<div class="card"><h2>提出したオーダー</h2>' + orderTable(m.myOrder, null) +
+          (m.x3Ask && m.myX3 ? '<div class="x3s">第３マッチ：<b>' + x3Text(m.myX3) + '</b></div>' : '') +
           (m.deadlinePassed
             ? '<div class="muted" style="margin-top:10px">締切（' + esc(m.deadline) + '）を過ぎたため、修正できません。変更は本部へ申し出てください。</div>'
             : '<div style="margin-top:12px"><button class="btn btn-out" onclick="startEdit()">オーダーを修正する</button></div><div class="muted" style="margin-top:6px">締切（' + esc(m.deadline || '-') + '）までは修正できます。相手のオーダーは、試合開始のあいさつで本部が公開するまで見えません。</div>') + '</div>';
@@ -242,7 +278,7 @@ function render() {
       }
     } else if (v === 'locked' || v === 'playing') {
       h += '<div class="msg ok">' + (v === 'playing' ? '試合中です。' : 'オーダーが公開されました' + (m.pubAt ? '（' + esc(m.pubAt) + '）' : '') + '。これ以降の変更は本部へ申し出てください。') + '</div>';
-      h += '<div class="card"><h2>オーダー</h2>' + orderTable(m.myOrder, m.oppOrder) + resultsLine() + '</div>';
+      h += '<div class="card"><h2>オーダー</h2>' + orderTable(m.myOrder, m.oppOrder) + x3Public() + resultsLine() + '</div>';
     }
   }
   h += history();
@@ -286,6 +322,7 @@ function resultsLine() {
 /* ========== オーダー入力 ========== */
 function startEdit() {
   draft = D.match.myOrder ? JSON.parse(JSON.stringify(D.match.myOrder)) : null;
+  draftX3 = D.match.myX3 || '';
   var h = orderForm();
   document.getElementById('main').innerHTML = matchCard() + h;
   editing = true;
@@ -305,6 +342,7 @@ function orderForm() {
     }
     h += '<div class="pair"><div class="t">第' + (i + 1) + 'マッチ</div><select data-p="' + i + '" data-k="0"></select><select data-p="' + i + '" data-k="1"></select></div>';
   }
+  if (D.match.x3Ask) h += x3Box();
   h += '<button class="btn btn-main" onclick="confirmOrder()">オーダーを確認する</button>';
   if (editing) h += '<div style="margin-top:8px"><button class="btn btn-out" onclick="cancelEdit()">修正をやめる</button></div>';
   return h + '</div>';
@@ -313,6 +351,7 @@ function orderForm() {
 function cancelEdit() {
   editing = false;
   draft = null;
+  draftX3 = '';
   render();
 }
 
@@ -367,9 +406,11 @@ function confirmOrder() {
   for (i = 0; i < need; i++) {
     if (!draft[i] || !draft[i][0] || !draft[i][1]) { alert('第' + (i + 1) + 'マッチの選手を2名選んでください。'); return; }
   }
+  if (D.match.x3Ask && !draftX3) { alert('第３マッチを行うかどうかを選んでください。'); return; }
   var pairs = draft.slice(0, need);
   editing = true;
-  var h = '<h3>このオーダーで提出しますか？</h3>' + orderTable(pairs.concat(need < 3 ? [null] : []), null);
+  var h = '<h3>このオーダーで提出しますか？</h3>' + orderTable(pairs.concat(need < 3 ? [null] : []), null) +
+    (D.match.x3Ask ? '<div class="x3s">第３マッチ：<b>' + x3Text(draftX3) + '</b></div>' : '');
   h += '<div class="muted" style="margin-top:8px">' + (D.match.deadline ? '締切（' + esc(D.match.deadline) + '）までは修正できます。' : '締切までは修正できます。') + '締切を過ぎると修正できません。</div>';
   h += '<div class="mbtns"><button class="btn btn-out" onclick="closeModal()">戻る</button><button class="btn btn-main" id="sendBtn" onclick="sendOrder()">提出する</button></div>';
   document.getElementById('modal').innerHTML = h;
@@ -385,7 +426,7 @@ function sendOrder() {
   btn.disabled = true;
   btn.textContent = '送信中...';
   sending = true;
-  fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'submitOrder', t: token, matchId: D.match.id, pairs: draft.slice(0, needPairs()) }) })
+  fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify({ action: 'submitOrder', t: token, matchId: D.match.id, pairs: draft.slice(0, needPairs()), x3: D.match.x3Ask ? draftX3 : '' }) })
     .then(function (r) { return r.text(); })
     .then(function (text) {
       var d;
@@ -394,6 +435,7 @@ function sendOrder() {
       sending = false;
       editing = false;
       draft = null;
+      draftX3 = '';
       closeModal();
       D = d;
       render();
