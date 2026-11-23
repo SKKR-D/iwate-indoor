@@ -26,10 +26,13 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:#111;line-
 /* ---- ページ ---- */
 .book{max-width:900px;margin:0 auto;padding:10px 10px 40px}
 .pg{background:#fff;border-radius:8px;box-shadow:0 1px 8px rgba(0,0,0,.08);padding:22px 22px;margin-bottom:16px;position:relative}
-.pg h2{font-size:1.2rem;font-weight:900;color:var(--deep);border-bottom:3px solid var(--main);padding-bottom:4px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.pg h2{position:relative;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:1px 8px;border-bottom:1px solid var(--line);padding-bottom:5px;margin-bottom:14px}
+.pg h2::before{content:attr(data-en);flex-basis:100%;font-size:.6rem;font-weight:700;letter-spacing:.42em;color:var(--gold);line-height:1.5}
+.pg h2::after{content:'';position:absolute;left:0;bottom:-2px;width:56px;height:3px;background:var(--gold)}
+.pg h2 span{font-size:1.28rem;font-weight:900;color:var(--deep);letter-spacing:.06em;line-height:1.3}
 .pg h2 small{font-size:.72rem;font-weight:500;color:var(--muted)}
 .pg h2.hcap{display:none}
-.pg h3{font-size:.98rem;font-weight:900;color:var(--main);margin:14px 0 6px;border-left:4px solid var(--main);padding-left:8px}
+.pg h3{font-size:.98rem;font-weight:900;color:var(--deep);margin:14px 0 6px;border-left:4px solid var(--gold);padding-left:8px;line-height:1.35}
 .pg p{font-size:.88rem}
 .later{border:2px dashed var(--line);border-radius:10px;padding:40px 16px;text-align:center;color:var(--muted);font-size:.95rem}
 body.locked .ctrl,body.locked .toc{display:none}
@@ -98,7 +101,66 @@ table.t td.n{white-space:nowrap}
 .toc-list a{display:flex;justify-content:space-between;border-bottom:1px dotted #bbb;color:#111;text-decoration:none;padding:3px 0;break-inside:avoid}
 .toc-list a span:last-child{color:var(--muted);font-size:.78rem}
 /* 要項 */
-.yk img{display:block;width:100%;height:auto;border:1px solid #ddd}
+dl.yk{display:grid;grid-template-columns:2em 6.8em minmax(0,1fr);column-gap:.7em;font-size:.86rem;line-height:1.7}
+dl.yk>div{display:contents}
+dl.yk dt,dl.yk dd{padding:5px 0;border-top:1px solid #e3e9e4}
+dl.yk>div:first-child>*{border-top:none}
+dl.yk dt.no{font-weight:700;color:var(--main);text-align:right}
+dl.yk dt.k{font-weight:700;color:var(--deep);text-align:justify;text-align-last:justify}
+.yk-lead{font-size:.8rem;color:var(--muted);margin:-6px 0 8px;line-height:1.6}
+.yk-day{font-weight:700;color:var(--main)}
+.yk-tag{display:inline-block;font-size:.7rem;border:1px solid var(--gold);color:#7a5e14;padding:0 5px;border-radius:3px;margin-left:5px;line-height:1.55;vertical-align:1px}
+.yk-sched{display:grid;grid-template-columns:auto auto auto auto;column-gap:1.2em;margin:2px 0 7px;font-size:.84rem;background:var(--soft);padding:4px 11px;border-radius:4px;width:max-content;max-width:100%}
+.yk-sched span:nth-child(odd){color:var(--muted)}
+.yk-sub{font-weight:700;color:var(--deep);margin-top:2px}
+ol.ind{list-style:none}
+ol.ind>li{padding-left:3em;text-indent:-3em}
+ol.ind.n1>li{padding-left:1.6em;text-indent:-1.6em}
+ol.ind ol.ind{margin-top:1px}
+.yk-rec{display:grid;grid-template-columns:auto auto auto auto minmax(0,1fr);column-gap:.8em;margin:2px 0 2px 3em;font-size:.82rem;line-height:1.6}
+.yk-rec b{color:var(--deep)}
+.yk-ask{display:flex;flex-wrap:wrap;gap:2px 1.6em;background:var(--soft);border-radius:4px;padding:6px 12px}
+.yk-ask b{color:var(--deep)}
+/* 服装規定 */
+.dr{font-size:.86rem;line-height:1.7}
+.dr h3:first-child{margin-top:2px}
+.dr .lead{margin:2px 0 3px}
+.dr .supp{font-weight:700;color:var(--deep);margin:8px 0 2px}
+.zk{display:flex;gap:18px;align-items:center;margin-top:10px;flex-wrap:wrap}
+.zk-cap{font-weight:700;color:var(--deep);font-size:.8rem;margin-bottom:3px}
+.zk-box{width:168px;height:116px;border:2px solid #222;display:grid;grid-template-rows:1fr 1.6fr 1fr;text-align:center;align-items:center;font-weight:700;background:#fff}
+.zk-box div:nth-child(1),.zk-box div:nth-child(3){font-size:.95rem;letter-spacing:.5em;padding-left:.5em}
+.zk-box div:nth-child(2){font-size:2rem;letter-spacing:.6em;padding-left:.6em;line-height:1}
+.zk-rat{display:grid;grid-template-rows:1fr 1.6fr 1fr;height:116px;align-items:center;font-size:.8rem;color:#333}
+.zk-rat b{color:var(--main);margin-right:.6em}
+.zk-note{flex:1;min-width:200px;font-size:.78rem;color:#333;border-left:3px solid var(--line);padding-left:10px;line-height:1.7}
+/* カウンターの見方 */
+.ct-intro{background:var(--soft);border-radius:6px;padding:9px 14px;font-size:.86rem;line-height:1.75}
+.ct-intro b{color:var(--deep)}
+.ct-intro ol{margin:3px 0 0 1.4em}
+.ct-ex{margin-top:16px}
+.ct-ex .cap{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.ct-ex .cap b{display:inline-block;background:var(--main);color:#fff;font-size:.72rem;padding:1px 8px;border-radius:3px;letter-spacing:.1em}
+.ct-ex .cap .call{font-size:1.05rem;font-weight:900;color:var(--deep)}
+.ct-ex .cap small{color:var(--muted);font-size:.78rem}
+.ct-ex svg{display:block;width:100%;max-width:640px;height:auto;margin:0 auto}
+.ct-note{font-size:.8rem;color:#333;margin-top:12px}
+/* 目次・メモ・裏表紙（印刷用） */
+.print-only{display:none}
+.tc-g{margin-top:12px}
+.tc-g h4{font-size:.72rem;font-weight:700;color:var(--gold);letter-spacing:.2em;border-bottom:1px solid var(--line);padding-bottom:2px;margin-bottom:2px}
+.tc-r{display:flex;align-items:baseline;gap:8px;padding:5px 0 5px 2px;font-size:.95rem}
+.tc-r .t{font-weight:700;color:var(--deep)}
+.tc-r .t small{font-weight:500;color:var(--muted);font-size:.78rem;margin-left:.6em}
+.tc-r .d{flex:1;border-bottom:1.5px dotted #b9c6bc;transform:translateY(-3px)}
+.tc-r .n{font-weight:900;color:var(--main);min-width:1.6em;text-align:right}
+.tc-foot{margin-top:18px;font-size:.78rem;color:var(--muted);border-top:1px solid var(--line);padding-top:8px;line-height:1.8}
+.memo-l{display:flex;flex-direction:column;height:560px}
+.memo-l i{flex:1;border-bottom:1px solid #cdd6cf}
+.memo-l i:nth-child(5n){border-bottom-color:#9fb3a5}
+.back{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:420px}
+.back svg{width:62%;max-width:400px;height:auto;display:block}
+.back .org{margin-top:28px;font-size:1.25rem;font-weight:700;letter-spacing:.32em;padding-left:.32em;color:#111;text-align:center}
 /* 注意 */
 ol.notes{counter-reset:n;list-style:none;font-size:.86rem}
 ol.notes>li{position:relative;padding:5px 0 5px 30px;border-bottom:1px dashed #e1e5e2}
@@ -170,11 +232,62 @@ table.prog2 td{padding:4px 5px;border:1px solid #d6ded8;vertical-align:top}
   .teams{grid-template-columns:repeat(2,1fr)}
   .cv-grid{grid-template-columns:repeat(2,1fr)}
   .toc-list{columns:1}
+  dl.yk{grid-template-columns:1.8em minmax(0,1fr)}
+  dl.yk dt.k{text-align:left;text-align-last:auto}
+  dl.yk dd{grid-column:1/-1;padding:0 0 7px 1.8em;border-top:none}
+  .yk-sched{grid-template-columns:auto auto;width:auto}
+  .yk-rec{grid-template-columns:auto auto minmax(0,1fr);margin-left:0}
+  .yk-rec span:nth-child(5n+4){grid-column:2}
+  .back .org{font-size:1rem;letter-spacing:.18em;padding-left:.18em}
 }
 /* ---- 印刷：1ページ＝A4 1枚 ---- */
 @media print{
-  @page{size:A4 portrait;margin:10mm}
   html{font-size:10.5pt}
+  .print-only{display:block}
+  .pg h2{margin-bottom:4.5mm;padding-bottom:1.6mm;border-bottom-width:.25mm}
+  .pg h2::before{font-size:6.6pt}
+  .pg h2::after{height:.9mm;width:20mm;bottom:-.35mm}
+  .pg h2 span{font-size:15.5pt}
+  .pg h2 small{font-size:8pt}
+  .pg h3{font-size:10.5pt;border-left-width:1mm;padding-left:2.4mm}
+  .cover,.back-pg,.cover *,.back-pg *,.pg h2::after,.yk-sched,.yk-ask,.ct-intro,.ct-ex .cap b,.pch,table.t th,.tm .h,.court{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  dl.yk{font-size:9.3pt;line-height:1.66}
+  dl.yk dt,dl.yk dd{padding:1.35mm 0}
+  .yk-lead{font-size:8.3pt;margin:-2.5mm 0 2.5mm}
+  .yk-sched{font-size:8.8pt;padding:1.2mm 3.6mm;margin:.8mm 0 2mm}
+  .yk-rec{font-size:8.8pt}
+  .dr{font-size:9.6pt;line-height:1.72}
+  .zk-box{width:46mm;height:32mm}
+  .zk-rat{height:32mm;font-size:8.6pt}
+  .zk-note{font-size:8.4pt}
+  .ct-intro{font-size:9.6pt}
+  .ct-ex{margin-top:5mm}
+  .ct-ex .cap{margin-bottom:1.5mm}
+  .ct-ex svg{max-width:none;width:100%}
+  .tc-g{margin-top:5mm}
+  .tc-g h4{font-size:7.6pt}
+  .tc-r{font-size:10.5pt;padding:1.5mm 0 1.5mm .5mm}
+  .tc-r .n{font-size:10.5pt}
+  .tc-foot{font-size:8.2pt;margin-top:8mm}
+  .memo-l{height:243mm}
+  /* 余白を残しすぎないように、内容の決まっているページは行間を広げてページを埋める */
+  .ofg{margin-bottom:2mm}
+  .ofg h3{margin-top:5mm}
+  .ofr{padding:3.1mm .5mm}
+  .ofr .role,.ofr .nm{font-size:10pt}
+  #youkou dl.yk{line-height:1.78}
+  #youkou dl.yk dt,#youkou dl.yk dd{padding:2.1mm 0}
+  #youkou .yk-sched{padding:1.8mm 3.6mm;line-height:1.75}
+  .tc-r{padding:2.1mm 0 2.1mm .5mm}
+  /* 白紙（冊子）のときの進行表：結果が入らないので行を高くして書き込みやすくする */
+  .blank-mode .pcols.roomy table.prog2{font-size:10pt}
+  .blank-mode .pcols.roomy table.prog2 td{padding:7.2mm 2.2mm}
+  .blank-mode .pcols:not(.roomy) table.prog2 td{padding:3.6px 3px}
+  .scr-only{display:none}
+  .back-pg{height:277mm;display:flex;align-items:center;justify-content:center}
+  .back{min-height:0;margin-top:-10mm}
+  .back svg{width:100mm;max-width:none}
+  .back .org{font-size:15pt;margin-top:15mm}
   body{background:#fff}
   .bar,.status,.pdftip,.cv-pdf,h2 small a{display:none}
   .cover{height:277mm;display:flex;flex-direction:column}
@@ -188,12 +301,10 @@ table.prog2 td{padding:4px 5px;border:1px solid #d6ded8;vertical-align:top}
   .book{max-width:none;padding:0;margin:0}
   .pg{box-shadow:none;border-radius:0;margin:0;padding:0;break-before:page;page-break-before:always;min-height:0}
   .pg:first-child{break-before:auto;page-break-before:auto}
-  .br svg{max-height:268mm;width:auto;max-width:100%;margin:0 auto}
-  .yk img{max-height:270mm;width:auto;max-width:100%;margin:0 auto;border:none}
-  .yk h2{display:none}
+  .br svg{max-height:250mm;width:auto;max-width:100%;margin:0 auto}
   table.t{font-size:8.6pt}
-  #notes ol.notes{font-size:8.8pt;line-height:1.42}
-  #notes ol.notes>li{padding:2px 0 2px 28px}
+  #notes ol.notes{font-size:8.5pt;line-height:1.38}
+  #notes ol.notes>li{padding:1.5px 0 1.5px 26px}
   #notes .callout{margin:3px 0 1px;padding:3px 8px 3px 10px;border-width:1.5px}
   #notes .callout .ct{margin-bottom:0}
   #notes ol.notes>li::before{top:4px}
@@ -267,7 +378,9 @@ table.prog2 td{padding:4px 5px;border:1px solid #d6ded8;vertical-align:top}
 
 <script src="preview.js"></script>
 <script src="bracket-core.js"></script>
+<style id="pageCss"></style>
 <script>
+var BR_CROP = 72;   /* 組合せの図の上の大会名・期日・場所は描かない（ページの見出しに出す） */
 /* ===== 設定 ===== */
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
 /* ================ */
@@ -382,17 +495,23 @@ var TITLES = {
   cover: '表紙', officials: '大会役員・競技役員', youkou: '大会要項', dress: '服装規定', counter: 'カウンターの見方', notes: '競技上の注意',
   'br-MI': '男子個人戦 組合せ', 'br-WI': '女子個人戦 組合せ', 'pr-MI': '男子個人戦 進行表', 'pr-WI': '女子個人戦 進行表',
   'br-MT': '男子団体戦 組合せ', 'br-WT': '女子団体戦 組合せ', 'pr-MT': '男子団体戦 進行表', 'pr-WT': '女子団体戦 進行表',
-  pairs: '個人戦 選手名簿', 'tm-MT': '男子団体戦 選手名簿', 'tm-WT': '女子団体戦 選手名簿', changes: '選手変更一覧', history: '栄光の記録'
+  pairs: '個人戦 選手名簿', 'tm-MT': '男子団体戦 選手名簿', 'tm-WT': '女子団体戦 選手名簿', changes: '選手変更一覧', history: '栄光の記録',
+  toc: '目次', memo: 'メモ', back: '裏表紙'
 };
 var GAME = ['br-MI', 'br-WI', 'pr-MI', 'pr-WI', 'br-MT', 'br-WT', 'pr-MT', 'pr-WT'];
-/* 公開の段階ごとに出すページ（この順で並ぶ） */
+/* 公開の段階ごとに出すページ（この順で並ぶ）。目次・メモは印刷したときだけ出る。
+   冊子（表紙・目次・本文・メモ・裏表紙）は24ページ（中綴じ）になるように組んでいる */
 var ORDER = {
-  pre: ['cover', 'youkou', 'dress', 'counter', 'notes'].concat(GAME, ['history']),
-  full: ['cover', 'officials', 'youkou', 'dress', 'counter', 'notes'].concat(GAME, ['pairs', 'tm-MT', 'tm-WT', 'history']),
-  after: ['br-MI', 'br-WI', 'br-MT', 'br-WT', 'history'],
-  staff: ['cover', 'officials', 'youkou', 'dress', 'counter', 'notes'].concat(GAME, ['pairs', 'tm-MT', 'tm-WT', 'changes', 'history'])
+  pre: ['cover', 'toc', 'youkou', 'dress', 'counter', 'notes'].concat(GAME, ['history', 'memo', 'back']),
+  full: ['cover', 'toc', 'officials', 'youkou', 'dress', 'counter', 'notes'].concat(GAME, ['pairs', 'tm-MT', 'tm-WT', 'history', 'memo', 'back']),
+  after: ['br-MI', 'br-WI', 'br-MT', 'br-WT', 'history', 'back'],
+  staff: ['cover', 'toc', 'officials', 'youkou', 'dress', 'counter', 'notes'].concat(GAME, ['pairs', 'tm-MT', 'tm-WT', 'changes', 'history', 'memo', 'back'])
 };
-function sectionsNow() { return ORDER[STAGE] || ORDER.staff; }
+/* 白紙（記入用）では選手変更一覧を出さない（非公開。冊子の事前印刷は白紙で行う） */
+function sectionsNow() {
+  var l = ORDER[STAGE] || ORDER.staff;
+  return BLANK_MODE ? l.filter(function (x) { return x !== 'changes'; }) : l;
+}
 function titleOf(id) {
   if (STAGE === 'after' && id.indexOf('br-') === 0) return NAME[id.slice(3)] + ' 結果';
   return TITLES[id];
@@ -406,8 +525,253 @@ var DOCS = {
 };
 
 function pg(id, title, body, sub) {
-  return '<section class="pg" id="' + id + '" data-grp="' + id + '">' + (title ? '<h2><span>' + title + '</span>' + (sub ? '<small>' + sub + '</small>' : '') + '</h2>' : '') + body + '</section>';
+  return '<section class="pg" id="' + id + '" data-grp="' + id + '">' + (title ? '<h2 data-en="' + enOf(id) + '"><span>' + title + '</span>' + (sub ? '<small>' + sub + '</small>' : '') + '</h2>' : '') + body + '</section>';
 }
+
+/* ---- 見出しの英字（冊子の章見出しの上に小さく出す） ---- */
+var EN = { toc: 'CONTENTS', officials: 'OFFICIALS', youkou: 'TOURNAMENT OUTLINE', dress: 'DRESS CODE', counter: 'SCORE COUNTER', notes: 'RULES AND NOTES',
+  br: 'DRAW', pr: 'ORDER OF PLAY', pairs: 'PLAYERS', tm: 'TEAM ROSTER', changes: 'CHANGES', history: 'HALL OF FAME', memo: 'MEMO' };
+function enOf(id) { return EN[id] || EN[id.slice(0, 2)] || ''; }
+
+/* ---- 大会要項（２ページ） ---- */
+function youkouPages() {
+  var pdf = '<a href="' + DOCS.youkou.pdf + '" target="_blank" download>📄 PDF</a>';
+  var row = function (no, k, v) { return '<div><dt class="no">' + no + '</dt><dt class="k">' + k + '</dt><dd>' + v + '</dd></div>'; };
+  var sched = function (a) {
+    return '<div class="yk-sched"><span>開場</span><span>７:30</span><span>受付</span><span>７:35〜８:00</span>' +
+      '<span>練習</span><span>' + a + '</span><span>監督会議</span><span>８:25</span>' +
+      '<span>開始式</span><span>８:45〜</span><span>競技開始</span><span>９:00〜</span>' +
+      '<span>表彰式</span><span>競技終了後</span><span>終了（予定）</span><span>17:00</span></div>';
+  };
+  var p1 = '<div class="yk-lead">兼 第38回都道府県対抗全日本中学生ソフトテニス大会 岩手県代表選手二次選考会<br>兼 第35回東北中学校ソフトテニスインドア大会 予選会</div><dl class="yk">' +
+    row('１', '主催', '岩手県中学生ソフトテニス連盟') +
+    row('２', '協賛', 'ナガセケンコー株式会社　ヨネックス株式会社') +
+    row('３', '期日', '<span class="yk-day">令和８年11月28日（土）</span>　男女個人戦<span class="yk-tag">都道府県対抗選手二次選考会を兼ねる</span><br>' +
+      '<span class="yk-day">令和８年11月29日（日）</span>　男女団体戦<span class="yk-tag">東北インドア予選会を兼ねる</span>') +
+    row('４', '会場', '<span class="yk-day">男子</span>　雫石町営体育館（２面）<br>　　　〒020-0543　岩手郡雫石町高前田104　TEL 019-692-5030<br>' +
+      '<span class="yk-day">女子</span>　紫波町総合体育館（２面）<br>　　　〒028-3307　紫波郡紫波町桜町字下川原100　TEL 019-676-2650') +
+    row('５', '日程', '両会場とも同じ日程とする。<div class="yk-sub">11月28日（土）男女個人戦</div>' + sched('７:45〜８:30（15分×３ローテ）') +
+      '<div class="yk-sub">11月29日（日）男女団体戦</div>' + sched('７:45〜８:25（５分×８ローテ）')) +
+    row('６', '参加資格', '参加者は、以下に示す参加資格を得た個人及びチームであること。' +
+      '<div class="yk-sub">（１）個人戦</div><ol class="ind n1"><li>①　中学連に登録しているチームに所属している中学生であること。</li>' +
+      '<li>②　中学連強化スタッフが岩手カップ中学生学年別ソフトテニス大会の結果と、県中学校新人大会個人戦の結果を参考に選考した男女各32名（＝16ペア）。</li></ol>' +
+      '<div class="yk-sub">（２）団体戦</div><ol class="ind n1"><li>①　中学連に登録しているチームであること。</li>' +
+      '<li>②　中学連強化スタッフが岩手県中学校新人大会の結果を参考に選考した男女各16チーム。</li></ol>') +
+    row('７', '引率及び監督', '<ol class="ind"><li>（１）参加者の引率は、監督（ベンチ入り指導者）・クラブ指導者・保護者とする。</li>' +
+      '<li>（２）監督（ベンチ入り指導者）は、当該校の教職員・部活動指導員・外部コーチ・校外コーチ、またはクラブ指導者とする。</li></ol>') +
+    '</dl>';
+  var p2 = '<dl class="yk">' +
+    row('８', '参加料', '個人戦出場ペア　１ペア　3,000円<br>団体戦出場チーム　１チーム　10,000円<br>（個人戦・団体戦にかかる参加料は、当日受付時に納入すること。）') +
+    row('９', '参加申込', '<ol class="ind"><li>（１）中学連ホームページの「大会要項・参加申込」から申し込むこと。</li>' +
+      '<li>（２）申込期間　令和８年11月４日（水）９:00 〜 11月19日（木）17:00</li></ol>') +
+    row('10', 'ルール', '<ol class="ind"><li>（１）ソフトテニスルールブック（2026.4.1発行版）による。</li>' +
+      '<li>（２）使用球は、公認球（ケンコー）を使用する。</li>' +
+      '<li>（３）個人戦・団体戦ともにベンチには、選手以外に監督（ベンチ入り指導者）が入るものとする。</li>' +
+      '<li>（４）選手は、背中に「公認ゼッケン」をつけること。</li>' +
+      '<li>（５）選手・監督（ベンチ入り指導者）の服装・ゼッケンは、「岩手県中学校体育連盟ソフトテニス専門部服装・ゼッケン規定（2026.09-2027.08）」に準ずる。</li></ol>') +
+    row('11', '競技方法', '<div class="yk-sub">（１）個人戦について</div><ol class="ind n1"><li>①　出場16ペアを４ブロックに分けて予選リーグを行い、その後リーグ１位・２位による決勝トーナメントを行う。</li><li>②　マッチは、全て７ゲームとする。</li></ol>' +
+      '<div class="yk-sub">（２）団体戦について</div><ol class="ind n1"><li>①　トーナメント戦（２回戦以降は先取法）とする。</li><li>②　マッチは全て５ゲームとする。</li></ol>' +
+      '<div class="yk-sub">（３）選手変更について</div>個人戦（１名のみ）、団体戦ともにやむを得ない場合受け付ける。当日受付で選手変更届用紙をもらい、大会本部へ提出すること。') +
+    row('12', '表彰', '団体戦・個人戦ともに３位まで表彰する。団体戦優勝チームには優勝旗を、個人戦優勝ペア、準優勝ペアにはそれぞれ優勝杯、準優勝杯を授与する。') +
+    row('13', 'その他', '<ol class="ind"><li>（１）今大会の男女個人戦優勝ペアは、都道府県対抗全日本中学生ソフトテニス大会岩手県代表選手として内定する。</li>' +
+      '<li>（２）今大会の男女団体戦優勝チームは、令和９年１月９日（土）・10日（日）に山形県で行われる「第35回ルーセントカップ東北中学校ソフトテニスインドア大会」への出場権利を得る。</li>' +
+      '<li>（３）個人戦優勝杯・準優勝杯、団体戦優勝旗返還は次の通りである。</li></ol>' +
+      '<div class="yk-rec"><b>団体戦 男子</b><span>優勝</span><span>水沢南中学校</span><span>準優勝</span><span>一関協会</span>' +
+      '<b>団体戦 女子</b><span>優勝</span><span>中野中学校</span><span>準優勝</span><span>胆沢中学校</span>' +
+      '<b>個人戦 男子</b><span>優勝</span><span>菊地・熊谷ペア（水沢南中）</span><span>準優勝</span><span>伊藤・坂井ペア（水沢南中）</span>' +
+      '<b>個人戦 女子</b><span>優勝</span><span>長根・粒來ペア（中野中）</span><span>準優勝</span><span>菅原・齋藤ペア（上野中／北上・南中）</span></div>' +
+      '<ol class="ind"><li>（４）参加者全員が傷害保険に加入し、病気・事故等に備えるが、保険の保障内容以外については、一切責任を負いかねます。</li></ol>') +
+    row('14', '三次選考会', '都道府県対抗全日本中学生ソフトテニス大会岩手県代表選手３次選考会について' +
+      '<ol class="ind"><li>（１）期日　令和８年12月19日（土）９:00〜16:00　女子（１日開催）<br>　　　　令和８年12月20日（日）９:00〜16:00　男子（１日開催）</li>' +
+      '<li>（２）会場　江刺西体育館</li>' +
+      '<li>（３）参加者　中学連強化スタッフが選出した男女各24名（下記、※１と※２を含む）</li></ol>' +
+      '<ol class="ind n1" style="margin-left:3em"><li>※１　都道府県大会代表選手の権利を得た県インドア大会個人戦の優勝ペア</li><li>※２　日本連盟主催の競技者育成プログラム（Step-4）に出場した選手</li></ol>') +
+    row('15', '問合せ先', '<div class="yk-ask"><span><b>岩手県中学生ソフトテニス連盟</b>　競技委員長　坂倉　大</span><span>sakakura0320@gmail.com</span><span>携帯（18〜20時）090-7072-2035</span></div>') +
+    '</dl>';
+  return '<section class="pg" id="youkou" data-grp="youkou"><h2 data-en="' + EN.youkou + '"><span>大会要項</span><small>' + pdf + '</small></h2>' + p1 + '</section>' +
+    '<section class="pg" data-grp="youkou">' + p2 + '</section>';
+}
+
+/* ---- 服装規定 ---- */
+function dressPage() {
+  var pdf = '<a href="' + DOCS.dress.pdf + '" target="_blank" download>📄 PDF</a>';
+  var h = '<div class="dr"><p class="yk-lead" style="margin-top:-8px">岩手県中学校体育連盟ソフトテニス専門部服装・ゼッケン規定（2026.09-2027.08）</p>' +
+    '<h3>１．服装規定</h3><p class="lead">競技中及び開会式・閉会式・表彰式では、次のことを原則とする。</p><ol class="ind">' +
+    '<li>（１）ユニフォームは、（公財）日本ソフトテニス連盟の着用基準を満たしたものとする。ただし、学校指定の体操服は可とする。<br>服装・用具は新たにデザイン等を入れず、装飾がされていないこと。ただし、端の部分に小さく「チーム名・名前」を記入してもよい。</li>' +
+    '<li>（２）サポーター、テーピング、アンダーシャツやアンダータイツ、アームカバー、テニスグローブ・サングラス等の使用や着用を認める。</li>' +
+    '<li>（３）シューズは、テニスシューズを着用する。ただし、体育館では室内用シューズに履きかえる。</li>' +
+    '<li>（４）キャップやサンバイザーなどを着用しても良い。</li>' +
+    '<li>（５）岩手県中学校体育連盟ソフトテニス専門部服装・ゼッケン規定のゼッケンを付ける。</li>' +
+    '<li>（６）監督・外部指導者（コーチ）は、上下ともスポーツウェアを着用し、テニスシューズを履く。ただし、体育館では室内用シューズに履きかえる。</li></ol>' +
+    '<div class="supp">【服装・用具等についての補足】</div><ol class="ind">' +
+    '<li>（１）服装・用具にスポンサーバナーが表示されていないこと。</li>' +
+    '<li>（２）靴や靴紐の左右などを意図的に色違いにしない。</li>' +
+    '<li>（３）シャツの袖をまくったり、ズボンを下げて履いたりしない。</li>' +
+    '<li>（４）アンダーシャツ・アンダータイツ・アームカバー（ステッチも含めて）、サポーター、テーピングを使用する場合、その色は白・黒・ベージュの単色とする。<br>なお、アンダーシャツ・アームカバーとアンダータイツの両方を使用する場合は、同色とする。</li>' +
+    '<li>（５）選手の腕などへのペイント・文字の書き込み、磁気ネックレス、装飾品（ミサンガなど）、腕時計の使用は禁止する。</li>' +
+    '<li>（６）特別な医療用具を使用するときには、所定の医療用具届を大会本部に提出する。</li></ol>' +
+    '<h3>２．ゼッケン規定</h3><p class="lead">背中のゼッケンを以下に示すとおり作成し、背中の中央に付けること。ただし、四隅を止めるものとする。</p><ol class="ind">' +
+    '<li>（１）大きさは、Ｂ５判横（縦：約18cm、横：約26cm）の大きさの白地の布などに、都道府県名・姓・チーム名を記述する。</li>' +
+    '<li>（２）様式は、（公財）日本ソフトテニス連盟で示されている三段とし、ゼッケンの文字の位置は例の通りとする。' +
+    '<ol class="ind n1"><li>①　１段目；都道府県名の「都・府・県」の文字は付けない。</li><li>②　２段目；同じチームに同姓の選手がいる場合は、名前の１文字目などを付け足し、区別がつけられるようにする。</li></ol></li>' +
+    '<li>（３）シャツそのものへのプリントは認めない。</li>' +
+    '<li>（４）ゼッケンの文字は、「漢字」、「ひらがな」、「カタカナ」等を使用し、文字は「黒」とする。</li></ol>' +
+    '<div class="zk"><div><div class="zk-cap">【ゼッケン例】</div><div class="zk-box"><div>岩手</div><div>吉田</div><div>乙部中</div></div></div>' +
+    '<div class="zk-rat"><span><b>１／４</b>都道府県</span><span><b>２／４</b>姓</span><span><b>１／４</b>チーム名</span></div>' +
+    '<div class="zk-note">＊学校の場合は「○○中」・「○○学園」など学校名がわかるように表記する。ただし「○○」のみ不可とする。また、学校名をわかりやすくするために「盛岡第二中」のように学校所在地を付記してもよい。地域クラブの場合は、所属がわかるように表記する。</div></div></div>';
+  return pg('dress', '服装規定', h, pdf);
+}
+
+/* ---- カウンターの見方 ---- */
+/* 副審（カウンターを見る人）のイラスト。元の資料（doc/counter-1.png）の絵を切り抜いて使う。
+   コールは正審なので吹き出しは右（正審側）から出す */
+var CT_PAGE = 'doc/counter-1.png';
+function counterSvg(a, b, c, d, call, sub) {
+  var BL = '#1f63c6', GR = '#22914a';
+  var t = function (x, y, s, size, col, w) { return '<text x="' + x + '" y="' + y + '" font-size="' + size + '" font-weight="' + (w || 700) + '" fill="' + col + '" text-anchor="middle">' + s + '</text>'; };
+  var card = function (x, y, w, h, s, col, size) {
+    return '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="4" fill="#fff" stroke="#9aa79d" stroke-width="1.2"/>' + t(x + w / 2, y + h / 2 + size * 0.36, s, size, col);
+  };
+  return '<svg viewBox="0 0 640 322" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Noto Sans JP, Noto Sans CJK JP, sans-serif">' +
+    '<svg x="4" y="34" width="92" height="284" viewBox="78 474 160 502" preserveAspectRatio="xMidYMax meet"><image width="1241" height="1754" href="' + CT_PAGE + '" xlink:href="' + CT_PAGE + '"/></svg>' +
+    '<path d="M150 6 H560 Q570 6 570 16 V22 L606 14 L570 38 V46 Q570 56 560 56 H150 Q140 56 140 46 V16 Q140 6 150 6 Z" fill="#fff" stroke="#1a4a2e" stroke-width="1.6"/>' +
+    t(622, 20, '正審', 13, '#5d6b62', 700) +
+    '<text x="355" y="39" font-size="21" font-weight="900" fill="#123522" text-anchor="middle">「' + call + '」' + (sub ? '<tspan font-size="13" font-weight="500" fill="#5d6b62">　' + sub + '</tspan>' : '') + '</text>' +
+    '<rect x="140" y="70" width="480" height="196" rx="10" fill="#eef3ef" stroke="#1a4a2e" stroke-width="2"/>' +
+    card(158, 86, 128, 164, a, BL, 128) + card(302, 86, 68, 86, b, BL, 62) + card(382, 86, 68, 86, c, GR, 62) + card(474, 86, 128, 164, d, GR, 128) +
+    '<path d="M304 182 q0 10 10 10 h46 q10 0 10 10 q0 -10 10 -10 h46 q10 0 10 -10" fill="none" stroke="#5d6b62" stroke-width="1.6"/>' +
+    t(376, 234, 'ゲームカウント', 14, '#1a4a2e') +
+    '<path d="M222 256 V304 H316 M538 256 V304 H436" fill="none" stroke="#b8902a" stroke-width="1.6"/>' +
+    '<path d="M216 264 L222 254 L228 264 M532 264 L538 254 L544 264" fill="none" stroke="#b8902a" stroke-width="1.6"/>' +
+    t(376, 309, 'ポイントカウント', 14, '#7a5e14') +
+    '</svg>';
+}
+function counterPage() {
+  var pdf = '<a href="' + DOCS.counter.pdf + '" target="_blank" download>📄 PDF</a>';
+  var h = '<div class="ct-intro"><b>副審とネットの間に設置してあるカウンターは、次のように見てください。</b><ol>' +
+    '<li>副審側の２つの数字（青）は、番号の小さい方のカウントを表示しています。</li>' +
+    '<li>外側の数字は、ポイントカウントを表示しています。</li>' +
+    '<li>内側の数字は、ゲームカウントを表示しています。</li></ol></div>' +
+    '<div class="ct-ex"><div class="cap"><b>例１</b><small>ゲームカウント１－３のとき</small></div>' + counterSvg('3', '1', '3', '2', 'スリー・ツー！', '') + '</div>' +
+    '<div class="ct-ex"><div class="cap"><b>例２</b></div>' + counterSvg('A', '3', '2', 'D', 'アドバンテージ、サーバー！', '') + '</div>' +
+    '<p class="ct-note">※　デュースの時は「Ｄ」、アドバンテージの時は「Ａ」と表示します。</p>';
+  return pg('counter', 'ソフトテニスカウンターの見方', h, pdf);
+}
+
+/* ---- 目次（ページ番号は描いたあとで入れる） ---- */
+var TOC_GROUPS = [
+  ['大会について', ['officials', 'youkou', 'dress', 'counter', 'notes']],
+  ['個人戦', ['br-MI', 'br-WI', 'pr-MI', 'pr-WI']],
+  ['団体戦', ['br-MT', 'br-WT', 'pr-MT', 'pr-WT']],
+  ['選手名簿', ['pairs', 'tm-MT', 'tm-WT']],
+  ['記録', ['changes', 'history', 'memo']]
+];
+function tocPage() {
+  var list = sectionsNow();
+  var h = '';
+  var i, j, id, g, rows;
+  for (i = 0; i < TOC_GROUPS.length; i++) {
+    g = TOC_GROUPS[i];
+    rows = '';
+    for (j = 0; j < g[1].length; j++) {
+      id = g[1][j];
+      if (list.indexOf(id) < 0) continue;
+      rows += '<div class="tc-r"><span class="t">' + esc(titleOf(id)) + '</span><span class="d"></span><span class="n" data-toc="' + id + '"></span></div>';
+    }
+    if (!rows) continue;
+    var sub = i === 1 ? P.info.indivDate : i === 2 ? P.info.teamDate : '';
+    h += '<div class="tc-g"><h4>' + esc(g[0]) + (sub ? '　' + esc(sub) : '') + '</h4>' + rows + '</div>';
+  }
+  h += '<div class="tc-foot">男子会場　' + esc(P.info.venueM) + '　／　女子会場　' + esc(P.info.venueW) + '<br>最新の組合せ・進行・結果は、表紙の二次元コードから見られます（大会当日は自動で更新されます）。</div>';
+  return '<section class="pg print-only" id="toc" data-grp="toc"><h2 data-en="' + EN.toc + '"><span>目次</span></h2>' + h + '</section>';
+}
+/* 印刷したときのページ番号：表紙＝１。１つの .pg が１ページ（栄光の記録は .hpg ごとに１ページ） */
+function fillToc() {
+  var secs = document.querySelectorAll('#book .pg');
+  var at = {}, page = 1;
+  var i, id, n;
+  for (i = 0; i < secs.length; i++) {
+    id = secs[i].getAttribute('data-grp');
+    if (!(id in at)) at[id] = page;
+    n = id === 'history' ? Math.max(1, secs[i].querySelectorAll('.hpg').length) : 1;
+    page += n;
+  }
+  var els = document.querySelectorAll('[data-toc]');
+  for (i = 0; i < els.length; i++) els[i].textContent = at[els[i].getAttribute('data-toc')] || '';
+}
+
+/* ---- メモ・裏表紙 ---- */
+function memoPage() {
+  var l = '';
+  var i;
+  for (i = 0; i < 25; i++) l += '<i></i>';
+  return '<section class="pg print-only" id="memo" data-grp="memo"><h2 data-en="' + EN.memo + '"><span>メモ</span></h2><div class="memo-l">' + l + '</div></section>';
+}
+/* 連盟のマーク（ます目で描く。印刷でもにじまないように画像ではなく図形にする） */
+function emblemSvg() {
+  var G = ['B.......', 'BGGG....', 'BG.BBB..', 'BG.B.GGG', '.GGG.B.G', '...BBBGG', '.....G.G'];
+  var R = G.length, C = G[0].length, S = 10;
+  var comp = [], n = 0, r, c, k;
+  for (r = 0; r < R; r++) { comp.push([]); for (c = 0; c < C; c++) comp[r].push(-1); }
+  for (r = 0; r < R; r++) for (c = 0; c < C; c++) {
+    if (G[r].charAt(c) === '.' || comp[r][c] >= 0) continue;
+    var st = [[r, c]];
+    comp[r][c] = n;
+    while (st.length) {
+      var q = st.pop();
+      var ds = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+      for (k = 0; k < 4; k++) {
+        var y = q[0] + ds[k][0], x = q[1] + ds[k][1];
+        if (y >= 0 && y < R && x >= 0 && x < C && comp[y][x] < 0 && G[y].charAt(x) === G[q[0]].charAt(q[1])) { comp[y][x] = n; st.push([y, x]); }
+      }
+    }
+    n++;
+  }
+  var cp = function (y, x) { return y >= 0 && y < R && x >= 0 && x < C ? comp[y][x] : -1; };
+  var out = '', wl = '', bl = '';
+  for (r = 0; r < R; r++) for (c = 0; c < C; c++) {
+    if (G[r].charAt(c) !== '.') out += '<rect x="' + c * S + '" y="' + r * S + '" width="' + S + '" height="' + S + '" fill="' + (G[r].charAt(c) === 'B' ? '#538ED4' : '#92D050') + '"/>';
+  }
+  var edge = function (a, b, x1, y1, x2, y2) {
+    if (a < 0 && b < 0) return;
+    var l = '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '"/>';
+    if (a === b) wl += l; else bl += l;
+  };
+  for (r = 0; r <= R; r++) for (c = 0; c < C; c++) edge(cp(r - 1, c), cp(r, c), c * S, r * S, (c + 1) * S, r * S);
+  for (r = 0; r < R; r++) for (c = 0; c <= C; c++) edge(cp(r, c - 1), cp(r, c), c * S, r * S, c * S, (r + 1) * S);
+  return '<svg viewBox="-0.6 -0.6 ' + (C * S + 1.2) + ' ' + (R * S + 1.2) + '" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="岩手県中学生ソフトテニス連盟のマーク">' + out +
+    '<g stroke="#fff" stroke-width="0.45">' + wl + '</g><g stroke="#000" stroke-width="1.2" stroke-linecap="square">' + bl + '</g></svg>';
+}
+function backPage() {
+  return '<section class="pg back-pg" id="back" data-grp="back"><div class="back">' + emblemSvg() + '<div class="org">岩手県中学生ソフトテニス連盟</div></div></section>';
+}
+
+/* ---- 印刷のページ設定：柱（各ページ上の見出し）とノンブル（ページ番号）。奇数ページは右側（左がとじしろ） ---- */
+function pageCss(one) {
+  var T = (P && P.info && P.info.tournament) || '';
+  var F = "font-family:'Noto Sans JP','Noto Sans CJK JP',sans-serif;";
+  var rule = 'vertical-align:bottom;padding-bottom:1.8mm;border-bottom:.3mm solid #1a4a2e;';
+  var head = F + 'font-size:7pt;color:#5d6b62;letter-spacing:.04em;' + rule;
+  var lab = F + 'font-size:7.2pt;font-weight:700;color:#1a4a2e;letter-spacing:.16em;' + rule;
+  var fol = F + 'font-size:9pt;font-weight:700;color:#1a4a2e;vertical-align:top;padding-top:3.2mm;';
+  var c = '@page{size:A4 portrait;margin:15mm 11mm 13mm 15mm}@page :left{margin-left:11mm;margin-right:15mm}@page :right{margin-left:15mm;margin-right:11mm}';
+  if (!one) c += '@page :right{@bottom-right{content:counter(page);' + fol + '}}@page :left{@bottom-left{content:counter(page);' + fol + '}}';
+  var list = sectionsNow();
+  var i, id, L;
+  for (i = 0; i < list.length; i++) {
+    id = list[i];
+    if (id === 'cover' || id === 'back') {
+      c += '@page p-' + id + '{margin:10mm;@bottom-left{content:none}@bottom-right{content:none}}';
+    } else {
+      L = String(titleOf(id) || '').replace(/["\\]/g, '');
+      c += '@page p-' + id + ':right{@top-left{content:"' + T + '";' + head + '}@top-center{content:"";' + head + '}@top-right{content:"' + L + '";' + lab + '}}' +
+        '@page p-' + id + ':left{@top-left{content:"' + L + '";' + lab + '}@top-center{content:"";' + head + '}@top-right{content:"' + T + '";' + head + '}}';
+    }
+    c += '.pg[data-grp="' + id + '"]{page:p-' + id + '}';
+  }
+  document.getElementById('pageCss').textContent = '@media print{' + c + '}';
+}
+
 
 /* 表紙：写真の上にタイトルと選手紹介を重ねる */
 function coverPage() {
@@ -463,21 +827,8 @@ function officialsPage() {
     }
     h += '</div>';
   }
-  h += '<p class="foot">式次第は、「📄 PDF」（大会役員・競技役員と同じページ）に載っています。</p>';
+  h += '<p class="foot scr-only">式次第は、「📄 PDF」（大会役員・競技役員と同じページ）に載っています。</p>';
   return pg('officials', '大会役員・競技役員', h, pdf);
-}
-
-function docPages(id) {
-  var d = DOCS[id];
-  if (!d.pages.length) return pg(id, TITLES[id], '<div class="later">後日掲載します</div>');
-  var h = '';
-  var i;
-  for (i = 0; i < d.pages.length; i++) {
-    h += '<section class="pg yk" data-grp="' + id + '"' + (i ? '' : ' id="' + id + '"') + '><h2><span>' + TITLES[id] + (i ? '（' + (i + 1) + '）' : '') + '</span>' +
-      (i ? '' : '<small><a href="' + d.pdf + '" target="_blank" download>📄 PDF</a></small>') + '</h2>' +
-      '<img src="' + d.pages[i] + '" alt="' + TITLES[id] + ' ' + (i + 1) + 'ページ"></section>';
-  }
-  return h;
 }
 
 /* 1つの資料だけをPDFにする（印刷の画面で「PDFに保存」） */
@@ -488,6 +839,7 @@ function pdfOne(id) {
   for (i = 0; i < secs.length; i++) secs[i].classList.add('pt');
   secs[0].classList.add('pt1');
   document.body.classList.add('print-one');
+  pageCss(true);
   showPdfTip(true);
 }
 function pdfAll() { showPdfTip(false); }
@@ -502,6 +854,7 @@ function closePdfTip() {
   var secs = document.querySelectorAll('.pg.pt');
   var i;
   for (i = 0; i < secs.length; i++) secs[i].classList.remove('pt', 'pt1');
+  if (P) pageCss(false);
 }
 function doPrint() {
   document.getElementById('pdfTip').hidden = true;
@@ -536,7 +889,7 @@ function notesPage() {
 function bracketPage(code) {
   var d = dataFor(code);
   var body = d.matches.length ? '<div class="br">' + (code.charAt(1) === 'T' ? teamPage(d) : indivPage(d)) + '</div>' : '<div class="wait">' + NAME[code] + 'の組合せは、11月24日（火）に掲載します。</div>';
-  return '<section class="pg" id="br-' + code + '" data-grp="br-' + code + '">' + (d.matches.length ? '' : '<h2><span>' + NAME[code] + ' 組合せ</span></h2>') + body + '</section>';
+  return pg('br-' + code, titleOf('br-' + code), body, d.matches.length ? esc(d.date || '') + '　' + esc(d.venue || '') : '');
 }
 
 function sideText(s, m, which) {
@@ -685,7 +1038,7 @@ function historyPage() {
     }
   }
   /* 印刷：個人戦は種別ごとに1ページ、団体戦は男女を左右に並べて1ページ。どのページにも「栄光の記録」 */
-  var cap = '<h2 class="hcap"><span>栄光の記録</span></h2>';
+  var cap = '<h2 class="hcap" data-en="' + EN.history + '"><span>栄光の記録</span></h2>';
   var indiv = '', team = '';
   for (i = 0; i < kinds.length; i++) {
     var list = by[kinds[i]].sort(function (a, b) { return histNo_(a['回']) - histNo_(b['回']); });  /* 上が古い回 */
@@ -714,7 +1067,12 @@ function makeSection(id) {
   var c = id.slice(3);
   if (id === 'cover') return coverPage();
   if (id === 'officials') return officialsPage();
-  if (DOCS[id]) return docPages(id);
+  if (id === 'toc') return tocPage();
+  if (id === 'youkou') return youkouPages();
+  if (id === 'dress') return dressPage();
+  if (id === 'counter') return counterPage();
+  if (id === 'memo') return memoPage();
+  if (id === 'back') return backPage();
   if (id === 'notes') return notesPage();
   if (id === 'pairs') return pairsPage();
   if (id === 'changes') return changesPage();
@@ -734,6 +1092,9 @@ function render() {
   var i;
   for (i = 0; i < list.length; i++) h += makeSection(list[i]);
   document.getElementById('book').innerHTML = h;
+  document.body.classList.toggle('blank-mode', !!BLANK_MODE);
+  fillToc();
+  pageCss(false);
   window.scrollTo(0, y);
   var qr = document.getElementById('qr');
   var url = (P.info.site || location.href.replace(/[^\/]*$/, '')) + 'program.html';
@@ -751,7 +1112,7 @@ function renderToc() {
   var h = '';
   var list = sectionsNow();
   var i;
-  for (i = 0; i < list.length; i++) if (list[i] !== 'cover') h += '<a href="#' + list[i] + '">' + titleOf(list[i]) + '</a>';
+  for (i = 0; i < list.length; i++) if (['cover', 'toc', 'memo', 'back'].indexOf(list[i]) < 0) h += '<a href="#' + list[i] + '">' + titleOf(list[i]) + '</a>';
   document.getElementById('toc').innerHTML = h;
 }
 
@@ -760,7 +1121,7 @@ function setMode(blank) {
   document.getElementById('mLive').className = blank ? '' : 'on';
   document.getElementById('mBlank').className = blank ? 'on' : '';
   try { history.replaceState(null, '', (blank ? '?mode=blank' : location.pathname) + (PREVIEW ? (blank ? '&' : '?') + 'preview=1' : '')); } catch (e) {}
-  if (P) render();
+  if (P) { renderToc(); render(); }
 }
 
 setMode(BLANK_MODE);
