@@ -541,11 +541,12 @@ function enOf(id) { return EN[id] || EN[id.slice(0, 2)] || ''; }
 function youkouPages() {
   var pdf = '<a href="' + DOCS.youkou.pdf + '" target="_blank" download>📄 PDF</a>';
   var row = function (no, k, v) { return '<div><dt class="no">' + no + '</dt><dt class="k">' + k + '</dt><dd>' + v + '</dd></div>'; };
-  var sched = function (a) {
+  /* 式の名前：個人戦の日は「開会式」「個人戦表彰式」、団体戦の日は「団体戦開始式」「閉会式（団体戦表彰式）」 */
+  var sched = function (a, open, close) {
     return '<div class="yk-sched"><span>開場</span><span>７:30</span><span>受付</span><span>７:35〜８:00</span>' +
       '<span>練習</span><span>' + a + '</span><span>監督会議</span><span>８:25</span>' +
-      '<span>開始式</span><span>８:45〜</span><span>競技開始</span><span>９:00〜</span>' +
-      '<span>表彰式</span><span>競技終了後</span><span>終了（予定）</span><span>17:00</span></div>';
+      '<span>' + open + '</span><span>８:45〜</span><span>競技開始</span><span>９:00〜</span>' +
+      '<span>' + close + '</span><span>競技終了後</span><span>終了（予定）</span><span>17:00</span></div>';
   };
   var p1 = '<div class="yk-lead">兼 第38回都道府県対抗全日本中学生ソフトテニス大会 岩手県代表選手二次選考会<br>兼 第35回東北中学校ソフトテニスインドア大会 予選会</div><dl class="yk">' +
     row('１', '主催', '岩手県中学生ソフトテニス連盟') +
@@ -554,8 +555,8 @@ function youkouPages() {
       '<span class="yk-day">令和８年11月29日（日）</span>　男女団体戦<span class="yk-tag">東北インドア予選会を兼ねる</span>') +
     row('４', '会場', '<span class="yk-day">男子</span>　雫石町営体育館（２面）<br>　　　〒020-0543　岩手郡雫石町高前田104　TEL 019-692-5030<br>' +
       '<span class="yk-day">女子</span>　紫波町総合体育館（２面）<br>　　　〒028-3307　紫波郡紫波町桜町字下川原100　TEL 019-676-2650') +
-    row('５', '日程', '両会場とも同じ日程とする。<div class="yk-sub">11月28日（土）男女個人戦</div>' + sched('７:45〜８:30（15分×３ローテ）') +
-      '<div class="yk-sub">11月29日（日）男女団体戦</div>' + sched('７:45〜８:25（５分×８ローテ）')) +
+    row('５', '日程', '両会場とも同じ日程とする。<div class="yk-sub">11月28日（土）男女個人戦</div>' + sched('７:45〜８:30（15分×３ローテ）', '開会式', '個人戦表彰式') +
+      '<div class="yk-sub">11月29日（日）男女団体戦</div>' + sched('７:45〜８:25（５分×８ローテ）', '団体戦開始式', '閉会式（団体戦表彰式）')) +
     row('６', '参加資格', '参加者は、以下に示す参加資格を得た個人及びチームであること。' +
       '<div class="yk-sub">（１）個人戦</div><ol class="ind n1"><li>①　中学連に登録しているチームに所属している中学生であること。</li>' +
       '<li>②　中学連強化スタッフが岩手カップ中学生学年別ソフトテニス大会の結果と、県中学校新人大会個人戦の結果を参考に選考した男女各32名（＝16ペア）。</li></ol>' +
