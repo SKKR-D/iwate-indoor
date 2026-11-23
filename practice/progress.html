@@ -94,6 +94,7 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 @media print{.rules{display:none}}
 .footer{text-align:center;font-size:.7rem;color:var(--text-light);padding:20px}
 @media(max-width:680px){.cols{grid-template-columns:1fr}}
+.x3n{margin-top:4px;font-size:.74rem;color:#a52a1a;font-weight:700}
 </style>
 </head>
 <body data-coach-return="show">
@@ -166,7 +167,7 @@ function stateBadge(m) {
   return '<span class="badge b-wait">待機</span>';
 }
 
-/* 勝った側の数字を丸数字に（例：4-2 → ④-2、2-1（G差）→ ②-1（G差）、不戦勝・リタイア 4-R → ④-R） */
+/* 勝った側の数字を丸数字に（例：4-2 → ④-2、1-1（得失G）→ ①-1（得失G）、2-1（代表戦）→ ②-1（代表戦）、不戦勝・リタイア 4-R → ④-R） */
 function circNum(n) {
   n = parseInt(n, 10);
   if (n === 0) return '⓪';
@@ -230,7 +231,10 @@ function pairsHtml(m) {
     h += '<span class="r">' + res + '</span>';
     h += '<span class="' + (p.w === 'R' ? 'won' : p.w ? 'lost' : '') + '">' + (p.r ? esc(p.r[0]) + '・' + esc(p.r[1]) : (t.orderR && i === 2 ? '欠員（不戦敗）' : '')) + '</span>';
   }
-  return h + '</div>';
+  h += '</div>';
+  /* 第３マッチ（勝敗に関係しない試合）を行うとき */
+  if (t.x3 === 'yes') h += '<div class="x3n">第３マッチは、勝敗に関係しない試合として行います</div>';
+  return h;
 }
 
 function render() {
