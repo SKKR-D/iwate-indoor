@@ -215,6 +215,8 @@ tr.locked td{background:#f4f4f4;color:#777}
     <button class="tab" data-tab="team" onclick="showTab('team')">団体戦 出場指定</button>
     <button class="tab" data-tab="indiv" onclick="showTab('indiv')">個人戦 ペア登録</button>
     <button class="tab" data-tab="master" onclick="showTab('master')">加盟チーム名簿</button>
+    <button class="tab" data-tab="photo" id="tabPhoto" onclick="showTab('photo')">記録写真</button>
+    <script>/* 記録写真は本番だけ（練習用ではドライブを使えない） */ if (window.IWP) document.getElementById('tabPhoto').style.display = 'none';</script>
   </nav>
   <main class="main">
 
@@ -390,6 +392,33 @@ tr.locked td{background:#f4f4f4;color:#777}
       <div id="preCfg"></div>
     </section>
 
+    <!-- ===== 記録写真 ===== -->
+    <section class="panel" id="panel-photo">
+      <h2>記録写真（報道・HP用の写真と共有）</h2>
+      <div class="lead">係員がスマホの「記録写真の撮影」ページ（photo.html、係員のパスワード）で撮ると、Googleドライブの記録写真フォルダに場面ごとに分けて保存されます。「入賞者」の写真は「00_報道・HP掲載用」にも決まった名前（例：男子団体戦_優勝_〇〇.jpg）で入ります。本部・控室のモニターは「記録写真モニター」（photo-view.html、役員・係員のパスワード）。<br>写真の掲載は、参加申込時に同意を得た新聞・連盟HPに限ります。</div>
+      <div class="row">
+        <button class="btn btn-out btn-sm" onclick="photoLoad()">状況を確認</button>
+        <a class="btn btn-out btn-sm" href="photo.html" target="_blank">📷 撮影ページ</a>
+        <a class="btn btn-out btn-sm" href="photo-view.html" target="_blank">🖼 記録写真モニター</a>
+      </div>
+      <div class="notice-st" id="photoSt">「状況を確認」を押すと、報道・HP用の写真がそろっているかを表示します。</div>
+      <div class="notice-box">
+        <h3>報道・HP用フォルダの共有（リンクを知っている人が閲覧できる）</h3>
+        <div class="muted">連盟の担当者・報道機関にフォルダのリンクを送るときに共有します。終了日時を過ぎると自動で共有を止めます（いつでも「共有を止める」で止められます）。</div>
+        <div class="notice-st" id="photoShareSt"></div>
+        <div class="row">
+          <span class="muted">共有の終了</span>
+          <input type="text" id="photoUntil" placeholder="2026/12/13 23:59" style="padding:8px 10px;border:2px solid #ddd;border-radius:8px;font-size:.88rem;width:170px">
+          <button class="btn btn-main btn-sm" onclick="photoShare(true)">共有する</button>
+          <button class="btn btn-out btn-sm" onclick="photoShare(false)">共有を止める</button>
+          <button class="btn btn-out btn-sm" onclick="photoCopy('url')">リンクをコピー</button>
+        </div>
+        <h3 style="margin-top:14px">送付メールの文面（大会結果とフォルダのリンク入り）</h3>
+        <textarea id="photoMail" readonly style="width:100%;height:260px;font-family:inherit;font-size:.8rem;line-height:1.6;padding:8px;border:2px solid #ddd;border-radius:8px"></textarea>
+        <div class="row"><button class="btn btn-main btn-sm" onclick="photoCopy('mail')">文面をコピー</button><span class="muted">メールソフトに貼り付けて、宛先を入れて送ってください。</span></div>
+      </div>
+    </section>
+
     <!-- ===== 加盟チーム名簿 ===== -->
     <section class="panel" id="panel-master">
       <h2>加盟チーム名簿（登録システムから取り込み）</h2>
@@ -499,6 +528,7 @@ function renderAll() {
 
 function showTab(name) {
   if (name === 'draw' && D) loadDraw();
+  if (name === 'photo' && !PHOTO) photoLoad();
   var tabs = document.querySelectorAll('.tab');
   var i;
   for (i = 0; i < tabs.length; i++) tabs[i].className = 'tab' + (tabs[i].getAttribute('data-tab') === name ? ' active' : '');
@@ -1178,6 +1208,50 @@ function saveDraw(generate) {
 
 /* ========== 公開のお知らせ（申込責任者へのメール） ========== */
 var NOTICE = null;
+/* ========== 記録写真 ========== */
+var PHOTO = null;
+function photoDraw(r) {
+  PHOTO = r;
+  var i, h = '<div>保存した写真：' + r.total + '枚　<a href="' + esc(r.rootUrl) + '" target="_blank">記録写真フォルダを開く</a>　<a href="' + esc(r.pressUrl) + '" target="_blank">報道・HP用フォルダを開く</a></div>';
+  var got = 0;
+  h += '<table style="margin-top:6px"><thead><tr><th>種目</th><th>区分</th><th>報道・HP用の写真</th></tr></thead><tbody>';
+  for (i = 0; i < r.press.length; i++) {
+    if (r.press[i].file) got++;
+    h += '<tr><td>' + esc(r.press[i].div) + '</td><td>' + esc(r.press[i].slot) + '</td><td>' + (r.press[i].file ? '<span class="ok">✓ ' + esc(r.press[i].file) + '</span>' : '<span class="ng">まだありません</span>') + '</td></tr>';
+  }
+  h += '</tbody></table><div style="margin-top:4px">' + got + '／' + r.press.length + '枚そろっています。</div>';
+  document.getElementById('photoSt').innerHTML = h;
+  document.getElementById('photoShareSt').innerHTML = r.shared ? '<span class="ok">共有中</span>（' + esc(r.until || '終了日時なし') + 'まで）　' + esc(r.pressUrl) : '<span class="muted">共有していません（連盟のアカウントの人だけが見られます）</span>';
+  var u = document.getElementById('photoUntil');
+  if (!u.value) u.value = r.until || r.defaultUntil || '';
+  document.getElementById('photoMail').value = r.mail;
+}
+function photoLoad() {
+  document.getElementById('photoSt').textContent = '確認しています…';
+  return api({ action: 'adminPhotoStatus' }).then(photoDraw).catch(function (err) { document.getElementById('photoSt').textContent = '確認できませんでした：' + err.message; });
+}
+function photoShare(on) {
+  if (on && !confirm('報道・HP用フォルダを「リンクを知っている人が閲覧できる」にします。\n終了日時：' + document.getElementById('photoUntil').value + '\nよろしいですか？')) return;
+  toast(on ? '共有しています…' : '共有を止めています…');
+  api({ action: 'adminPhotoShare', on: on, until: document.getElementById('photoUntil').value }).then(function (r) {
+    photoDraw(r);
+    toast(on ? '共有しました。リンクと文面をコピーできます' : '共有を止めました');
+  }).catch(function (err) { toast('できませんでした：' + err.message, true); });
+}
+function photoCopy(what) {
+  if (!PHOTO) { toast('先に「状況を確認」を押してください', true); return; }
+  if (what === 'url' && !PHOTO.shared) { toast('まだ共有していません。「共有する」を押してからコピーしてください', true); return; }
+  var text = what === 'url' ? PHOTO.pressUrl : document.getElementById('photoMail').value;
+  var done = function () { toast('コピーしました'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, function () { fallback(); });
+  else fallback();
+  function fallback() {
+    var ta = document.getElementById('photoMail');
+    if (what === 'url') { prompt('リンク', text); return; }
+    ta.removeAttribute('readonly'); ta.select(); document.execCommand('copy'); ta.setAttribute('readonly', ''); done();
+  }
+}
+
 function noticeLoad() {
   document.getElementById('noticeSt').textContent = '確認しています…';
   return api({ action: 'adminNoticeStatus' }).then(function (r) {
