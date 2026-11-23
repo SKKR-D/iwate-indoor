@@ -161,6 +161,12 @@ tr.locked td{background:#f4f4f4;color:#777}
 .role-draw .tabs .tab:not([data-tab="draw"]){display:none}
 .role-draw .admin-only{display:none !important}
 .role-draw .draw-only{display:block}
+.notice-box{margin-top:18px;border:2px solid #cfe3d4;border-radius:10px;padding:12px 14px;background:#f6fbf7}
+.notice-box h3{margin-top:0}
+.notice-st{font-size:.85rem;line-height:1.8;margin:6px 0 10px}
+.notice-st .ng{color:#c0392b;font-weight:bold}
+.notice-st .ok{color:#1e7b34;font-weight:bold}
+.notice-box input[type=email]{padding:8px 10px;border:2px solid #ddd;border-radius:8px;font-size:.88rem;width:260px;max-width:100%}
 .draw-only.note{background:#fff8e1;border:2px solid #c8a020;border-radius:8px;padding:10px 14px;font-size:.84rem;line-height:1.7;margin-bottom:12px;color:#5a4500}
 .req-card{border:2px solid #e08a00;background:#fffaf0;border-radius:10px;padding:12px 14px;margin-bottom:10px}
 .req-card .h{display:flex;flex-wrap:wrap;gap:8px;align-items:baseline;justify-content:space-between}
@@ -290,6 +296,17 @@ tr.locked td{background:#f4f4f4;color:#777}
         <button class="btn btn-main" onclick="saveDraw(false)">組合せを保存</button>
         <button class="btn btn-main admin-only" onclick="saveDraw(true)">保存して進行表を作成</button>
         <span class="muted" id="drawStatus"></span>
+      </div>
+      <div class="notice-box admin-only">
+        <h3>公開のお知らせ（申込責任者へのメール）</h3>
+        <div class="muted">すべての区分の進行表を作ったあとに送ります。申込済みのチームの申込責任者メールあてに、チームごとに１通（個人戦と団体戦の両方に出るチームも１通）。組合せ・進行表・プログラムのURLと、チーム専用の受付票のリンク、監督向け動画・練習ページを知らせます。送ったチームは記録し、２回は送りません。</div>
+        <div class="notice-st" id="noticeSt">「状況を確認」を押すと、送る相手の数と進行表の状況を表示します。</div>
+        <div class="row">
+          <button class="btn btn-out btn-sm" onclick="noticeLoad()">状況を確認</button>
+          <input type="email" id="noticeTo" placeholder="テストの送り先メールアドレス">
+          <button class="btn btn-out btn-sm" onclick="noticeTest()">テスト送信（１通）</button>
+          <button class="btn btn-main" onclick="noticeSend()">未送信のチームに送る</button>
+        </div>
       </div>
     </section>
 
@@ -1153,6 +1170,52 @@ function saveDraw(generate) {
       return loadDraw();
     });
   }).catch(function (err) { toast('保存できません：' + err.message, true); });
+}
+
+/* ========== 公開のお知らせ（申込責任者へのメール） ========== */
+var NOTICE = null;
+function noticeLoad() {
+  document.getElementById('noticeSt').textContent = '確認しています…';
+  return api({ action: 'adminNoticeStatus' }).then(function (r) {
+    NOTICE = r;
+    var i, h = '', d;
+    for (i = 0; i < r.divs.length; i++) {
+      d = r.divs[i];
+      if (!d.applied) continue;
+      h += esc(d.name) + '：' + (d.published ? '<span class="ok">進行表あり</span>' : '<span class="ng">進行表なし</span>') + '　';
+    }
+    h += '<br>送る相手：' + r.total + '通（送信済み ' + r.sent + '通、未送信 ' + r.unsent + '通）' + (r.lastAt ? '　最後に送った日時：' + esc(r.lastAt) : '');
+    if (r.noMail.length) h += '<br><span class="ng">申込者メールがないため送れない：' + esc(r.noMail.join('、')) + '</span>';
+    if (r.diff && r.diff.length) h += '<br>申込責任者と監督が違うチーム（メールに「受付票のリンクを監督へ」の一文が入ります）：' + r.diff.length + '件<br><span class="muted">' + esc(r.diff.join('、')) + '</span>';
+    if (r.missing.length) h += '<br><span class="ng">進行表を作っていない区分があるため、まだ送れません（テスト送信はできます）。</span>';
+    h += '<br><span class="muted">今日送れる残り：' + r.quota + '通</span>';
+    document.getElementById('noticeSt').innerHTML = h;
+    var to = document.getElementById('noticeTo');
+    if (!to.value) { try { to.value = localStorage.getItem('iw_notice_to') || r.me || ''; } catch (e) { to.value = r.me || ''; } }
+  }).catch(function (err) { document.getElementById('noticeSt').textContent = '確認できませんでした：' + err.message; });
+}
+function noticeTest() {
+  var to = document.getElementById('noticeTo').value.replace(/^\s+|\s+$/g, '');
+  if (!to) { toast('テストの送り先メールアドレスを入れてください', true); return; }
+  try { localStorage.setItem('iw_notice_to', to); } catch (e) {}
+  toast('テスト送信中…');
+  api({ action: 'adminNoticeSend', test: true, to: to }).then(function (r) {
+    toast('✉ テストを送りました（' + r.to + '／内容は「' + r.team + '」の例）');
+  }).catch(function (err) { toast('送れませんでした：' + err.message, true); });
+}
+function noticeSend() {
+  var go = function () {
+    var r = NOTICE;
+    if (r.missing.length) { toast('進行表を作っていない区分があります：' + r.missing.join('、'), true); return; }
+    if (!r.unsent) { toast('未送信のチームはありません'); return; }
+    if (!confirm('申込責任者 ' + r.unsent + '人に「組合せ・進行表を公開しました」のメールを送ります。\n（送ったチームは記録し、２回は送りません）\nよろしいですか？')) return;
+    toast('送信中…');
+    api({ action: 'adminNoticeSend' }).then(function (x) {
+      toast('✉ ' + x.sent + '通送りました' + (x.noMail.length ? '（申込者メールなし：' + x.noMail.join('、') + '）' : ''), x.noMail.length > 0);
+      return noticeLoad();
+    }).catch(function (err) { toast('送れませんでした：' + err.message, true); noticeLoad(); });
+  };
+  noticeLoad().then(function () { if (NOTICE) go(); });
 }
 
 /* ========== 選手変更 ========== */
