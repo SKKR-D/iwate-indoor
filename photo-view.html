@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>記録写真モニター｜県インドア大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--deep:#123522;--main:#1a4a2e;--gold:#b8902a;--line:#c9d6cc}
+html,body{height:100%;background:#0b130e;color:#fff;font-family:'Noto Sans JP',sans-serif;overflow:hidden}
+.login{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle at 50% 30%,#1a4a2e,#0b130e 70%)}
+.login .box{width:min(380px,90vw);text-align:center}
+.login h1{font-size:1.3rem;letter-spacing:.12em;margin-bottom:4px}
+.login p{font-size:.8rem;opacity:.75;margin-bottom:16px}
+.login input{width:100%;font-family:inherit;font-size:1rem;padding:12px;border-radius:10px;border:none;margin-bottom:10px}
+.login button{width:100%;font-family:inherit;font-size:1rem;font-weight:900;padding:12px;border-radius:10px;border:none;background:var(--gold);color:#fff;cursor:pointer}
+.login .err{color:#ff9b90;font-size:.84rem;margin-top:8px;min-height:1.2em}
+.wall{position:fixed;inset:0;display:grid;gap:6px;padding:6px;background:#0b130e}
+.wall.g4{grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr}
+.wall.g6{grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr}
+.wall.g1{grid-template-columns:1fr;grid-template-rows:1fr}
+.tile{position:relative;overflow:hidden;border-radius:10px;background:#16241b}
+.tile img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity 1.2s ease}
+.tile img.on{opacity:1}
+.tile img.fit{object-fit:contain;background:#0b130e}
+.tile .cap{position:absolute;left:0;right:0;bottom:0;padding:22px 12px 8px;background:linear-gradient(transparent,rgba(0,0,0,.72));font-size:clamp(11px,1.3vw,18px);font-weight:700;letter-spacing:.04em;opacity:0;transition:opacity 1.2s}
+.tile .cap.on{opacity:1}
+.tile .new{position:absolute;top:10px;left:10px;background:var(--gold);color:#fff;font-size:clamp(10px,1vw,14px);font-weight:900;padding:2px 9px;border-radius:12px;letter-spacing:.12em;opacity:0;transition:opacity .6s}
+.tile .new.on{opacity:1}
+.tile .empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:#9fb3a5;font-size:clamp(12px,1.4vw,18px)}
+.tile .empty svg{width:28%;opacity:.55}
+.bar{position:fixed;top:10px;right:10px;display:flex;gap:6px;z-index:5;transition:opacity .4s}
+.bar.hide{opacity:0;pointer-events:none}
+.bar button{font-family:inherit;font-size:.8rem;font-weight:700;padding:7px 12px;border-radius:18px;border:none;background:rgba(0,0,0,.55);color:#fff;cursor:pointer}
+.bar button.on{background:var(--gold)}
+.stat{position:fixed;left:12px;top:14px;font-size:.72rem;color:#fff;background:rgba(0,0,0,.55);padding:5px 10px;border-radius:14px;z-index:5;transition:opacity .4s}
+body.idle .stat{opacity:0}
+.hidden{display:none!important}
+body.idle{cursor:none}
+</style>
+</head>
+<body>
+<div class="login" id="login">
+  <div class="box">
+    <h1>記録写真モニター</h1>
+    <p id="tname">第40回岩手県中学校インドアソフトテニス大会</p>
+    <input type="password" id="pwInput" placeholder="パスワード（役員・係員）" onkeydown="if(event.key==='Enter')login()">
+    <button onclick="login()">表示する</button>
+    <div class="err" id="err"></div>
+  </div>
+</div>
+<div class="wall g4 hidden" id="wall"></div>
+<div class="bar hidden" id="bar">
+  <button data-g="1" onclick="setGrid(1)">１画面</button>
+  <button data-g="4" onclick="setGrid(4)">４画面</button>
+  <button data-g="6" onclick="setGrid(6)">６画面</button>
+  <button id="fsBtn" onclick="fullscreen()">全画面</button>
+</div>
+<div class="stat hidden" id="stat"></div>
+
+<script>
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
+var pw = '';
+var LIST = [];          /* 新しい順 { id, cap, at } */
+var SEEN = {};          /* 一度表示した写真 */
+var FRESH = [];         /* まだ表示していない新しい写真（新しい順） */
+var IMG = {};           /* id → 画像のURL（端末にためる） */
+var IMG_ORDER = [];
+var SHOWING = {};       /* いま表示中の id */
+var TILES = [];
+var GRID = 4;
+var loaded = false;
+var WAKE = null;
+
+function store(key, val) {
+  try {
+    if (val === undefined) return localStorage.getItem(key) || '';
+    if (val === null) localStorage.removeItem(key); else localStorage.setItem(key, val);
+  } catch (e) { return ''; }
+  return '';
+}
+function esc(s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function api(body) {
+  body.pw = pw;
+  return fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) })
+    .then(function (res) { return res.text(); })
+    .then(function (text) {
+      var d;
+      try { d = JSON.parse(text); } catch (e) { throw new Error('サーバーの応答を読み取れません'); }
+      if (d.status !== 'ok') throw new Error(d.message || 'エラー');
+      return d;
+    });
+}
+
+function login() {
+  pw = document.getElementById('pwInput').value;
+  document.getElementById('err').textContent = '';
+  api({ action: 'photoLogin' }).then(function (d) {
+    store('iwViewPw', pw);
+    document.getElementById('tname').textContent = d.tournament;
+    document.getElementById('login').className = 'login hidden';
+    document.getElementById('wall').className = 'wall g' + GRID;
+    document.getElementById('bar').className = 'bar';
+    document.getElementById('stat').className = 'stat';
+    setGrid(parseInt(store('iwViewGrid'), 10) || 4);
+    refresh();
+    setInterval(refresh, 60000);   /* 新しい写真の確認は１分に１回 */
+    keepAwake();
+  }).catch(function (e) { document.getElementById('err').textContent = e.message; });
+}
+
+/* ========== 写真の一覧 ========== */
+function refresh() {
+  var p = api({ action: 'photoList' }).then(function (d) { return d.photos; });
+  return p.then(function (photos) {
+    var known = {}, i;
+    for (i = 0; i < LIST.length; i++) known[LIST[i].id] = true;
+    var add = [];
+    for (i = 0; i < photos.length; i++) if (!known[photos[i].id]) add.push(photos[i]);
+    /* 最初に開いたときは、新しい12枚だけを「新着」扱いにする */
+    if (!loaded) add = add.slice(0, 12);
+    for (i = add.length - 1; i >= 0; i--) if (!SEEN[add[i].id]) FRESH.unshift(add[i]);
+    LIST = photos;
+    loaded = true;
+    stat();
+  }).catch(function (e) { document.getElementById('stat').textContent = '写真の一覧を読めませんでした（' + e.message + '）。１分後にもう一度読みます。'; });
+}
+function stat() {
+  var d = new Date();
+  document.getElementById('stat').textContent = '写真 ' + LIST.length + '枚　最終確認 ' + d.getHours() + ':' + ('0' + d.getMinutes()).slice(-2);
+}
+
+/* 画像を取ってくる（同時に２つまで）。端末には最大80枚ためる */
+var inflight = 0, waiters = [];
+function getImage(id) {
+  if (IMG[id]) return Promise.resolve(IMG[id]);
+  return new Promise(function (ok, ng) {
+    var go = function () {
+      inflight++;
+      var p = api({ action: 'photoImage', id: id }).then(function (d) { return 'data:image/jpeg;base64,' + d.base64; });
+      p.then(function (src) {
+        return fetch(src).then(function (r) { return r.blob(); }).then(function (b) {
+          var url = URL.createObjectURL(b);
+          IMG[id] = url; IMG_ORDER.push(id);
+          while (IMG_ORDER.length > 80) {
+            var old = IMG_ORDER.shift();
+            if (SHOWING[old]) { IMG_ORDER.push(old); break; }
+            URL.revokeObjectURL(IMG[old]); delete IMG[old];
+          }
+          ok(url);
+        });
+      }).catch(ng).then(function () { inflight--; var n = waiters.shift(); if (n) n(); });
+    };
+    if (inflight < 2) go(); else waiters.push(go);
+  });
+}
+
+/* ========== 表示の枠 ========== */
+function setGrid(n) {
+  GRID = n;
+  store('iwViewGrid', String(n));
+  var wall = document.getElementById('wall');
+  wall.className = 'wall g' + n;
+  var bs = document.querySelectorAll('#bar button[data-g]'), i;
+  for (i = 0; i < bs.length; i++) bs[i].className = bs[i].getAttribute('data-g') === String(n) ? 'on' : '';
+  for (i = 0; i < TILES.length; i++) clearTimeout(TILES[i].timer);
+  TILES = [];
+  SHOWING = {};
+  wall.innerHTML = '';
+  for (i = 0; i < n; i++) {
+    var el = document.createElement('div');
+    el.className = 'tile';
+    el.innerHTML = '<img alt=""><img alt=""><div class="cap"></div><div class="new">NEW</div>' +
+      '<div class="empty">' + emblem() + '<span>写真を待っています</span></div>';
+    wall.appendChild(el);
+    var t = { el: el, front: 0, id: '' };
+    TILES.push(t);
+    /* 枠ごとに切り替えの時刻をずらす */
+    (function (tt, k) { tt.timer = setTimeout(function () { next(tt); }, 600 + k * 1300); })(t, i);
+  }
+}
+function pickPhoto() {
+  var i, p;
+  while (FRESH.length) {
+    p = FRESH.shift();
+    if (!SHOWING[p.id]) return { p: p, fresh: true };
+  }
+  if (!LIST.length) return null;
+  /* 新しい60枚から、いま出ていないものを選ぶ（新しいほど出やすい） */
+  var pool = LIST.slice(0, 60).filter(function (x) { return !SHOWING[x.id]; });
+  /* 写真が枠の数より少ないときは、同じ写真を別の枠に出してもよい */
+  if (!pool.length) pool = LIST.slice(0, 60);
+  var r = Math.random();
+  i = Math.floor(r * r * pool.length);
+  return { p: pool[i], fresh: false };
+}
+function next(t) {
+  var wait = 5000 + Math.floor(Math.random() * 3000);   /* 5〜8秒 */
+  var pick = pickPhoto();
+  if (!pick) { t.timer = setTimeout(function () { next(t); }, 3000); return; }
+  SHOWING[pick.p.id] = true;
+  getImage(pick.p.id).then(function (url) {
+    var imgs = t.el.querySelectorAll('img');
+    var back = imgs[1 - t.front], front = imgs[t.front];
+    back.onload = function () {
+      /* 縦長の写真は切らずに全体を見せる */
+      back.className = back.naturalHeight > back.naturalWidth * 1.05 ? 'fit' : '';
+      setTimeout(function () {
+        back.className += ' on';
+        front.className = front.className.replace(' on', '');
+        if (t.id) delete SHOWING[t.id];
+        t.id = pick.p.id; t.front = 1 - t.front;
+        SEEN[pick.p.id] = true;
+        var cap = t.el.querySelector('.cap');
+        cap.textContent = pick.p.cap || '';
+        cap.className = 'cap on';
+        t.el.querySelector('.new').className = 'new' + (pick.fresh ? ' on' : '');
+        t.el.querySelector('.empty').className = 'empty hidden';
+      }, 30);
+    };
+    back.src = url;
+    t.timer = setTimeout(function () { next(t); }, wait);
+  }).catch(function () {
+    delete SHOWING[pick.p.id];
+    t.timer = setTimeout(function () { next(t); }, 4000);
+  });
+}
+
+/* ========== 画面まわり ========== */
+function fullscreen() {
+  var d = document.documentElement;
+  if (!document.fullscreenElement) { if (d.requestFullscreen) d.requestFullscreen(); }
+  else if (document.exitFullscreen) document.exitFullscreen();
+}
+function keepAwake() {
+  try { if (navigator.wakeLock) navigator.wakeLock.request('screen').then(function (w) { WAKE = w; }).catch(function () {}); } catch (e) { /* 対応していない端末 */ }
+}
+document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible' && pw) keepAwake(); });
+/* しばらく触らなければボタンとカーソルを隠す */
+var idleT = null;
+function wake() {
+  document.body.className = '';
+  var b = document.getElementById('bar');
+  if (pw) b.className = 'bar';
+  clearTimeout(idleT);
+  idleT = setTimeout(function () { document.body.className = 'idle'; b.className = 'bar hide'; }, 4000);
+}
+document.addEventListener('mousemove', wake);
+document.addEventListener('touchstart', wake);
+document.addEventListener('keydown', function (e) {
+  if (!pw) return;
+  if (e.key === 'f') fullscreen();
+  if (e.key === '1' || e.key === '4' || e.key === '6') setGrid(parseInt(e.key, 10));
+});
+/* 連盟のマーク（プログラムの裏表紙と同じ描き方） */
+function emblem() {
+  var G = ['B.......', 'BGGG....', 'BG.BBB..', 'BG.B.GGG', '.GGG.B.G', '...BBBGG', '.....G.G'];
+  var R = G.length, C = G[0].length, S = 10, comp = [], n = 0, r, c, k;
+  for (r = 0; r < R; r++) { comp.push([]); for (c = 0; c < C; c++) comp[r].push(-1); }
+  for (r = 0; r < R; r++) for (c = 0; c < C; c++) {
+    if (G[r].charAt(c) === '.' || comp[r][c] >= 0) continue;
+    var st = [[r, c]];
+    comp[r][c] = n;
+    while (st.length) {
+      var q = st.pop(), ds = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+      for (k = 0; k < 4; k++) {
+        var y = q[0] + ds[k][0], x = q[1] + ds[k][1];
+        if (y >= 0 && y < R && x >= 0 && x < C && comp[y][x] < 0 && G[y].charAt(x) === G[q[0]].charAt(q[1])) { comp[y][x] = n; st.push([y, x]); }
+      }
+    }
+    n++;
+  }
+  var cp = function (y, x) { return y >= 0 && y < R && x >= 0 && x < C ? comp[y][x] : -1; };
+  var out = '', bl = '';
+  for (r = 0; r < R; r++) for (c = 0; c < C; c++) if (G[r].charAt(c) !== '.') out += '<rect x="' + c * S + '" y="' + r * S + '" width="' + S + '" height="' + S + '" fill="' + (G[r].charAt(c) === 'B' ? '#538ED4' : '#92D050') + '"/>';
+  var edge = function (a, b, x1, y1, x2, y2) { if ((a >= 0 || b >= 0) && a !== b) bl += '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '"/>'; };
+  for (r = 0; r <= R; r++) for (c = 0; c < C; c++) edge(cp(r - 1, c), cp(r, c), c * S, r * S, (c + 1) * S, r * S);
+  for (r = 0; r < R; r++) for (c = 0; c <= C; c++) edge(cp(r, c - 1), cp(r, c), c * S, r * S, c * S, (r + 1) * S);
+  return '<svg viewBox="-0.6 -0.6 ' + (C * S + 1.2) + ' ' + (R * S + 1.2) + '" xmlns="http://www.w3.org/2000/svg">' + out + '<g stroke="#000" stroke-width="1.2" stroke-linecap="square">' + bl + '</g></svg>';
+}
+
+document.getElementById('pwInput').value = store('iwViewPw');
+</script>
+</body>
+</html>
