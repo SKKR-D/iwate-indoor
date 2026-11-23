@@ -415,10 +415,11 @@ function addLog(name, press) {
   el.insertBefore(d, el.firstChild);
 }
 
-/* 前回のパスワード・名前 */
+/* 前回のパスワード・名前（役員の二次元コードから来たときも、ここに入っている）。両方あればそのまま入る */
 (function () {
   document.getElementById('pwInput').value = store('iwPhotoPw');
   document.getElementById('byInput').value = store('iwPhotoBy');
+  if (store('iwPhotoPw') && store('iwPhotoBy')) login();
 })();
 </script>
 </body>
