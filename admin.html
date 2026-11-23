@@ -1187,6 +1187,11 @@ function noticeLoad() {
     h += '<br>送る相手：' + r.total + '通（送信済み ' + r.sent + '通、未送信 ' + r.unsent + '通）' + (r.lastAt ? '　最後に送った日時：' + esc(r.lastAt) : '');
     if (r.noMail.length) h += '<br><span class="ng">申込者メールがないため送れない：' + esc(r.noMail.join('、')) + '</span>';
     if (r.diff && r.diff.length) h += '<br>申込責任者と監督が違うチーム（メールに「受付票のリンクを監督へ」の一文が入ります）：' + r.diff.length + '件<br><span class="muted">' + esc(r.diff.join('、')) + '</span>';
+    if (r.oath && r.oath.length) {
+      var oh = [], k;
+      for (k = 0; k < r.oath.length; k++) oh.push(esc(r.oath[k].name) + '：' + esc(r.oath[k].team) + (r.oath[k].found ? '' : '<span class="ng">（申込が見つかりません。設定「選手宣誓」のチーム名を確認）</span>'));
+      h += '<br>選手宣誓のお願い（メールに入ります）：' + oh.join('　');
+    }
     if (r.missing.length) h += '<br><span class="ng">進行表を作っていない区分があるため、まだ送れません（テスト送信はできます）。</span>';
     h += '<br><span class="muted">今日送れる残り：' + r.quota + '通</span>';
     document.getElementById('noticeSt').innerHTML = h;
