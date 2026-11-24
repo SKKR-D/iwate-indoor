@@ -506,14 +506,18 @@ var TITLES = {
   pairs: '個人戦 選手名簿', 'tm-MT': '男子団体戦 選手名簿', 'tm-WT': '女子団体戦 選手名簿', changes: '選手変更一覧', history: '栄光の記録',
   toc: '目次', memo: 'メモ', back: '裏表紙'
 };
-var GAME = ['br-MI', 'br-WI', 'pr-MI', 'pr-WI', 'br-MT', 'br-WT', 'pr-MT', 'pr-WT'];
+var GAME_I = ['br-MI', 'pr-MI', 'br-WI', 'pr-WI'];
+var GAME_T = ['br-MT', 'pr-MT', 'br-WT', 'pr-WT'];
+var INFO = ['youkou', 'notes', 'dress', 'counter'];
 /* 公開の段階ごとに出すページ（この順で並ぶ）。目次・メモは印刷したときだけ出る。
-   冊子（表紙・目次・本文・メモ・裏表紙）は24ページ（中綴じ）になるように組んでいる */
+   冊子は24ページ（中綴じ）：表紙・目次（番号なし）、１ 役員、２〜３ 要項、４ 競技上の注意、５ 服装規定、６ カウンター、
+   ７ 個人戦選手名簿、８〜11 個人戦（男子 組合せ・進行表、女子 組合せ・進行表）、12〜13 団体戦選手名簿（男子・女子）、
+   14〜17 団体戦（男子 組合せ・進行表、女子 組合せ・進行表）、18〜20 栄光の記録、21 メモ、裏表紙（番号なし） */
 var ORDER = {
-  pre: ['cover', 'toc', 'youkou', 'dress', 'counter', 'notes'].concat(GAME, ['history', 'memo', 'back']),
-  full: ['cover', 'toc', 'officials', 'youkou', 'dress', 'counter', 'notes'].concat(GAME, ['pairs', 'tm-MT', 'tm-WT', 'history', 'memo', 'back']),
+  pre: ['cover', 'toc'].concat(INFO, GAME_I, GAME_T, ['history', 'memo', 'back']),
+  full: ['cover', 'toc', 'officials'].concat(INFO, ['pairs'], GAME_I, ['tm-MT', 'tm-WT'], GAME_T, ['history', 'memo', 'back']),
   after: ['br-MI', 'br-WI', 'br-MT', 'br-WT', 'history', 'back'],
-  staff: ['cover', 'toc', 'officials', 'youkou', 'dress', 'counter', 'notes'].concat(GAME, ['pairs', 'tm-MT', 'tm-WT', 'changes', 'history', 'memo', 'back'])
+  staff: ['cover', 'toc', 'officials'].concat(INFO, ['pairs'], GAME_I, ['tm-MT', 'tm-WT'], GAME_T, ['changes', 'history', 'memo', 'back'])
 };
 /* 白紙（記入用）では選手変更一覧を出さない（非公開。冊子の事前印刷は白紙で行う） */
 function sectionsNow() {
@@ -669,10 +673,9 @@ function counterPage() {
 
 /* ---- 目次（ページ番号は描いたあとで入れる） ---- */
 var TOC_GROUPS = [
-  ['大会について', ['officials', 'youkou', 'dress', 'counter', 'notes']],
-  ['個人戦', ['br-MI', 'br-WI', 'pr-MI', 'pr-WI']],
-  ['団体戦', ['br-MT', 'br-WT', 'pr-MT', 'pr-WT']],
-  ['選手名簿', ['pairs', 'tm-MT', 'tm-WT']],
+  ['大会について', ['officials', 'youkou', 'notes', 'dress', 'counter']],
+  ['個人戦', ['pairs', 'br-MI', 'pr-MI', 'br-WI', 'pr-WI']],
+  ['団体戦', ['tm-MT', 'tm-WT', 'br-MT', 'pr-MT', 'br-WT', 'pr-WT']],
   ['記録', ['history', 'memo']]
 ];
 function tocPage() {
@@ -694,7 +697,8 @@ function tocPage() {
   h += '<div class="tc-foot">男子会場　' + esc(P.info.venueM) + '　／　女子会場　' + esc(P.info.venueW) + '<br>最新の組合せ・進行・結果は、表紙の二次元コードから見られます（大会当日は自動で更新されます）。</div>';
   return '<section class="pg print-only" id="toc" data-grp="toc"><h2 data-en="' + EN.toc + '"><span>目次</span></h2>' + h + '</section>';
 }
-/* 印刷したときのページ番号：表紙＝１。１つの .pg が１ページ（栄光の記録は .hpg ごとに１ページ） */
+/* 印刷したときのページ番号：表紙・目次・裏表紙は番号なしで、その次のページが１。１つの .pg が１ページ（栄光の記録は .hpg ごとに１ページ） */
+var NO_FOLIO = { cover: 1, toc: 1, back: 1 };
 function fillToc() {
   var secs = document.querySelectorAll('#book .pg');
   var at = {}, page = 1;
@@ -702,6 +706,7 @@ function fillToc() {
   for (i = 0; i < secs.length; i++) {
     id = secs[i].getAttribute('data-grp');
     if (id === 'changes') continue;   /* 印刷しないページ */
+    if (NO_FOLIO[id]) continue;        /* 番号を振らないページ */
     if (!(id in at)) at[id] = page;
     n = id === 'history' ? Math.max(1, secs[i].querySelectorAll('.hpg').length) : 1;
     page += n;
@@ -771,8 +776,10 @@ function pageCss(one) {
   for (i = 0; i < list.length; i++) {
     id = list[i];
     if (id === 'cover' || id === 'back') {
-      c += '@page p-' + id + '{margin:10mm;@bottom-left{content:none}@bottom-right{content:none}}';
+      c += '@page p-' + id + '{margin:10mm;counter-increment:page 0;@bottom-left{content:none}@bottom-right{content:none}}';
     } else {
+      /* 目次は柱だけ出して、番号は振らない（次の大会役員・競技役員が１ページ） */
+      if (NO_FOLIO[id]) c += '@page p-' + id + '{counter-increment:page 0;@bottom-left{content:none}@bottom-right{content:none}}';
       L = String(titleOf(id) || '').replace(/["\\]/g, '');
       c += '@page p-' + id + ':right{@top-left{content:"' + T + '";' + head + '}@top-center{content:"";' + head + '}@top-right{content:"' + L + '";' + lab + '}}' +
         '@page p-' + id + ':left{@top-left{content:"' + L + '";' + lab + '}@top-center{content:"";' + head + '}@top-right{content:"' + T + '";' + head + '}}';
