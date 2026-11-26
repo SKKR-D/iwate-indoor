@@ -55,6 +55,8 @@ input:focus{outline:none;border-color:var(--main)}
       <label for="byInput">あなたの名前（撮った写真の記録に残ります）</label>
       <input type="text" id="byInput" placeholder="例：坂倉" oninput="saveBy()">
     </div>
+    <a class="go shoot" href="score.html" onclick="saveBy()"><span class="ic">🎾</span><span><b>コート主任の入力</b><span class="s">試合中のポイントを入力（ゲーム・ポイントが進行表に出ます）。写真も撮れます</span></span></a>
+    <a class="go" href="courts.html"><span class="ic">📺</span><span><b>４コートの試合</b><span class="s">男子会場・女子会場の４コートの、いまの試合のゲーム・ポイント（本部の端末などで）</span></span></a>
     <a class="go" href="program.html"><span class="ic">📖</span><span><b>大会プログラム（役員向け）</b><span class="s">その時点の全ページ。組合せ・進行・選手名簿・役員など</span></span></a>
     <button type="button" class="go shoot" onclick="goShoot()"><span class="ic">📸</span><span><b>記録写真の撮影</b><span class="s">場面を選んで撮ると、ドライブに分けて保存されます</span></span></button>
     <a class="go" href="photo-view.html"><span class="ic">🖼</span><span><b>記録写真モニター</b><span class="s">撮った写真を１・４・６画面で順に表示（本部の端末などで）</span></span></a>
