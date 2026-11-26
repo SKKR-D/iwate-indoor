@@ -84,6 +84,15 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .cc .more .c-body{padding:4px 6px}
 .cc .more .tp{grid-template-columns:1.2em 1fr 2.6em 1fr;padding:4px 6px 6px;font-size:.66rem}
 .cc .more .refr,.cc .more .gat{padding:3px 6px;font-size:.68rem}
+.lvw{padding:4px 8px 6px;display:grid;gap:5px}
+.lvw.cmpw{padding:3px 3px 4px}
+.cmpw .lv-h,.cmpw .lv-r{grid-template-columns:1fr 2.7em 2.7em}
+.cmpw .lv-h{padding:1px 3px 0 8px}
+.cmpw .lv-h span{font-size:.5rem;letter-spacing:-.02em}
+.cmpw .lv-r>.lv-g{font-size:1.25rem;margin:2px 2px}
+.cmpw .lv-p{font-size:.92rem}
+.cmpw .lv-r{border-left-width:5px;padding:1px 3px;min-height:1.9em}
+.cmpw .lv-f{font-size:.6rem}
 .card{background:#fff;border-radius:var(--radius);border:1.5px solid var(--line);margin-bottom:8px;overflow:hidden}
 .card.live{border-color:var(--red);box-shadow:0 0 0 2px rgba(179,48,48,.25)}
 .card.call{border-color:var(--gold);box-shadow:0 0 0 2px rgba(200,160,32,.3)}
@@ -183,9 +192,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
   <h3>会場使用について</h3>
   <ol><li>水分補給は、シートの上で行ってください。</li><li>ゴミは持ち帰ってください（特に弁当類）。</li><li>本部以外のコンセントは使用しないでください。</li><li>アリーナ以外で、ラケットとボールを使った練習はしないでください。</li><li>監督証は、必ず返却してください。</li></ol>
 </section>
-<div class="footer">予定時刻は目安です。進行状況により変わります。30秒ごとに自動更新します。</div>
+<div class="footer">予定時刻は目安です。進行状況により変わります。30秒ごとに自動更新します（試合中のゲーム・ポイントは10秒ごと）。</div>
 
 <script src="preview.js"></script>
+<script src="live-core.js"></script>
 <script>
 /* ★ GASのウェブアプリURL */
 var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
@@ -202,6 +212,7 @@ var SLOT_OF = {};       /* id → 組合せの番号 */
 var TEAMS_OF = {};      /* id → 所属チーム（個人戦は２人の所属） */
 var AHEAD = {};         /* 試合id → 同じコートで前に残っている試合の数 */
 var JUMPED = false;     /* スマホの２列表示で、最初の１回だけ進んでいる位置まで送る */
+var LIVE = {};          /* 試合中のカウント（コート主任の入力）：{ matchId: { マッチ番号: { s: 点の並び, … } } } */
 
 function esc(s) {
   if (s === undefined || s === null) return '';
@@ -317,6 +328,7 @@ function cardHtml(m, showCourt) {
   h += '<div class="c-body">' + sideHtml(m, m.left, 'L');
   h += '<div class="vs">' + (m.state === '終了' && m.score ? '<span class="score">' + scoreHtml(m) + '</span>' : 'vs') + '</div>';
   h += sideHtml(m, m.right, 'R') + '</div>';
+  h += liveHtml(m, false);
   /* コート集合（これからの試合だけ）：9:00／前の試合が終わり次第／本部のコールで／本部の放送で など */
   if ((m.state === '待機' || m.state === '呼出') && m.note !== '不戦勝' && (m.gather || m.gatherNote)) h += '<div class="gat">コート集合：<b>' + esc(m.gather || m.gatherNote) + '</b></div>';
   h += refHtml(m);
@@ -324,6 +336,44 @@ function cardHtml(m, showCourt) {
   h += aheadHtml(m, 'ahead');
   h += '</div>';
   return h;
+}
+
+/* ---------- 試合中のカウント（コート主任がスマホで入力。正式な結果は本部が採点票から入力したもの） ----------
+   ２段表示：上＝青（左・番号の小さい方）、下＝緑。ゲームを大きく、ポイントを小さく */
+function liveName(s, cmp, pair) {
+  if (!s || !s.decided) return '';
+  var t = slotTag(slotOf(s), s.id, '', s.few);
+  if (!cmp) t += '<span>' + esc(s.label) + '</span>';
+  if (pair && !cmp) t += '<span style="font-size:.68rem;font-weight:500;color:#555">' + pair + '</span>';
+  return t;
+}
+function liveHtml(m, cmp) {
+  if (m.state !== '試合中' || !LIVE[m.id]) return '';
+  var type = DATA.division.type;
+  var h = '', mi, rec, c, r, p, pl, pr;
+  for (mi = 0; mi < (type === 'team' ? 4 : 1); mi++) {
+    rec = LIVE[m.id][String(mi)];
+    if (!rec || !rec.s) continue;
+    p = type === 'team' && m.team && m.team.pairs[mi] ? m.team.pairs[mi] : null;
+    if (p && p.w) continue;                       /* 本部が結果を入れたマッチは、下の結果の欄に出る */
+    r = LC.rule(type, mi);
+    c = LC.count(rec.s, r);
+    pl = p && p.l ? esc(p.l[0]) + '・' + esc(p.l[1]) : '';
+    pr = p && p.r ? esc(p.r[0]) + '・' + esc(p.r[1]) : '';
+    var lab = type === 'team' ? LC.mLabel(type, mi) + '　' : '';
+    h += LC.board({ L: liveName(m.left, cmp, pl), R: liveName(m.right, cmp, pr), c: c, r: r,
+      foot: esc(lab) + (c.end ? '終了・本部確認中' : esc(LC.gameLabel(c, r))) });
+  }
+  return h ? '<div class="lvw' + (cmp ? ' cmpw' : '') + '">' + h + '</div>' : '';
+}
+function loadLive() {
+  return fetch(GAS_URL + '?action=live&div=' + encodeURIComponent(divCode)).then(function (r) { return r.json(); }).then(function (d) {
+    if (d.status !== 'ok' || !d.live) return;
+    var nv = d.live[divCode] || {};
+    if (JSON.stringify(nv) === JSON.stringify(LIVE)) return;
+    LIVE = nv;
+    render();
+  }).catch(function () { /* 次の読み込みで */ });
 }
 
 /* ---------- 練習割り当て（要項どおり 7:45〜。その日の8:30まで進行表の上に出す） ----------
@@ -406,6 +456,7 @@ function compactCard(m) {
   h += '<div class="h"><span>' + (m.no ? '<span class="no">' + m.no + '</span> ' : '') + '<span class="rd">' + esc(m.round) + '</span></span>' + stateBadge(m) + '</div>';
   var mid = m.state === '終了' && m.score ? '<span class="sc">' + scoreHtml(m) + '</span>' : '<span class="vs2">vs</span>';
   h += '<div class="v">' + cSide(m, m.left, 'L') + mid + cSide(m, m.right, 'R') + '</div>';
+  h += liveHtml(m, true);
   var foot = '';
   if (m.state !== '終了' && m.note !== '不戦勝') {
     var r = m.referee;
@@ -662,6 +713,7 @@ function load() {
         (live.length ? '　試合中：<strong>' + live.join('・') + '</strong>' : '') +
         (d.finishPlan ? '　終了見込み <strong>' + esc(d.finishPlan) + '</strong>' : '') + '　<span>更新 ' + esc(d.updated) + '</span>';
       render();
+      if (!PREVIEW) loadLive();
     })
     .catch(function (err) {
       document.getElementById('info').textContent = '更新できませんでした（' + err.message + '）。自動で再試行します。';
@@ -700,8 +752,16 @@ function load() {
       if (narrow() !== lastNarrow) { lastNarrow = narrow(); render(); }
     }, 200);
   });
+  LC.css();
   load();
   setInterval(load, 30000);
+  /* 試合中のカウントは10秒ごと（試合中の試合があるときだけ） */
+  if (!PREVIEW) setInterval(function () {
+    if (document.hidden || !DATA) return;
+    var i, any = false;
+    for (i = 0; i < DATA.matches.length; i++) if (DATA.matches[i].state === '試合中') any = true;
+    if (any) loadLive();
+  }, 10000);
 })();
 </script>
 <script src="coach-return.js"></script>
