@@ -36,6 +36,11 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .award .aw-pl{font-size:1.15rem;font-weight:900;color:#7a4b00;line-height:1.5;margin-bottom:6px}
 .award .aw-msg{font-size:1.1rem;font-weight:900;color:#5a3600;line-height:1.5}
 .chg-btn{display:block;margin-top:10px;padding:14px;border-radius:12px;background:#fff;border:2px solid #e08a00;color:#8a4b00;font-weight:900;font-size:1rem;text-decoration:none}
+.prac{margin-top:12px;padding:10px 12px;border:2px solid #b8902a;border-radius:12px;background:#fffbea;text-align:left}
+.prac b.h{display:block;color:#7a5d00;font-size:.9rem;margin-bottom:4px}
+.prac div{font-size:.95rem;font-weight:700;color:#1a4a2e;line-height:1.6}
+.prac small{display:block;font-size:.72rem;color:#666;margin-top:4px}
+.prac a{font-size:.78rem}
 .nav-btn{display:block;margin-top:10px;padding:14px;border-radius:12px;background:#fff;border:2px solid #1a4a2e;color:#1a4a2e;font-weight:900;font-size:1rem;text-decoration:none}
 .portal-note{margin-top:14px;font-size:.78rem;color:var(--text-light);background:#f3f7f4;border-radius:10px;padding:10px}
 .err{max-width:420px;margin:40px auto;background:#f8d7da;color:#721c24;border-radius:var(--radius);padding:18px;font-weight:700;line-height:1.6}
@@ -100,6 +105,7 @@ function render(d) {
   }
   /* 変更申請は、申請できる期間（当日の受付終了まで）だけ出す */
   if (d.changeOpen !== false) html += '<a class="chg-btn" href="change.html?t=' + encodeURIComponent(token) + '">✏️ 選手・監督の変更申請</a>';
+  html += '<div id="pracBox"></div>';
   html += '<a class="nav-btn" href="progress.html' + (d.divCode ? '?div=' + encodeURIComponent(d.divCode) : '') + '">📋 進行表を見る（試合の進み具合・結果）</a>';
   html += '<a class="nav-btn" href="changes.html?div=' + encodeURIComponent(d.divCode || '') + '&t=' + encodeURIComponent(token) + '">🔁 選手変更一覧を見る（' + esc(d.division) + '）</a>';
   html += '<div class="howto">・当日の受付で、この画面（または印刷した紙）を提示してください。<br>・参加料と引き換えに二次元コードを読み取り、受付完了となります。<br>・領収書は受付完了後、申込責任者のメールに送ります。</div>';
@@ -115,6 +121,62 @@ function render(d) {
   }
   document.getElementById('printBtn').style.display = 'block';
   document.title = d.division + ' 受付票（' + d.teamName + '）';
+  pracShow(d);
+}
+
+/* 練習割り当て（要項どおり 7:45〜。その日の8:30まで出す）。進行表のデータから、このチームの枠を探す
+   個人戦：A・Bブロック＝Aコート、C・Dブロック＝Bコート。枠の順に３・３・２ペア、15分×３回
+   団体戦：１〜８番＝Aコート、９〜16番＝Bコート。番号順に５分×８回 */
+var PRAC_HTML = null;
+function pracHm(m) { return Math.floor(m / 60) + ':' + ('0' + (m % 60)).slice(-2); }
+function pracOf(type, slot) {
+  var st, s = String(slot || '');
+  if (type === 'indiv') {
+    var m = /^([A-D])(\d)$/.exec(s);
+    if (!m) return null;
+    var idx = (m[1] === 'B' || m[1] === 'D' ? 4 : 0) + parseInt(m[2], 10) - 1;
+    st = 465 + (idx < 3 ? 0 : idx < 6 ? 1 : 2) * 15;
+    return { court: m[1] === 'A' || m[1] === 'B' ? 'A' : 'B', from: st, to: st + 15 };
+  }
+  var n = parseInt(s, 10);
+  if (!(n >= 1 && n <= 16)) return null;
+  st = 465 + ((n - 1) % 8) * 5;
+  return { court: n <= 8 ? 'A' : 'B', from: st, to: st + 5 };
+}
+function pracShow(d) {
+  var box = document.getElementById('pracBox');
+  if (!box || !d.divCode) return;
+  if (PRAC_HTML !== null) { box.innerHTML = PRAC_HTML; return; }
+  fetch(GAS_URL + '?action=progress&div=' + encodeURIComponent(d.divCode)).then(function (r) { return r.json(); }).then(function (p) {
+    PRAC_HTML = '';
+    if (p.status !== 'ok' || !p.matches || !p.matches.length) return;
+    var dm = /(\d+)月(\d+)日/.exec(String(p.date || ''));
+    if (!dm) return;
+    var now = new Date(), day = new Date(now.getFullYear(), parseInt(dm[1], 10) - 1, parseInt(dm[2], 10));
+    var today = now.getMonth() === day.getMonth() && now.getDate() === day.getDate();
+    if ((now > day && !today) || (today && now.getHours() * 60 + now.getMinutes() >= 510)) return;
+    var type = p.division.type, lines = [], seen = {}, i, k, s, x;
+    var mine = function (side) {
+      if (!side || !side.decided) return false;
+      if (side.full === d.teamName) return true;
+      var tf = side.teamsFull || [];
+      return tf[0] === d.teamName || tf[1] === d.teamName;
+    };
+    for (i = 0; i < p.matches.length; i++) for (k = 0; k < 2; k++) {
+      s = k ? p.matches[i].right : p.matches[i].left;
+      if (!mine(s) || !s.slot || seen[s.slot]) continue;
+      seen[s.slot] = 1;
+      x = pracOf(type, s.slot);
+      if (x) lines.push({ slot: s.slot, t: '<span style="display:inline-block;min-width:2em;border:1.5px solid #1a4a2e;border-radius:3px;text-align:center;margin-right:6px">' + esc(s.slot) + '</span>' + x.court + 'コート　' + pracHm(x.from) + '〜' + pracHm(x.to) + (type === 'indiv' ? '　<small style="display:inline;font-size:.78rem;color:#555">' + esc(s.label) + '</small>' : '') });
+    }
+    if (!lines.length) return;
+    lines.sort(function (a, b) { return a.slot < b.slot ? -1 : 1; });
+    var h = '<div class="prac"><b class="h">🎾 練習（' + esc(p.date) + '）</b>';
+    for (i = 0; i < lines.length; i++) h += '<div>' + lines[i].t + '</div>';
+    h += '<small>' + (type === 'team' ? '１回戦を行うコートで５分間' : '予選リーグを行うコートで15分間') + '。8:30を過ぎると、この表示は消えます。</small><a href="renshu.html">会場ごとの練習割り当て</a></div>';
+    PRAC_HTML = h;
+    box.innerHTML = h;
+  }).catch(function () { PRAC_HTML = null; });
 }
 
 /* 読み込み。開いたままでも受付済み・コール・表彰の表示が変わるように20秒ごとに読み直す（内容が変わったときだけ描き直す） */
