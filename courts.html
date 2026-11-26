@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>４コートの試合（役員）｜県インドア大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--deep:#123522;--main:#1a4a2e;--soft:#e8f1eb;--line:#c9d6cc;--red:#b33030}
+html{font-size:16px}
+body{font-family:'Noto Sans JP',sans-serif;background:#eef0ec;color:#222;min-height:100vh}
+.header{background:linear-gradient(135deg,var(--deep),var(--main));color:#fff;padding:8px 14px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.header small{display:block;font-size:.68rem;opacity:.85}
+.header h1{font-size:1.05rem;font-weight:900}
+.header .rt{font-size:.74rem;text-align:right}
+.kind{display:inline-flex;gap:4px;margin-left:6px}
+.kind button{font-family:inherit;border:1.5px solid rgba(255,255,255,.6);background:transparent;color:#fff;border-radius:14px;padding:2px 10px;font-size:.72rem;font-weight:700;cursor:pointer}
+.kind button.on{background:#f3d36b;border-color:#f3d36b;color:#3a2e00}
+.main{padding:10px;max-width:1400px;margin:0 auto}
+.msg{background:#fff;border-radius:10px;padding:14px;font-size:.9rem;line-height:1.7}
+.msg.err{color:var(--red);font-weight:700}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.vh{font-size:.9rem;font-weight:900;color:#fff;background:var(--deep);border-radius:8px;padding:4px 10px;text-align:center}
+.pane{background:#fff;border-radius:12px;border:2px solid var(--line);padding:8px 10px 10px;display:flex;flex-direction:column;gap:6px;min-height:200px}
+.pane.live{border-color:#d98c8c}
+.ph{display:flex;justify-content:space-between;align-items:baseline;gap:6px;flex-wrap:wrap}
+.ph b{font-size:1.15rem;color:var(--deep)}
+.ph span{font-size:.78rem;color:#555}
+.mt{font-size:.86rem;font-weight:700;color:#333}
+.mt .st{display:inline-block;background:var(--red);color:#fff;border-radius:10px;font-size:.68rem;padding:1px 8px;margin-left:4px;vertical-align:1px}
+.slot{display:inline-flex;align-items:center;justify-content:center;min-width:2.2em;height:1.55em;padding:0 .3em;border:1.6px solid var(--main);border-radius:4px;background:#fff;color:var(--main);font-weight:900;font-size:.82rem;line-height:1;margin-right:5px}
+.sb{font-size:.72rem;font-weight:500;color:#555;margin-left:4px}
+.ago{font-size:.78rem;color:#555}
+.ago.warn{color:#8a4b00;font-weight:700}
+.ago.bad{color:var(--red);font-weight:900}
+.none{font-size:.86rem;color:#777;padding:10px 0}
+.nx{font-size:.8rem;color:#333;border-top:1px dashed #ccc;padding-top:5px;margin-top:auto;line-height:1.5}
+.nx b{color:var(--deep)}
+.tw{font-size:.82rem;font-weight:700;color:var(--deep)}
+.foot{font-size:.72rem;color:#666;margin-top:10px;line-height:1.7}
+@media (max-width:760px){.grid{grid-template-columns:1fr}.vh.v2{margin-top:6px}}
+</style>
+</head>
+<body>
+<header class="header">
+  <div><small id="tname">第40回岩手県中学校インドアソフトテニス大会</small><h1>４コートの試合（役員）</h1></div>
+  <div class="rt"><span id="upd"></span><span class="kind" id="kindBox"></span></div>
+</header>
+<main class="main">
+  <div id="board"><div class="msg">確認しています…</div></div>
+  <div class="foot">ゲーム・ポイントは、各コートのコート主任がスマホで入力したものです（５秒ごとに更新）。正式な結果は、本部が採点票から入力したものです。<br>「最後の入力」から時間がたっているコートは、入力が止まっているかもしれません。</div>
+</main>
+<script src="live-core.js"></script>
+<script>
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
+var KEY = '';
+var INFO = null;
+var KIND = '';
+var PROG = {};           /* 区分 → 進行表 */
+var LIVE = {};           /* 区分 → カウント */
+var SKEW = 0;            /* サーバーの時計 − この端末の時計 */
+
+function store(key, val) {
+  try {
+    if (val === undefined) return localStorage.getItem(key) || '';
+    localStorage.setItem(key, val);
+  } catch (e) { return ''; }
+  return '';
+}
+function esc(s) { return LC.esc(s); }
+function parse(t) { try { return JSON.parse(t); } catch (e) { throw new Error('サーバーの応答を読み取れません'); } }
+function api(body) {
+  body.pw = KEY;
+  return fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) }).then(function (r) { return r.text(); }).then(parse);
+}
+function getJ(q) { return fetch(GAS_URL + '?' + q).then(function (r) { return r.text(); }).then(parse); }
+function dayOf(s) {
+  var m = /(\d+)月(\d+)日/.exec(String(s || ''));
+  return m ? new Date(new Date().getFullYear(), parseInt(m[1], 10) - 1, parseInt(m[2], 10)) : null;
+}
+function divs() { return KIND === 'team' ? ['MT', 'WT'] : ['MI', 'WI']; }
+function setKind(k) { KIND = k; PROG = {}; LIVE = {}; drawKind(); render(); loadProg(); loadLive(); }
+function drawKind() {
+  document.getElementById('kindBox').innerHTML = '<button type="button" class="' + (KIND === 'indiv' ? 'on' : '') + '" onclick="setKind(\'indiv\')">個人戦</button><button type="button" class="' + (KIND === 'team' ? 'on' : '') + '" onclick="setKind(\'team\')">団体戦</button>';
+}
+
+function slotTag(s) { return s && s.decided && s.slot ? '<span class="slot">' + esc(s.slot) + '</span>' : ''; }
+function nm(s, pair) {
+  if (!s) return '';
+  if (!s.decided) return '<span style="color:#999">' + esc(s.label) + '</span>';
+  return slotTag(s) + '<span>' + esc(s.label) + '</span>' + (pair ? '<span class="sb">' + pair + '</span>' : (s.sub ? '<span class="sb">' + esc(s.sub) + '</span>' : ''));
+}
+function agoText(at) {
+  if (!at) return '';
+  var sec = Math.max(0, Math.round((new Date().getTime() + SKEW - at) / 1000));
+  var cls = sec >= 360 ? 'bad' : sec >= 180 ? 'warn' : '';
+  var t = sec < 60 ? sec + '秒前' : Math.floor(sec / 60) + '分前';
+  return '<div class="ago ' + cls + '">最後の入力：' + t + '</div>';
+}
+
+function pane(div, g, c) {
+  var p = PROG[div];
+  var own = INFO && INFO.owners ? INFO.owners[g + c] : null;
+  var h = '<div class="ph"><b>' + c + 'コート</b><span>' + (own ? '担当：' + esc(own.by) : '担当なし') + '</span></div>';
+  if (!p) return '<div class="pane">' + h + '<div class="none">読み込み中…</div></div>';
+  if (!p.matches || !p.matches.length) return '<div class="pane">' + h + '<div class="none">進行表はまだ公開されていません。</div></div>';
+  var list = p.matches.filter(function (m) { return (m.court === c || m.two) && m.note !== '不戦勝'; });
+  var cur = null, nx = null, i;
+  for (i = 0; i < list.length; i++) if (list[i].state === '試合中') { cur = list[i]; break; }
+  for (i = 0; i < list.length; i++) if ((list[i].state === '待機' || list[i].state === '呼出') && (!cur || list[i].id !== cur.id)) { nx = list[i]; break; }
+  var lv = LIVE[div] || {};
+  var body = '';
+  if (cur) {
+    body += '<div class="mt">第' + cur.no + '試合　' + esc(cur.round) + '<span class="st">試合中</span>' + (cur.two ? '<span class="sb">２面展開</span>' : '') + '</div>';
+    var type = p.division.type, mi, rec, r, cc, pp, last = 0, any = false, wl = 0, wr = 0;
+    for (mi = 0; mi < (type === 'team' ? 4 : 1); mi++) {
+      rec = lv[cur.id] ? lv[cur.id][String(mi)] : null;
+      pp = type === 'team' && cur.team && cur.team.pairs[mi] ? cur.team.pairs[mi] : null;
+      if (pp && pp.w) { if (mi < 3) { if (pp.w === 'L') wl++; else wr++; } continue; }
+      if (!rec || !rec.s) continue;
+      r = LC.rule(type, mi);
+      cc = LC.count(rec.s, r);
+      if (cc.end && mi < 3) { if (cc.winner === 'L') wl++; else wr++; }
+      if (rec.at > last) last = rec.at;
+      any = true;
+      if (type === 'team' && cc.end) continue;
+      var pl = pp && pp.l ? esc(pp.l[0]) + '・' + esc(pp.l[1]) : '';
+      var pr = pp && pp.r ? esc(pp.r[0]) + '・' + esc(pp.r[1]) : '';
+      body += LC.board({ L: nm(cur.left, pl), R: nm(cur.right, pr), c: cc, r: r, size: 'l',
+        head: type === 'team' ? esc(LC.mLabel(type, mi)) + (rec.c && cur.two ? '（' + esc(rec.c) + 'コート）' : '') : '',
+        foot: cc.end ? '試合終了・本部確認中' : esc(LC.gameLabel(cc, r)) });
+    }
+    if (!any) body += LC.board({ L: nm(cur.left), R: nm(cur.right), c: LC.count('', LC.rule(p.division.type, 0)), r: LC.rule(p.division.type, 0), size: 'l', foot: 'まだ入力がありません' });
+    if (type === 'team') body += '<div class="tw">マッチの勝ち数　<span style="color:#0a62e0">青 ' + wl + '</span> − <span style="color:#12940f">' + wr + ' 緑</span></div>';
+    body += agoText(last);
+  } else {
+    body += '<div class="none">試合中の試合はありません。</div>';
+  }
+  if (nx) body += '<div class="nx"><b>次：第' + nx.no + '試合</b>　' + esc(nx.round) + '<br>' + nm(nx.left) + ' 対 ' + nm(nx.right) + '</div>';
+  return '<div class="pane' + (cur ? ' live' : '') + '">' + h + body + '</div>';
+}
+
+function render() {
+  if (!INFO) return;
+  var d = divs();
+  var vm = INFO.venues ? INFO.venues['男'] : '', vw = INFO.venues ? INFO.venues['女'] : '';
+  var h = '<div class="grid">';
+  if (window.innerWidth > 760) {
+    h += '<div class="vh">男子会場　' + esc(vm) + '</div><div class="vh">女子会場　' + esc(vw) + '</div>';
+    h += pane(d[0], '男', 'A') + pane(d[1], '女', 'A') + pane(d[0], '男', 'B') + pane(d[1], '女', 'B');
+  } else {
+    h += '<div class="vh">男子会場　' + esc(vm) + '</div>' + pane(d[0], '男', 'A') + pane(d[0], '男', 'B');
+    h += '<div class="vh v2">女子会場　' + esc(vw) + '</div>' + pane(d[1], '女', 'A') + pane(d[1], '女', 'B');
+  }
+  document.getElementById('board').innerHTML = h + '</div>';
+}
+
+function loadProg() {
+  var d = divs(), k = KIND;
+  return Promise.all(d.map(function (dc) {
+    return getJ('action=progress&div=' + dc).then(function (x) { if (x.status === 'ok' && k === KIND) PROG[dc] = x; }).catch(function () {});
+  })).then(render);
+}
+function loadLive() {
+  var d = divs(), k = KIND;
+  var t0 = new Date().getTime();
+  return getJ('action=live&div=' + d.join(',')).then(function (x) {
+    if (x.status !== 'ok' || k !== KIND) return;
+    SKEW = x.now - Math.round((t0 + new Date().getTime()) / 2);
+    LIVE = x.live;
+    document.getElementById('upd').textContent = '更新 ' + new Date().toTimeString().slice(0, 8);
+    render();
+  }).catch(function () {});
+}
+function loadInfo() {
+  return api({ action: 'liveInfo' }).then(function (d) {
+    if (d.status !== 'ok') {
+      if (d.code === 'auth') { document.getElementById('board').innerHTML = '<div class="msg err">この端末では開けません。<a href="yakuin.html">役員のページ</a>から、役員の二次元コードを読み取ってください。</div>'; return false; }
+      throw new Error(d.message || 'エラー');
+    }
+    INFO = d;
+    if (d.tournament) document.getElementById('tname').textContent = d.tournament;
+    return true;
+  });
+}
+
+(function () {
+  LC.css();
+  KEY = store('iwOfficerKey') || store('iwPhotoPw');
+  if (!KEY) { document.getElementById('board').innerHTML = '<div class="msg err">役員の二次元コードを読み取ってから開いてください。<br><a href="yakuin.html">役員のページへ</a></div>'; return; }
+  loadInfo().then(function (ok) {
+    if (!ok) return;
+    var t = dayOf(INFO.dates.team);
+    KIND = t && new Date().getTime() >= t.getTime() ? 'team' : 'indiv';
+    drawKind();
+    render();
+    loadProg();
+    loadLive();
+    setInterval(function () { if (!document.hidden) loadLive(); }, 5000);
+    setInterval(function () { if (!document.hidden) loadProg(); }, 30000);
+    setInterval(function () { if (!document.hidden) loadInfo().then(render).catch(function () {}); }, 60000);
+    var rt = null;
+    window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(render, 200); });
+  }).catch(function (e) { document.getElementById('board').innerHTML = '<div class="msg err">通信できませんでした（' + esc(e.message) + '）。ページを開き直してください。</div>'; });
+})();
+</script>
+</body>
+</html>
