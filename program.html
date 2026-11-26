@@ -46,7 +46,7 @@ body.st-pre #mLive,body.st-pre #mBlank,body.st-after #mLive,body.st-after #mBlan
 .cv-pdf{position:absolute;top:10px;right:12px;font-size:.78rem;font-weight:700;color:#fff;background:rgba(0,0,0,.25);padding:3px 9px;border-radius:12px;text-decoration:none;z-index:2}
 .cover{padding:0;overflow:hidden}
 .cv-hero{position:relative;container-type:inline-size;aspect-ratio:1144/1385;overflow:hidden;color:#fff;background:#0b1a2e}
-.cv-ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cv-ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;filter:url(#cvLift)}
 .cv-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(5,14,30,.62) 0%,rgba(5,14,30,0) 20%,rgba(5,14,30,0) 56%,rgba(4,20,36,.5) 72%,rgba(3,12,26,.9) 100%)}
 .cv-no{position:absolute;left:5cqw;top:3.6cqw;font-family:'Noto Serif JP',serif;font-weight:900;line-height:1;text-shadow:0 .3cqw 1.4cqw rgba(0,0,0,.6)}
 .cv-no span{font-size:5.2cqw;vertical-align:.4em}
@@ -158,6 +158,18 @@ ol.ind ol.ind{margin-top:1px}
 .memo-l{display:flex;flex-direction:column;height:560px}
 .memo-l i{flex:1;border-bottom:1px solid #cdd6cf}
 .memo-l i:nth-child(5n){border-bottom-color:#9fb3a5}
+/* 練習割り当て（メモのページの上半分） */
+.prc{display:grid;grid-template-columns:1fr 1fr;gap:3mm 5mm;margin-bottom:4mm}
+.prc .pd h4{font-size:.78rem;font-weight:900;color:#fff;background:var(--deep);border-radius:3px;padding:1px 8px;margin-bottom:2px;display:flex;justify-content:space-between}
+.prc .pd h4 small{font-weight:500;font-size:.7rem;opacity:.9}
+.prc table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:.78rem}
+.prc th,.prc td{border:1px solid #b9c7bd;padding:1.5px 4px;vertical-align:middle}
+.prc thead th{background:#eef3ef;color:var(--deep);font-size:.66rem}
+.prc tbody th{width:24%;font-weight:700;color:var(--deep);white-space:nowrap;background:#f8faf8;font-size:.66rem}
+.prc td div{display:flex;align-items:center;gap:3px;white-space:nowrap;overflow:hidden;line-height:1.45}
+.prc .slot{font-size:.62rem;min-width:1.9em;line-height:1.25}
+.prc-note{font-size:.72rem;color:#555;margin:-2mm 0 3mm}
+.prc-note+.memo-l{height:300px}
 .back{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:420px}
 .back svg{width:62%;max-width:400px;height:auto;display:block}
 .back .org{margin-top:28px;font-size:1.25rem;font-weight:700;letter-spacing:.32em;padding-left:.32em;color:#111;text-align:center}
@@ -273,6 +285,7 @@ table.prog2 td{padding:4px 5px;border:1px solid #d6ded8;vertical-align:top}
   .tc-r .n{font-size:10.5pt}
   .tc-foot{font-size:8.2pt;margin-top:8mm}
   .memo-l{height:243mm}
+  .prc-note+.memo-l{height:128mm}
   /* 余白を残しすぎないように、内容の決まっているページは行間を広げてページを埋める */
   .ofg{margin-bottom:2mm}
   .ofg h3{margin-top:5mm}
@@ -504,7 +517,7 @@ var TITLES = {
   'br-MI': '男子個人戦 組合せ', 'br-WI': '女子個人戦 組合せ', 'pr-MI': '男子個人戦 進行表', 'pr-WI': '女子個人戦 進行表',
   'br-MT': '男子団体戦 組合せ', 'br-WT': '女子団体戦 組合せ', 'pr-MT': '男子団体戦 進行表', 'pr-WT': '女子団体戦 進行表',
   pairs: '個人戦 選手名簿', 'tm-MT': '男子団体戦 選手名簿', 'tm-WT': '女子団体戦 選手名簿', changes: '選手変更一覧', history: '栄光の記録',
-  toc: '目次', memo: 'メモ', back: '裏表紙'
+  toc: '目次', memo: '練習割り当て・メモ', back: '裏表紙'
 };
 var GAME_I = ['br-MI', 'pr-MI', 'br-WI', 'pr-WI'];
 var GAME_T = ['br-MT', 'pr-MT', 'br-WT', 'pr-WT'];
@@ -542,7 +555,7 @@ function pg(id, title, body, sub) {
 
 /* ---- 見出しの英字（冊子の章見出しの上に小さく出す） ---- */
 var EN = { toc: 'CONTENTS', officials: 'OFFICIALS', youkou: 'TOURNAMENT OUTLINE', dress: 'DRESS CODE', counter: 'SCORE COUNTER', notes: 'RULES AND NOTES',
-  br: 'DRAW', pr: 'ORDER OF PLAY', pairs: 'PLAYERS', tm: 'TEAM ROSTER', changes: 'CHANGES', history: 'HALL OF FAME', memo: 'MEMO' };
+  br: 'DRAW', pr: 'ORDER OF PLAY', pairs: 'PLAYERS', tm: 'TEAM ROSTER', changes: 'CHANGES', history: 'HALL OF FAME', memo: 'PRACTICE / MEMO' };
 function enOf(id) { return EN[id] || EN[id.slice(0, 2)] || ''; }
 
 /* ---- 大会要項（２ページ） ---- */
@@ -716,11 +729,67 @@ function fillToc() {
 }
 
 /* ---- メモ・裏表紙 ---- */
+/* 練習割り当て（要項どおり 7:45〜）。個人戦：予選リーグのコート（A・Bブロック＝Aコート、C・Dブロック＝Bコート）で
+   枠の順に３・３・２ペア、15分×３回。団体戦：１回戦のコート（１〜８番＝A、９〜16番＝B）で番号順に５分×８回。空いた枠は詰めない */
+var PRAC = { start: 7 * 60 + 45, indivMin: 15, teamMin: 5 };
+function pracHm(m) { return Math.floor(m / 60) + ':' + ('0' + (m % 60)).slice(-2); }
+/* 区分の練習：[{ from, to, A: [{slot,label}], B: [...] }]。データがなければ null */
+function pracRows(code) {
+  var d = DIV[code], rows = [], i, k;
+  if (!d || !d.matches || !d.matches.length) return null;
+  if (d.division.type === 'indiv') {
+    if (!d.blocks) return null;
+    var at = function (b, p) { var l = d.blocks[b] || [], j; for (j = 0; j < l.length; j++) if (l[j].pos === p) return { slot: b + p, label: l[j].sub || l[j].label }; return null; };
+    var seq = { A: [], B: [] };
+    for (i = 1; i <= 4; i++) { seq.A.push(['A', i]); seq.B.push(['C', i]); }
+    for (i = 1; i <= 4; i++) { seq.A.push(['B', i]); seq.B.push(['D', i]); }
+    var grp = [[0, 3], [3, 6], [6, 8]];
+    for (k = 0; k < 3; k++) {
+      var st = PRAC.start + k * PRAC.indivMin, r = { from: pracHm(st), to: pracHm(st + PRAC.indivMin), A: [], B: [] }, c, x;
+      for (c in seq) for (i = grp[k][0]; i < grp[k][1]; i++) { x = at(seq[c][i][0], seq[c][i][1]); if (x) r[c].push(x); }
+      rows.push(r);
+    }
+    return rows;
+  }
+  var bySlot = {}, m, s;
+  for (i = 0; i < d.matches.length; i++) {
+    m = d.matches[i];
+    for (k = 0; k < 2; k++) { s = k ? m.right : m.left; if (s && s.decided && s.slot) bySlot[s.slot] = s.label; }
+  }
+  for (k = 0; k < 8; k++) {
+    var t0 = PRAC.start + k * PRAC.teamMin;
+    rows.push({ from: pracHm(t0), to: pracHm(t0 + PRAC.teamMin),
+      A: bySlot[String(k + 1)] ? [{ slot: String(k + 1), label: bySlot[String(k + 1)] }] : [],
+      B: bySlot[String(k + 9)] ? [{ slot: String(k + 9), label: bySlot[String(k + 9)] }] : [] });
+  }
+  return rows;
+}
+function pracTable(code) {
+  var rows = pracRows(code);
+  if (!rows) return '';
+  var team = DIV[code].division.type === 'team';
+  var h = '<div class="pd"><h4>' + esc(NAME[code]) + '<small>' + (team ? '7:45〜8:25　５分×８回' : '7:45〜8:30　15分×３回') + '</small></h4><table><thead><tr><th></th><th>Ａコート</th><th>Ｂコート</th></tr></thead><tbody>';
+  var i, c, cell, j;
+  for (i = 0; i < rows.length; i++) {
+    h += '<tr><th>' + rows[i].from + '〜' + rows[i].to + '</th>';
+    for (c = 0; c < 2; c++) {
+      cell = rows[i][c ? 'B' : 'A'];
+      h += '<td>';
+      for (j = 0; j < cell.length; j++) h += '<div><span class="slot">' + esc(cell[j].slot) + '</span>' + esc(cell[j].label) + '</div>';
+      h += '</td>';
+    }
+    h += '</tr>';
+  }
+  return h + '</tbody></table></div>';
+}
 function memoPage() {
   var l = '';
   var i;
-  for (i = 0; i < 25; i++) l += '<i></i>';
-  return '<section class="pg print-only" id="memo" data-grp="memo"><h2 data-en="' + EN.memo + '"><span>メモ</span></h2><div class="memo-l">' + l + '</div></section>';
+  var pr = '';
+  for (i = 0; i < CODES.length; i++) pr += pracTable(CODES[i]);
+  for (i = 0; i < (pr ? 12 : 25); i++) l += '<i></i>';
+  var head = pr ? '<div class="prc">' + pr + '</div><p class="prc-note">練習は、個人戦が予選リーグを行うコート、団体戦が１回戦を行うコートで行います。欠場で空いた枠の時間は、繰り上げずに空けておきます。</p>' : '';
+  return '<section class="pg print-only" id="memo" data-grp="memo"><h2 data-en="' + EN.memo + '"><span>' + (pr ? '練習割り当て・メモ' : 'メモ') + '</span></h2>' + head + '<div class="memo-l">' + l + '</div></section>';
 }
 /* 連盟のマーク（ます目で描く。印刷でもにじまないように画像ではなく図形にする） */
 function emblemSvg() {
@@ -795,6 +864,9 @@ function coverPage() {
   var f = P.info;
   var no = (String(f.tournament).match(/第(\d+)回/) || [])[1] || '';
   return '<section class="pg cover" id="cover" data-grp="cover"><a class="cv-pdf" href="#" onclick="pdfOne(\'cover\');return false">📄 PDF</a>' +
+    /* 写真の暗い部分（顔）を持ち上げる：中間〜暗部だけ明るくして、コートの青は白っぽくしない */
+    '<svg width="0" height="0" style="position:absolute" aria-hidden="true"><filter id="cvLift" color-interpolation-filters="sRGB"><feComponentTransfer>' +
+    '<feFuncR type="gamma" exponent="0.65"/><feFuncG type="gamma" exponent="0.65"/><feFuncB type="gamma" exponent="0.65"/></feComponentTransfer></filter></svg>' +
     '<div class="cv-hero"><img class="cv-ph" src="doc/cover-photo.jpg" alt="高橋偲選手"><div class="cv-shade"></div>' +
     (no ? '<div class="cv-no"><span>第</span><b>' + no + '</b><span>回</span></div>' : '') +
     '<div class="cv-lbl"><small>PROGRAM</small><b>大会プログラム</b></div>' +
