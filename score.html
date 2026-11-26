@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="robots" content="noindex">
+<meta name="referrer" content="no-referrer">
+<title>コート主任の入力｜県インドア大会</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--deep:#123522;--main:#1a4a2e;--soft:#e8f1eb;--gold:#b8902a;--line:#c9d6cc;--red:#b33030;--blue:#0a62e0;--green:#12940f}
+html{font-size:16px;-webkit-text-size-adjust:100%}
+body{font-family:'Noto Sans JP',sans-serif;background:#f5f5f0;color:#222;min-height:100vh;-webkit-user-select:none;user-select:none}
+button{font-family:inherit;cursor:pointer;touch-action:manipulation}
+.header{background:linear-gradient(135deg,var(--deep),var(--main));color:#fff;padding:8px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.header h1{font-size:1rem;font-weight:900}
+.header small{display:block;font-size:.66rem;opacity:.85}
+.header .ct{font-size:.95rem;font-weight:900;text-align:right;line-height:1.2}
+.header .ct small{font-weight:500}
+.main{max-width:560px;margin:0 auto;padding:10px}
+.card{background:#fff;border-radius:12px;border:1.5px solid var(--line);padding:12px;margin-bottom:10px}
+.msg{font-size:.9rem;line-height:1.7}
+.msg.err{color:var(--red);font-weight:700}
+.hide{display:none!important}
+label{display:block;font-size:.84rem;font-weight:700;color:var(--deep);margin-bottom:4px}
+input[type=text]{width:100%;font-family:inherit;font-size:1rem;padding:10px 12px;border:2px solid var(--line);border-radius:10px;-webkit-user-select:text;user-select:text}
+.btn{display:block;width:100%;border:none;border-radius:10px;background:var(--main);color:#fff;font-weight:900;font-size:1rem;padding:12px;margin-top:8px}
+.btn.sub{background:#fff;color:var(--main);border:2px solid var(--main)}
+.btn:disabled{opacity:.45}
+/* コートを選ぶ */
+.courts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.courts button{border:2px solid var(--main);background:#fff;border-radius:12px;padding:14px 6px;text-align:center}
+.courts button b{display:block;font-size:1.05rem;color:var(--deep)}
+.courts button span{display:block;font-size:.72rem;color:#666;margin-top:3px}
+.courts button.mine{background:var(--soft)}
+.courts button.taken span{color:#8a4b00;font-weight:700}
+/* 上の帯 */
+.bar{display:flex;gap:6px;align-items:center;margin-bottom:8px}
+.tabs{display:flex;flex:1;border:2px solid var(--main);border-radius:10px;overflow:hidden}
+.tabs button{flex:1;border:none;background:#fff;color:var(--main);font-weight:900;font-size:.92rem;padding:8px 4px}
+.tabs button.on{background:var(--main);color:#fff}
+.mini{border:1.5px solid #999;background:#fff;color:#444;border-radius:8px;font-size:.72rem;font-weight:700;padding:6px 8px;white-space:nowrap}
+.kind{font-size:.72rem;color:#555;display:flex;align-items:center;gap:6px;justify-content:flex-end;margin:-2px 0 8px}
+.kind button{border:1.5px solid #bbb;background:#fff;border-radius:14px;padding:2px 10px;font-size:.72rem;font-weight:700;color:#555}
+.kind button.on{border-color:var(--main);background:var(--main);color:#fff}
+/* 試合 */
+.mh{display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin-bottom:6px}
+.mh b{font-size:1.02rem;color:var(--deep)}
+.mh span{font-size:.76rem;color:#555}
+.mtabs{display:flex;gap:4px;margin-bottom:8px}
+.mtabs button{flex:1;border:2px solid #c8cfc8;background:#fff;border-radius:8px;padding:5px 2px;font-size:.76rem;font-weight:900;color:#444;line-height:1.25}
+.mtabs button small{display:block;font-size:.6rem;font-weight:500;color:#777}
+.mtabs button.on{border-color:var(--main);background:var(--soft);color:var(--deep)}
+.mtabs button.dn{color:#999}
+.names{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px}
+.nm{border-radius:8px;padding:5px 7px;color:#fff;font-size:.8rem;font-weight:700;line-height:1.35;min-height:2.6em}
+.nm small{display:block;font-size:.66rem;font-weight:500;opacity:.92}
+.nm.b{background:var(--blue)}.nm.g{background:var(--green)}
+.slot{display:inline-block;min-width:2em;text-align:center;border:1.5px solid #fff;border-radius:4px;font-weight:900;font-size:.74rem;padding:0 3px;margin-right:4px}
+/* カウンター（会場のカウンターと同じ並び：外側＝ポイント、内側＝ゲーム。左＝青、右＝緑） */
+.cnt{background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:8px 6px 4px}
+.cnt .row{display:grid;grid-template-columns:1.35fr .8fr .8fr 1.35fr;gap:6px;align-items:end}
+.cnt .bx{border:2px solid #333;border-radius:6px;text-align:center;font-weight:900;line-height:1;background:#fff}
+.cnt .pt{font-size:4.2rem;padding:8px 0 6px}
+.cnt .gm{font-size:2.3rem;padding:6px 0 4px}
+.cnt .b{color:var(--blue)}.cnt .g{color:var(--green)}
+.cnt .lab{display:grid;grid-template-columns:1.35fr 1.6fr 1.35fr;gap:6px;text-align:center;font-size:.7rem;font-weight:700;color:#555;margin-top:3px}
+.cnt .lab span{border-top:2px solid #999;padding-top:1px}
+.cnt .gl{text-align:center;font-size:.86rem;font-weight:900;color:var(--deep);margin-top:4px}
+.cnt.fin .gl{color:var(--red)}
+/* 得点のボタン */
+.pts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.pts button{border:none;border-radius:14px;color:#fff;font-weight:900;font-size:1.05rem;padding:22px 6px;min-height:118px;line-height:1.35;box-shadow:0 3px 0 rgba(0,0,0,.25)}
+.pts button small{display:block;font-size:.72rem;font-weight:500;margin-top:4px;opacity:.95}
+.pts button:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.pts .b{background:var(--blue)}.pts .g{background:var(--green)}
+.pts button:disabled{opacity:.35}
+.ops{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ops button{border:2px solid #555;background:#fff;border-radius:12px;font-weight:900;font-size:.95rem;padding:12px 4px;color:#333}
+.ops button.cam{border-color:var(--gold);background:#fffbea;color:#6b5200}
+.sync{font-size:.74rem;color:#555;text-align:center;margin-top:8px}
+.sync.ng{color:var(--red);font-weight:700}
+.endbox{border:2px solid var(--gold);background:#fffbea;border-radius:12px;padding:10px 12px;margin:10px 0;font-size:.9rem;line-height:1.6}
+.endbox b{color:#7a5d00}
+.next{border:2px dashed #9aa79c;border-radius:12px;padding:10px 12px;background:#fff;margin-top:10px}
+.next h3{font-size:.88rem;color:var(--deep);margin-bottom:4px}
+.next .vs{font-size:.86rem;line-height:1.6}
+.next .note{font-size:.72rem;color:#666;margin-top:4px}
+.pick{margin-top:10px;font-size:.8rem}
+.pick summary{color:#555;font-weight:700;cursor:pointer}
+.pick button{display:block;width:100%;text-align:left;border:1.5px solid #ccc;background:#fff;border-radius:8px;padding:6px 8px;margin-top:6px;font-size:.8rem}
+.lost{border:2px solid var(--red);background:#fff0ee;color:var(--red);border-radius:10px;padding:10px;font-weight:700;font-size:.88rem;margin-bottom:10px}
+/* 写真 */
+.shoot{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.shoot button{border:2px solid var(--gold);background:#fffbea;border-radius:14px;padding:22px 6px;font-weight:900;font-size:1.05rem;color:#6b5200}
+.shoot button.lib{border-color:#888;background:#fff;color:#444}
+.plog{font-size:.76rem;line-height:1.6;margin-top:10px;color:#333;word-break:break-all}
+.plog .ng{color:var(--red);font-weight:700}
+.foot{font-size:.72rem;color:#666;line-height:1.7;margin-top:10px}
+/* 確認 */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:30;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal .box{background:#fff;border-radius:14px;padding:16px;max-width:420px;width:100%}
+.modal p{font-size:.95rem;line-height:1.7;margin-bottom:6px}
+.modal .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.toast{position:fixed;left:50%;top:12px;transform:translateX(-50%);background:#1d1d1d;color:#fff;padding:9px 16px;border-radius:20px;font-size:.88rem;opacity:0;pointer-events:none;transition:opacity .2s;z-index:40;max-width:92vw;text-align:center}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<header class="header">
+  <div><small id="tname">第40回岩手県中学校インドアソフトテニス大会</small><h1>コート主任の入力</h1></div>
+  <div class="ct" id="hdCourt"></div>
+</header>
+<main class="main">
+  <div class="card" id="stateCard"><div class="msg" id="stateMsg">確認しています…</div></div>
+
+  <div class="card hide" id="nameCard">
+    <label for="byInput">あなたの名前</label>
+    <input type="text" id="byInput" placeholder="例：坂倉">
+    <div class="foot" style="margin-top:4px">担当の表示と、撮った写真の記録に使います。</div>
+    <button class="btn" type="button" onclick="saveName()">次へ</button>
+  </div>
+
+  <div class="hide" id="courtSel">
+    <div class="card">
+      <div class="msg" style="margin-bottom:10px">担当するコートを押してください。</div>
+      <div class="courts" id="courtBtns"></div>
+      <div class="foot">１つのコートを入力できるのは、担当になった１台だけです。交代するときは、次の人が同じコートを押して「引き継ぐ」を選びます。</div>
+    </div>
+  </div>
+
+  <div class="hide" id="work">
+    <div id="lostBox"></div>
+    <div class="bar">
+      <div class="tabs"><button type="button" id="tRec" onclick="setMode('rec')">記録</button><button type="button" id="tPho" onclick="setMode('photo')">写真</button></div>
+      <button type="button" class="mini" onclick="showCourts()">コートを変える</button>
+    </div>
+    <div class="kind" id="kindBox"></div>
+    <div id="rec"></div>
+    <div id="photo" class="hide">
+      <div class="card">
+        <div class="msg" id="phoNow" style="font-size:.84rem"></div>
+        <div class="shoot" style="margin-top:10px">
+          <button type="button" onclick="pickPhoto(true)">📷 撮る</button>
+          <button type="button" class="lib" onclick="pickPhoto(false)">🖼 写真を選ぶ</button>
+        </div>
+        <div class="plog" id="plog"></div>
+        <div class="foot">撮った写真は、裏で順番に送ります。送っている間も「記録」に戻って入力できます。<br>表彰式・入賞者の写真は、役員のページの「記録写真の撮影」から撮ってください。<br>写真の公開は、新聞とHPだけです。</div>
+      </div>
+    </div>
+  </div>
+</main>
+<input type="file" id="camInput" accept="image/*" capture="environment" class="hide" onchange="picked(this)">
+<input type="file" id="libInput" accept="image/*" multiple class="hide" onchange="picked(this)">
+<div id="modal"></div>
+<div class="toast" id="toast"></div>
+
+<script src="live-core.js"></script>
+<script>
+var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOitIVPfNC3SOPYk58-Lm3UtCPIT6slKdcVz0C9SvpCJJ/exec';
+var KEY = '';           /* 役員の二次元コード（またはパスワード） */
+var NEWKEY = '';        /* コート主任用の二次元コードで来たときの合言葉（確かめるまで覚えさせない） */
+var DEV = '';           /* この端末の目印 */
+var SEL = null;         /* { g: '男'|'女', c: 'A'|'B' } 担当のコート */
+var KIND = '';          /* 'indiv'|'team'（日付から。手で切り替えもできる） */
+var KIND_SET = false;
+var INFO = null;        /* liveInfo の答え */
+var PROG = null;        /* 進行表 */
+var LIVE = {};          /* 区分のカウント（サーバー） */
+var MODE = 'rec';
+var PICK = '';          /* 手で選んだ試合 */
+var MI_PICK = {};       /* 団体戦：試合ごとに手で選んだマッチ */
+var LOST = '';          /* 担当が外れたとき */
+var LAST_TAP = 0;
+var SENDING = false;
+var FLUSH_T = null;
+
+function store(key, val) {
+  try {
+    if (val === undefined) return localStorage.getItem(key) || '';
+    if (val === null) localStorage.removeItem(key); else localStorage.setItem(key, val);
+  } catch (e) { return ''; }
+  return '';
+}
+function esc(s) { return LC.esc(s); }
+function toast(msg, long) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show';
+  clearTimeout(t._t);
+  t._t = setTimeout(function () { t.className = 'toast'; }, long ? 4500 : 1800);
+}
+function state(text, err) {
+  var c = document.getElementById('stateCard');
+  if (!text) { c.className = 'card hide'; return; }
+  c.className = 'card';
+  var m = document.getElementById('stateMsg');
+  m.innerHTML = text;
+  m.className = 'msg' + (err ? ' err' : '');
+}
+function parse(t) {
+  var d;
+  try { d = JSON.parse(t); } catch (e) { throw new Error('サーバーの応答を読み取れません'); }
+  return d;
+}
+function api(body) {
+  body.pw = KEY;
+  return fetch(GAS_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain' }, body: JSON.stringify(body) })
+    .then(function (r) { return r.text(); }).then(parse);
+}
+function getJ(q) {
+  return fetch(GAS_URL + '?' + q).then(function (r) { return r.text(); }).then(parse);
+}
+
+/* ---------- 区分・日付 ---------- */
+function dayOf(s) {
+  var m = /(\d+)月(\d+)日/.exec(String(s || ''));
+  if (!m) return null;
+  return new Date(new Date().getFullYear(), parseInt(m[1], 10) - 1, parseInt(m[2], 10));
+}
+function autoKind() {
+  var t = dayOf(INFO && INFO.dates ? INFO.dates.team : '');
+  var now = new Date();
+  if (t && now.getTime() >= t.getTime()) return 'team';
+  return 'indiv';
+}
+function divCode() { return (SEL.g === '男' ? 'M' : 'W') + (KIND === 'team' ? 'T' : 'I'); }
+function courtName(g, c) { return (g === '男' ? '男子' : '女子') + '会場 ' + c + 'コート'; }
+
+/* ---------- 記録（端末に保存してから送る） ---------- */
+function rk(mid, mi) { return 'iwLive:' + divCode() + ':' + mid + ':' + mi; }
+function recGet(mid, mi) {
+  var loc = null;
+  try { loc = JSON.parse(store(rk(mid, mi)) || 'null'); } catch (e) { loc = null; }
+  var sv = LIVE[mid] && LIVE[mid][String(mi)];
+  if (sv && (!loc || sv.v > loc.v || (sv.v === loc.v && loc.sent))) {
+    loc = { s: sv.s, v: sv.v, sent: true, c: sv.c };
+    store(rk(mid, mi), JSON.stringify(loc));
+  }
+  return loc || { s: '', v: 0, sent: true };
+}
+function recSet(mid, mi, rec) {
+  rec.sent = false;
+  rec.c = SEL.c;
+  rec.t = new Date().getTime();
+  store(rk(mid, mi), JSON.stringify(rec));
+  var ks = keysAll();
+  if (ks.indexOf(rk(mid, mi)) < 0) { ks.push(rk(mid, mi)); store('iwLiveKeys', JSON.stringify(ks)); }
+  var q = pending();
+  if (q.indexOf(rk(mid, mi)) < 0) q.push(rk(mid, mi));
+  store('iwLivePending', JSON.stringify(q));
+  flushSoon(150);
+}
+function keysAll() { try { return JSON.parse(store('iwLiveKeys') || '[]'); } catch (e) { return []; } }
+/* この端末の記録を捨てる（担当が外れた・ほかの端末から引き継いだとき）。以後はサーバーの記録を使う */
+function purge(g) {
+  var pf = 'iwLive:' + (g === '男' ? 'M' : 'W');
+  var ks = keysAll(), keep = [], i;
+  for (i = 0; i < ks.length; i++) { if (ks[i].indexOf(pf) === 0) store(ks[i], null); else keep.push(ks[i]); }
+  store('iwLiveKeys', JSON.stringify(keep));
+  store('iwLivePending', JSON.stringify(pending().filter(function (k) { return k.indexOf(pf) !== 0; })));
+}
+function pending() { try { return JSON.parse(store('iwLivePending') || '[]'); } catch (e) { return []; } }
+function flushSoon(ms) { clearTimeout(FLUSH_T); FLUSH_T = setTimeout(flush, ms); }
+/* 未送信を順に送る（電波がなければ、あとで自動で送り直す） */
+function flush() {
+  if (SENDING || LOST) return;
+  var q = pending();
+  if (!q.length) { drawSync(); return; }
+  var key = q[0];
+  var rec = null;
+  try { rec = JSON.parse(store(key) || 'null'); } catch (e) { rec = null; }
+  var parts = key.split(':');
+  if (!rec || rec.sent || parts.length < 4) { q.shift(); store('iwLivePending', JSON.stringify(q)); flushSoon(10); return; }
+  var div = parts[1], mid = parts[2], mi = parts[3];
+  var sentV = rec.v;
+  SENDING = true;
+  drawSync();
+  api({ action: 'livePut', dev: DEV, by: store('iwPhotoBy'), gender: div.charAt(0) === 'M' ? '男' : '女', court: rec.c || SEL.c, div: div, matchId: mid, mi: mi, s: rec.s, v: rec.v })
+    .then(function (d) {
+      SENDING = false;
+      if (d.status !== 'ok') {
+        if (d.code === 'owner') { LOST = d.message || '担当が外れました。'; purge(div.charAt(0) === 'M' ? '男' : '女'); render(); return; }
+        if (d.code === 'auth') { LOST = d.message; render(); return; }
+        throw new Error(d.message || 'エラー');
+      }
+      var cur = null;
+      try { cur = JSON.parse(store(key) || 'null'); } catch (e) { cur = null; }
+      if (d.stale && cur && cur.v <= d.v) cur = { s: d.s, v: d.v, sent: true, c: cur.c };
+      else if (cur && cur.v === sentV) cur.sent = true;
+      if (cur) store(key, JSON.stringify(cur));
+      var q2 = pending();
+      if (cur && cur.sent) { q2 = q2.filter(function (x) { return x !== key; }); store('iwLivePending', JSON.stringify(q2)); }
+      if (!LIVE[mid]) LIVE[mid] = {};
+      if (cur && cur.sent && div === divCode()) LIVE[mid][mi] = { s: cur.s, v: cur.v, c: cur.c, at: new Date().getTime() };
+      if (d.stale) render(); else drawSync();
+      flushSoon(q2.length ? 50 : 0);
+    })
+    .catch(function (e) {
+      SENDING = false;
+      SYNC_ERR = e.message;
+      drawSync();
+      flushSoon(4000);
+    });
+}
+var SYNC_ERR = '';
+function drawSync() {
+  var el = document.getElementById('sync');
+  if (!el) return;
+  var n = pending().length;
+  if (!n) { SYNC_ERR = ''; el.className = 'sync'; el.textContent = '✓ 送信済み'; return; }
+  el.className = 'sync' + (SYNC_ERR ? ' ng' : '');
+  el.textContent = SENDING ? '送信中…' : '未送信 ' + n + '件' + (SYNC_ERR ? '（電波が戻ると自動で送ります）' : '');
+}
+
+/* ---------- 試合の選び方 ---------- */
+function courtMatches() {
+  if (!PROG || !PROG.matches) return [];
+  return PROG.matches.filter(function (m) { return (m.court === SEL.c || m.two) && m.note !== '不戦勝'; });
+}
+function ruleOf(mi) { return LC.rule(KIND, mi); }
+function cntOf(mid, mi) { return LC.count(recGet(mid, mi).s, ruleOf(mi)); }
+/* 団体戦：マッチごとの状態。done＝本部の結果か、カウントで終わっている */
+function teamState(m) {
+  var out = { rows: [], wL: 0, wR: 0, decided: false, allDone: true };
+  var i, p, c, sv, row;
+  for (i = 0; i < 4; i++) {
+    p = m.team && m.team.pairs[i] ? m.team.pairs[i] : {};
+    c = cntOf(m.id, i);
+    sv = LIVE[m.id] && LIVE[m.id][String(i)];
+    row = { i: i, p: p, c: c, other: '', done: false, none: false, w: '' };
+    if (i < 3 && (p.kind === 'none')) { row.none = true; row.done = true; }
+    else if (i < 3 && p.w) { row.done = true; row.w = p.w; }
+    else if (c.end) { row.done = true; row.w = c.winner; }
+    if (sv && sv.c && sv.c !== SEL.c && !row.done && sv.s) row.other = sv.c;
+    if (i < 3 && row.w === 'L') out.wL++;
+    if (i < 3 && row.w === 'R') out.wR++;
+    if (i < 3 && !row.done && !(p.kind === 'abort')) out.allDone = false;
+    out.rows.push(row);
+  }
+  var rep = out.rows[3];
+  if (m.stage !== 'R1' && (out.wL >= 2 || out.wR >= 2)) out.decided = true;
+  else if (out.allDone && out.wL !== out.wR) out.decided = true;
+  else if (out.allDone && rep.done) out.decided = true;
+  return out;
+}
+function matchDone(m) {
+  if (KIND === 'team') return teamState(m).decided;
+  return cntOf(m.id, 0).end;
+}
+function current() {
+  var list = courtMatches();
+  var i;
+  if (PICK) for (i = 0; i < list.length; i++) if (list[i].id === PICK && list[i].state !== '終了') return list[i];
+  PICK = '';
+  for (i = 0; i < list.length; i++) if (list[i].state === '試合中' && !matchDone(list[i])) return list[i];
+  return null;
+}
+function nextMatch(after) {
+  var list = courtMatches();
+  var i, seen = !after;
+  for (i = 0; i < list.length; i++) {
+    if (after && list[i].id === after.id) { seen = true; continue; }
+    if (!seen) continue;
+    if (list[i].state === '待機' || list[i].state === '呼出') return list[i];
+  }
+  for (i = 0; i < list.length; i++) if ((list[i].state === '待機' || list[i].state === '呼出') && (!after || list[i].id !== after.id)) return list[i];
+  return null;
+}
+/* 団体戦：このコートで入力するマッチ */
+function curMi(m, ts) {
+  var p = MI_PICK[m.id];
+  if (p !== undefined && ts.rows[p] && !ts.rows[p].done) return p;
+  var open = [], i;
+  for (i = 0; i < 3; i++) if (!ts.rows[i].done && ts.rows[i].p.kind !== 'abort' && !ts.rows[i].other) open.push(i);
+  if (!open.length) return ts.allDone && !ts.decided ? 3 : (p !== undefined ? p : 0);
+  /* 2面展開：Bコートは、まだどちらのコートも始めていなければ２つ目のマッチ */
+  if (m.two && SEL.c === 'B' && open.length > 1) {
+    var started = false;
+    for (i = 0; i < 3; i++) if (ts.rows[i].c.total || (ts.rows[i].p.w && ts.rows[i].p.kind === 'played')) started = true;
+    if (!started) return open[1];
+  }
+  return open[0];
+}
+
+/* ---------- 名前 ---------- */
+function sideName(s) {
+  if (!s || !s.decided) return { t: esc(s ? s.label : ''), sub: '' };
+  return { t: (s.slot ? '<span class="slot">' + esc(s.slot) + '</span>' : '') + esc(s.label), sub: esc(s.sub || '') };
+}
+function pairOf(m, mi, which) {
+  if (KIND !== 'team' || mi === 3 || !m.team || !m.team.pairs[mi]) return '';
+  var p = m.team.pairs[mi][which === 'L' ? 'l' : 'r'];
+  return p ? esc(p[0]) + '・' + esc(p[1]) : '';
+}
+function vsText(m) {
+  var a = sideName(m.left), b = sideName(m.right);
+  return '<span style="color:var(--blue);font-weight:900">青</span> ' + a.t + (a.sub ? '<small>（' + a.sub + '）</small>' : '') + '<br><span style="color:var(--green);font-weight:900">緑</span> ' + b.t + (b.sub ? '<small>（' + b.sub + '）</small>' : '');
+}
+function mTitle(m) { return (m.no ? '第' + m.no + '試合　' : '') + m.round; }
+/* 写真の名前に付ける試合の情報 */
+function photoMatch() {
+  var m = current() || lastShown;
+  if (!m) return { match: SEL.c + 'コート', cap: courtName(SEL.g, SEL.c) };
+  var sl = function (s) { return s && s.decided ? (s.slot || '') + (s.label ? ' ' + s.label : '') : ''; };
+  var short = function (s) { return s && s.decided ? (s.slot || s.label || '') : ''; };
+  return { match: SEL.c + 'コート第' + m.no + '試合_' + short(m.left) + '-' + short(m.right),
+    cap: courtName(SEL.g, SEL.c) + ' 第' + m.no + '試合 ' + m.round + '　' + sl(m.left) + ' 対 ' + sl(m.right) };
+}
+var lastShown = null;
+
+/* ---------- 画面 ---------- */
+function setMode(md) {
+  MODE = md;
+  document.getElementById('tRec').className = md === 'rec' ? 'on' : '';
+  document.getElementById('tPho').className = md === 'photo' ? 'on' : '';
+  document.getElementById('rec').className = md === 'rec' ? '' : 'hide';
+  document.getElementById('photo').className = md === 'photo' ? '' : 'hide';
+  if (md === 'photo') drawPhotoNow();
+}
+function setKind(k) { KIND = k; KIND_SET = true; PICK = ''; MI_PICK = {}; PROG = null; LIVE = {}; render(); loadProg(); loadLive(); }
+function drawKind() {
+  document.getElementById('kindBox').innerHTML = '<span>' + esc(INFO && INFO.venues ? INFO.venues[SEL.g] || '' : '') + '</span>' +
+    '<button type="button" class="' + (KIND === 'indiv' ? 'on' : '') + '" onclick="setKind(\'indiv\')">個人戦</button>' +
+    '<button type="button" class="' + (KIND === 'team' ? 'on' : '') + '" onclick="setKind(\'team\')">団体戦</button>';
+}
+
+function render() {
+  if (!SEL) return;
+  document.getElementById('hdCourt').innerHTML = esc(courtName(SEL.g, SEL.c)) + '<small>担当：' + esc(store('iwPhotoBy')) + '</small>';
+  document.getElementById('lostBox').innerHTML = LOST ? '<div class="lost">' + esc(LOST) + '<br>この端末では入力できません。この端末でまだ送っていなかった入力は送りません。続けて入力するときは「コートを変える」から、もう一度担当になってください。</div>' : '';
+  drawKind();
+  var box = document.getElementById('rec');
+  if (!PROG) { box.innerHTML = '<div class="card"><div class="msg">進行表を読み込んでいます…</div></div>'; return; }
+  if (!PROG.matches || !PROG.matches.length) { box.innerHTML = '<div class="card"><div class="msg">' + esc(PROG.division ? PROG.division.name : '') + 'の進行表は、まだ公開されていません。</div></div>'; return; }
+  var m = current();
+  var h = '';
+  if (m) {
+    lastShown = m;
+    h += matchHtml(m);
+    if (matchDone(m)) h += nextHtml(nextMatch(m));
+  } else {
+    var nx = nextMatch(null);
+    h += '<div class="card">' + lastHtml() + '<div class="msg">このコートで、いま入力する試合はありません。</div>' + nextHtml(nx) + pickHtml() + '</div>';
+  }
+  box.innerHTML = h;
+  drawSync();
+  if (MODE === 'photo') drawPhotoNow();
+}
+
+function matchHtml(m) {
+  var team = KIND === 'team';
+  var ts = team ? teamState(m) : null;
+  var mi = team ? curMi(m, ts) : 0;
+  var rec = recGet(m.id, mi);
+  var r = ruleOf(mi);
+  var c = LC.count(rec.s, r);
+  var h = '<div class="card">';
+  h += '<div class="mh"><b>' + esc(mTitle(m)) + '</b><span>' + (m.state === '試合中' ? '試合中' : esc(m.state)) + (m.two ? '・２面展開' : '') + '</span></div>';
+  if (team) {
+    h += '<div class="mtabs">';
+    var i, rw, lab;
+    for (i = 0; i < 4; i++) {
+      rw = ts.rows[i];
+      if (i === 3 && !(ts.allDone && ts.wL === ts.wR) && !rw.c.total) continue;
+      lab = rw.none ? 'なし' : rw.done ? (rw.p.kind === 'forfeit' ? '不戦勝 ' : '終了 ') + (rw.w === 'L' ? '青' : '緑') : rw.other ? rw.other + 'コート' : rw.c.total ? rw.c.gL + '-' + rw.c.gR : '';
+      h += '<button type="button" class="' + (i === mi ? 'on' : '') + (rw.done ? ' dn' : '') + '" onclick="pickMi(\'' + esc(m.id) + '\',' + i + ')">' + LC.mLabel('team', i) + '<small>' + esc(lab) + '</small></button>';
+    }
+    h += '</div>';
+  }
+  var a = sideName(m.left), b = sideName(m.right);
+  var pa = pairOf(m, mi, 'L'), pb = pairOf(m, mi, 'R');
+  h += '<div class="names"><div class="nm b">' + a.t + '<small>' + (pa || a.sub) + '</small></div><div class="nm g">' + b.t + '<small>' + (pb || b.sub) + '</small></div></div>';
+  h += '<div class="cnt' + (c.fin ? ' fin' : '') + '"><div class="row">' +
+    '<div class="bx pt b">' + (c.end ? '–' : esc(c.dL)) + '</div><div class="bx gm b">' + c.gL + '</div>' +
+    '<div class="bx gm g">' + c.gR + '</div><div class="bx pt g">' + (c.end ? '–' : esc(c.dR)) + '</div></div>' +
+    '<div class="lab"><span>ポイント</span><span>ゲーム</span><span>ポイント</span></div>' +
+    '<div class="gl">' + esc(LC.gameLabel(c, r)) + '</div></div>';
+  var dis = c.end || !!LOST ? ' disabled' : '';
+  var nmA = m.left.slot || m.left.label, nmB = m.right.slot || m.right.label;
+  h += '<div class="pts"><button type="button" class="b" onclick="point(\'L\')"' + dis + '>青が得点<small>' + esc(nmA) + '</small></button>' +
+    '<button type="button" class="g" onclick="point(\'R\')"' + dis + '>緑が得点<small>' + esc(nmB) + '</small></button></div>';
+  if (c.end) {
+    var wn = c.winner === 'L' ? m.left : m.right;
+    if (team && mi < 3) h += '<div class="endbox"><b>' + LC.mLabel('team', mi) + ' 終了 ' + c.gL + '-' + c.gR + '</b>（' + (c.winner === 'L' ? '青' : '緑') + '：' + esc(wn.label) + '）<br>' + (ts.decided ? '対戦の勝敗が決まりました。採点票を本部へ届けてください。' : '次のマッチは、上のマッチの欄から選べます（自動で次に進みます）。') + '</div>';
+    else h += '<div class="endbox"><b>試合終了 ' + c.gL + '-' + c.gR + '</b>（' + (c.winner === 'L' ? '青' : '緑') + '：' + esc(wn.label) + 'の勝ち）<br>採点票を本部へ届けてください。結果は本部が入力します。</div>';
+  }
+  if (team && mi === 3 && !c.total) h += '<div class="endbox">勝ち数が同じです。得失ゲーム差・得失ポイント差で決まらず、代表戦を行うときだけ入力してください。</div>';
+  h += '<div class="ops"><button type="button" onclick="undo(\'' + esc(m.id) + '\',' + mi + ')"' + (rec.s && !LOST ? '' : ' disabled') + '>↩ １つ戻す</button><button type="button" class="cam" onclick="pickPhoto(true)">📷 写真を撮る</button></div>';
+  h += '<div class="sync" id="sync"></div>';
+  h += pickHtml();
+  return h + '</div>';
+}
+
+/* 終わったばかりの試合（本部が結果を入れるまで）。間違いに気づいたら「１つ戻す」 */
+function lastHtml() {
+  var m = lastShown;
+  if (!m || m.state === '終了') return '';
+  var i, list = courtMatches(), cur = null;
+  for (i = 0; i < list.length; i++) if (list[i].id === m.id) cur = list[i];
+  if (!cur || cur.state === '終了' || !matchDone(cur)) return '';
+  var mi = 0, c;
+  if (KIND === 'team') {
+    var ts = teamState(cur);
+    for (i = 3; i >= 0; i--) if (ts.rows[i].c.end) { mi = i; break; }
+    c = { gL: ts.wL, gR: ts.wR };
+  } else c = cntOf(cur.id, 0);
+  return '<div class="endbox"><b>終わった試合：' + esc(mTitle(cur)) + '　' + (KIND === 'team' ? 'マッチ ' : 'ゲーム ') + c.gL + '-' + c.gR + '</b><br>本部が採点票から結果を入力するまで、ここに出ます。' +
+    '<button type="button" class="btn sub" style="margin-top:6px;padding:8px" onclick="undo(\'' + esc(cur.id) + '\',' + mi + ')">↩ 最後の１点を取り消す</button></div>';
+}
+function nextHtml(nx) {
+  if (!nx) return '<div class="next"><h3>このコートの次の試合</h3><div class="vs">ありません。</div></div>';
+  var ok = nx.left.decided && nx.right.decided;
+  return '<div class="next"><h3>次の試合：' + esc(mTitle(nx)) + '</h3><div class="vs">' + vsText(nx) + '</div>' +
+    '<button type="button" class="btn" onclick="startMatch(\'' + esc(nx.id) + '\')"' + (ok && !LOST ? '' : ' disabled') + '>この試合を始める</button>' +
+    '<div class="note">' + (ok ? '押すと進行表も「試合中」になります。本部が先に「試合中」にしたときは、自動でこの試合になります。' : '対戦相手が決まると押せます。') + '</div></div>';
+}
+function pickHtml() {
+  var list = courtMatches().filter(function (m) { return m.state !== '終了' && m.left.decided && m.right.decided; });
+  if (!list.length) return '';
+  var h = '<details class="pick"><summary>ほかの試合を選ぶ（本部の操作が遅れているときなど）</summary>';
+  var i;
+  for (i = 0; i < list.length; i++) h += '<button type="button" onclick="pickMatch(\'' + esc(list[i].id) + '\')">' + esc(mTitle(list[i])) + '（' + esc(list[i].state) + '）<br>' + esc(list[i].left.slot || list[i].left.label) + ' 対 ' + esc(list[i].right.slot || list[i].right.label) + '</button>';
+  return h + '</details>';
+}
+function pickMatch(id) {
+  var m = null, list = courtMatches(), i;
+  for (i = 0; i < list.length; i++) if (list[i].id === id) m = list[i];
+  if (!m) return;
+  if (m.state !== '試合中') { startMatch(id); return; }
+  PICK = id;
+  render();
+  window.scrollTo(0, 0);
+}
+function pickMi(id, i) { MI_PICK[id] = i; render(); }
+
+/* ---------- 入力 ---------- */
+function point(side) {
+  var now = new Date().getTime();
+  if (now - LAST_TAP < 280) return;
+  LAST_TAP = now;
+  var m = current();
+  if (!m || LOST) return;
+  var team = KIND === 'team';
+  var ts = team ? teamState(m) : null;
+  var mi = team ? curMi(m, ts) : 0;
+  MI_PICK[m.id] = mi;
+  PICK = m.id;
+  var rec = recGet(m.id, mi);
+  var r = ruleOf(mi);
+  var before = LC.count(rec.s, r);
+  if (before.end) return;
+  rec.s += side;
+  rec.v = (rec.v || 0) + 1;
+  recSet(m.id, mi, rec);
+  if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) {} }
+  var c = LC.count(rec.s, r);
+  render();
+  if (c.end) confirmEnd(m, mi, c);
+  else if (c.games.length > before.games.length) toast('ゲーム ' + (side === 'L' ? '青' : '緑') + '　' + c.gL + '-' + c.gR);
+}
+/* 取り消しは、表示している試合（マッチ）の最後の１点 */
+function undo(mid, mi) {
+  if (LOST || !mid) return;
+  var rec = recGet(mid, mi);
+  if (!rec.s) return;
+  rec.s = rec.s.slice(0, -1);
+  rec.v = (rec.v || 0) + 1;
+  recSet(mid, mi, rec);
+  PICK = mid;
+  if (KIND === 'team') MI_PICK[mid] = mi;
+  render();
+  toast('１つ戻しました');
+}
+function confirmEnd(m, mi, c) {
+  var wn = c.winner === 'L' ? '青（' + (m.left.slot || m.left.label) + '）' : '緑（' + (m.right.slot || m.right.label) + '）';
+  var what = KIND === 'team' && mi < 3 ? LC.mLabel('team', mi) : KIND === 'team' ? '代表戦' : '試合';
+  showModal('<p><b>' + esc(wn) + '</b>が取って、' + what + 'が終わりました（ゲーム ' + c.gL + '-' + c.gR + '）。</p><p style="font-size:.8rem;color:#555">間違えて押したときは「１つ戻す」を押してください。</p>' +
+    '<div class="two"><button class="btn sub" type="button" onclick="closeModal();undo(\'' + esc(m.id) + '\',' + mi + ')">１つ戻す</button><button class="btn" type="button" onclick="closeModal();afterEnd(\'' + esc(m.id) + '\')">終わりでよい</button></div>');
+}
+function afterEnd(id) {
+  PICK = '';
+  if (KIND === 'team') {
+    var m = null, list = courtMatches(), i;
+    for (i = 0; i < list.length; i++) if (list[i].id === id) m = list[i];
+    if (m) { delete MI_PICK[m.id]; var ts = teamState(m); if (!ts.decided) PICK = id; }
+  }
+  render();
+}
+function startMatch(id) {
+  if (LOST) return;
+  var list = courtMatches(), m = null, i;
+  for (i = 0; i < list.length; i++) if (list[i].id === id) m = list[i];
+  if (!m) return;
+  showModal('<p><b>' + esc(mTitle(m)) + '</b>を始めます。</p><p style="font-size:.86rem">' + vsText(m) + '</p><p style="font-size:.8rem;color:#555">進行表も「試合中」になります。</p>' +
+    '<div class="two"><button class="btn sub" type="button" onclick="closeModal()">やめる</button><button class="btn" type="button" id="goBtn" onclick="doStart(\'' + esc(id) + '\')">始める</button></div>');
+}
+function doStart(id) {
+  var b = document.getElementById('goBtn');
+  if (b) { b.disabled = true; b.textContent = '送信中…'; }
+  api({ action: 'liveStart', dev: DEV, by: store('iwPhotoBy'), gender: SEL.g, court: SEL.c, div: divCode(), matchId: id })
+    .then(function (d) {
+      closeModal();
+      if (d.status !== 'ok') {
+        if (d.code === 'owner') { LOST = d.message; render(); return; }
+        toast(d.message || 'エラー', true);
+        return;
+      }
+      PICK = id;
+      var i;
+      for (i = 0; i < PROG.matches.length; i++) if (PROG.matches[i].id === id) PROG.matches[i].state = '試合中';
+      render();
+      window.scrollTo(0, 0);
+      setTimeout(loadProg, 1500);
+    })
+    .catch(function (e) { closeModal(); toast('送れませんでした（' + e.message + '）。電波を確かめて、もう一度押してください。', true); });
+}
+function showModal(html) { document.getElementById('modal').innerHTML = '<div class="modal"><div class="box">' + html + '</div></div>'; }
+function closeModal() { document.getElementById('modal').innerHTML = ''; }
+
+/* ---------- 写真（裏で順番に送る） ---------- */
+var PQ = [];
+var PBUSY = false;
+function pickPhoto(cam) {
+  var el = document.getElementById(cam ? 'camInput' : 'libInput');
+  el.value = '';
+  el.click();
+}
+function shrink(file, max, q) {
+  var draw = function (src, w, h) {
+    var r = Math.min(1, max / Math.max(w, h));
+    var c = document.createElement('canvas');
+    c.width = Math.round(w * r); c.height = Math.round(h * r);
+    c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', q);
+  };
+  function viaImg() {
+    return new Promise(function (ok, ng) {
+      var url = URL.createObjectURL(file);
+      var img = new Image();
+      img.onload = function () { var u = draw(img, img.naturalWidth, img.naturalHeight); URL.revokeObjectURL(url); ok(u); };
+      img.onerror = function () { URL.revokeObjectURL(url); ng(new Error('写真を読み込めません')); };
+      img.src = url;
+    });
+  }
+  if (window.createImageBitmap) {
+    return createImageBitmap(file, { imageOrientation: 'from-image' }).then(function (bmp) { var u = draw(bmp, bmp.width, bmp.height); if (bmp.close) bmp.close(); return u; })
+      .catch(function () { return viaImg(); });
+  }
+  return viaImg();
+}
+function picked(input) {
+  var files = Array.prototype.slice.call(input.files || []);
+  if (!files.length) return;
+  if (files.length > 20) { toast('一度に送れるのは20枚までです'); files = files.slice(0, 20); }
+  var pm = photoMatch();
+  var base = { gender: SEL.g, kind: KIND, match: pm.match, cap: pm.cap };
+  var chain = Promise.resolve();
+  files.forEach(function (f) {
+    chain = chain.then(function () {
+      /* 長辺1600px・１枚300KBほど（鑑賞用は1080px） */
+      return shrink(f, 1600, 0.75).then(function (full) {
+        return shrink(f, 1080, 0.7).then(function (view) {
+          PQ.push({ full: full, view: view, base: base, status: '待ち', name: '' });
+          drawPlog();
+        });
+      }).catch(function (e) { toast(e.message, true); });
+    });
+  });
+  chain.then(function () { toast('写真を送ります（' + files.length + '枚）'); sendPhotos(); });
+}
+function sendPhotos() {
+  if (PBUSY) return;
+  var q = null, i;
+  for (i = 0; i < PQ.length; i++) if (PQ[i].status === '待ち' || (PQ[i].status === '失敗' && PQ[i].retry && (PQ[i].tries || 0) < 5)) { q = PQ[i]; break; }
+  if (!q) { drawPlog(); return; }
+  PBUSY = true;
+  q.status = '送信中';
+  q.retry = false;
+  drawPlog();
+  var body = { action: 'photoUpload', gender: q.base.gender, kind: q.base.kind, scene: 'play', match: q.base.match, cap: q.base.cap, by: store('iwPhotoBy'),
+    data: q.full.split(',')[1], view: q.view.split(',')[1] };
+  api(body).then(function (d) {
+    if (d.status !== 'ok') throw new Error(d.message || 'エラー');
+    q.status = '保存済'; q.name = d.name; q.full = ''; q.view = '';
+  }).catch(function (e) {
+    q.status = '失敗'; q.err = String(e.message || '').replace(/。$/, ''); q.retry = true; q.tries = (q.tries || 0) + 1;
+    setTimeout(sendPhotos, 8000);
+  }).then(function () { PBUSY = false; drawPlog(); setTimeout(sendPhotos, 300); });
+}
+function drawPlog() {
+  var el = document.getElementById('plog');
+  var h = '', i, w = 0, stuck = false;
+  for (i = PQ.length - 1; i >= 0; i--) {
+    if (PQ[i].status !== '保存済') w++;
+    var gaveUp = PQ[i].status === '失敗' && (PQ[i].tries || 0) >= 5;
+    h += '<div' + (PQ[i].status === '失敗' ? ' class="ng"' : '') + '>' + (PQ[i].status === '保存済' ? '✓ ' + esc(PQ[i].name) : esc(PQ[i].status) + (PQ[i].err && PQ[i].status === '失敗' ? '（' + esc(PQ[i].err) + '。' + (gaveUp ? '送れませんでした' : '自動で送り直します') + '）' : '') + '　' + esc(PQ[i].base.match)) + '</div>';
+    if (gaveUp) stuck = true;
+  }
+  if (stuck) h = '<button type="button" class="btn sub" style="margin:0 0 6px" onclick="retryPhotos()">送れなかった写真を、もう一度送る</button>' + h;
+  el.innerHTML = h || 'まだありません';
+  var t = document.getElementById('tPho');
+  if (t) t.textContent = w ? '写真（残り' + w + '）' : '写真';
+}
+function retryPhotos() {
+  var i;
+  for (i = 0; i < PQ.length; i++) if (PQ[i].status === '失敗') { PQ[i].tries = 0; PQ[i].retry = true; }
+  sendPhotos();
+}
+function drawPhotoNow() {
+  var pm = photoMatch();
+  document.getElementById('phoNow').innerHTML = '写真には、次の情報が付きます。<br><b>' + esc(pm.cap) + '</b>';
+}
+
+/* ---------- 読み込み ---------- */
+function loadProg() {
+  if (!SEL) return Promise.resolve();
+  var dc = divCode();
+  return getJ('action=progress&div=' + dc).then(function (d) {
+    if (d.status !== 'ok' || dc !== divCode()) return;
+    PROG = d;
+    render();
+  }).catch(function () { /* 次の読み込みで */ });
+}
+function loadLive() {
+  if (!SEL) return Promise.resolve();
+  var dc = divCode();
+  return getJ('action=live&div=' + dc).then(function (d) {
+    if (d.status !== 'ok' || dc !== divCode()) return;
+    var nv = d.live[dc] || {};
+    var changed = JSON.stringify(nv) !== JSON.stringify(LIVE);
+    LIVE = nv;
+    if (changed) render();
+  }).catch(function () {});
+}
+
+/* ---------- コートを選ぶ・担当になる ---------- */
+function showCourts() {
+  document.getElementById('work').className = 'hide';
+  document.getElementById('courtSel').className = '';
+  state('');
+  document.getElementById('courtBtns').innerHTML = '<div class="msg">読み込み中…</div>';
+  api({ action: 'liveInfo' }).then(function (d) {
+    if (d.status !== 'ok') throw new Error(d.message || 'エラー');
+    INFO = d;
+    drawCourts();
+  }).catch(function (e) { document.getElementById('courtBtns').innerHTML = '<div class="msg err">' + esc(e.message) + '</div>'; });
+}
+function drawCourts() {
+  var gs = ['男', '女'], cs = ['A', 'B'], h = '', i, j, o, k;
+  for (i = 0; i < 2; i++) for (j = 0; j < 2; j++) {
+    k = gs[i] + cs[j];
+    o = INFO.owners[k];
+    var mine = o && o.dev === DEV;
+    h += '<button type="button" class="' + (mine ? 'mine' : o ? 'taken' : '') + '" onclick="claim(\'' + gs[i] + '\',\'' + cs[j] + '\',false)"><b>' + (gs[i] === '男' ? '男子' : '女子') + '会場<br>' + cs[j] + 'コート</b><span>' +
+      (mine ? 'この端末が担当' : o ? '担当：' + esc(o.by) + '（' + esc(o.at) + '〜）' : '担当なし') + '</span></button>';
+  }
+  document.getElementById('courtBtns').innerHTML = h;
+}
+function claim(g, c, force) {
+  var o = INFO && INFO.owners ? INFO.owners[g + c] : null;
+  if (o && o.dev !== DEV && !force) {
+    showModal('<p>' + esc(courtName(g, c)) + 'は、<b>' + esc(o.by) + 'さん</b>の端末が担当しています（' + esc(o.at) + '〜）。</p><p>この端末に引き継ぎますか？ 引き継ぐと、前の端末では入力できなくなります。</p>' +
+      '<div class="two"><button class="btn sub" type="button" onclick="closeModal()">やめる</button><button class="btn" type="button" onclick="closeModal();claim(\'' + g + '\',\'' + c + '\',true)">引き継ぐ</button></div>');
+    return;
+  }
+  api({ action: 'liveClaim', dev: DEV, by: store('iwPhotoBy'), gender: g, court: c, force: !!force }).then(function (d) {
+    if (d.status !== 'ok') {
+      if (d.code === 'taken') { INFO.owners[g + c] = { by: d.by, at: d.at, dev: '?' }; claim(g, c, false); return; }
+      throw new Error(d.message || 'エラー');
+    }
+    /* ほかの端末から引き継いだときは、この端末に残っている古い記録を使わない */
+    if (!(o && o.dev === DEV)) purge(g);
+    INFO.owners = d.owners;
+    SEL = { g: g, c: c };
+    store('iwLiveCourt', g + c);
+    LOST = '';
+    if (!KIND_SET) KIND = autoKind();
+    PROG = null; LIVE = {}; PICK = ''; MI_PICK = {};
+    document.getElementById('courtSel').className = 'hide';
+    document.getElementById('work').className = '';
+    setMode('rec');
+    render();
+    loadProg();
+    loadLive();
+    flushSoon(500);
+  }).catch(function (e) { toast(e.message, true); });
+}
+function saveName() {
+  var v = document.getElementById('byInput').value.trim();
+  if (!v) { document.getElementById('byInput').focus(); return; }
+  store('iwPhotoBy', v);
+  document.getElementById('nameCard').className = 'card hide';
+  start2();
+}
+function start2() {
+  api({ action: 'liveInfo' }).then(function (d) {
+    if (d.status !== 'ok') {
+      if (d.code === 'auth') {
+        if (!NEWKEY && store('iwOfficerKey') === KEY) store('iwOfficerKey', null);
+        state('この二次元コードは使えません。期限が過ぎたか、新しい二次元コードに変わっています。競技委員長に確かめてください。', true);
+        return;
+      }
+      throw new Error(d.message || 'エラー');
+    }
+    INFO = d;
+    if (NEWKEY) {
+      var ks = ['iwOfficerKey', 'iwPhotoPw', 'iwViewPw', 'iwateIndoorProgramPw'], ki;
+      for (ki = 0; ki < ks.length; ki++) store(ks[ki], NEWKEY);
+      NEWKEY = '';
+    }
+    if (d.tournament) document.getElementById('tname').textContent = d.tournament;
+    state('');
+    KIND = autoKind();
+    /* 前に担当していたコートで、まだこの端末が担当なら、そのまま続ける */
+    var last = store('iwLiveCourt');
+    var o = last ? d.owners[last] : null;
+    if (o && o.dev === DEV) {
+      SEL = { g: last.charAt(0), c: last.charAt(1) };
+      document.getElementById('work').className = '';
+      setMode('rec');
+      render();
+      loadProg();
+      loadLive();
+      flushSoon(500);
+      return;
+    }
+    showCourts();
+  }).catch(function (e) { state('通信できませんでした（' + esc(e.message) + '）。電波のよい所で、ページを開き直してください。', true); });
+}
+
+(function () {
+  LC.css();
+  /* コート主任用の二次元コード（score.html?y=合言葉）から来たとき：役員の二次元コードと同じく、この端末に覚えさせる */
+  /* 確かめられてから覚えさせる（start2） */
+  var ym = location.search.match(/[?&]y=([^&#]+)/);
+  if (ym) {
+    NEWKEY = decodeURIComponent(ym[1]);
+    if (history.replaceState) history.replaceState(null, '', location.pathname);
+  }
+  KEY = NEWKEY || store('iwOfficerKey') || store('iwPhotoPw');
+  DEV = store('iwLiveDev');
+  if (!DEV) { DEV = 'd' + new Date().getTime().toString(36) + Math.random().toString(36).slice(2, 10); store('iwLiveDev', DEV); }
+  if (!KEY) { state('役員の二次元コードを読み取ってから開いてください。<br><a href="yakuin.html">役員のページへ</a>', true); return; }
+  if (!store('iwPhotoBy')) { state(''); document.getElementById('nameCard').className = 'card'; }
+  else { state('確認しています…'); start2(); }
+  setInterval(function () { if (SEL && !document.hidden) loadLive(); }, 8000);
+  setInterval(function () { if (SEL && !document.hidden) loadProg(); }, 30000);
+  setInterval(function () { if (pending().length) flush(); }, 15000);
+  document.addEventListener('visibilitychange', function () { if (!document.hidden && SEL) { loadLive(); loadProg(); flushSoon(100); } });
+  window.addEventListener('online', function () { flushSoon(100); });
+})();
+</script>
+</body>
+</html>
