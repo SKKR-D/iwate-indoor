@@ -48,6 +48,19 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .card.mine{border-color:var(--gold);background:#fffbea}
 .ahead{padding:3px 10px;font-size:.74rem;font-weight:900;color:#7a5d00;background:#fff3cd;border-top:1px dashed #ecd9a0}
 .note2{font-size:.72rem;color:var(--text-light);margin:-2px 0 8px}
+/* 練習割り当て（その日の8:30まで表示） */
+.prac{background:#fff;border:2px solid var(--gold);border-radius:10px;padding:8px 10px;margin-bottom:12px}
+.prac h3{font-size:.9rem;font-weight:900;color:var(--main);margin-bottom:6px;display:flex;justify-content:space-between;align-items:baseline;gap:6px;flex-wrap:wrap}
+.prac h3 small{font-size:.7rem;font-weight:500;color:var(--text-light)}
+.prac table{width:100%;border-collapse:collapse;table-layout:fixed;font-size:.8rem}
+.prac th,.prac td{border:1px solid var(--line);padding:3px 5px;vertical-align:middle}
+.prac thead th{background:#f3f6f3;font-size:.74rem;color:var(--main)}
+.prac tbody th{width:28%;font-size:.74rem;white-space:nowrap;background:#fafaf6}
+.prac td div{display:flex;align-items:center;gap:4px;line-height:1.5}
+.prac td .slot{font-size:.7rem;min-width:2em;height:1.5em}
+.prac tr.now th,.prac tr.now td{background:#fff3cd}
+.prac tr.now th{color:#7a5d00;font-weight:900}
+.prac .lk{display:block;text-align:right;font-size:.72rem;margin-top:5px}
 /* スマホ縦：コート別を２列のまま、番号の札で詰めて出す */
 .cmp .cols{grid-template-columns:1fr 1fr;gap:6px}
 .cmp .col h2{font-size:.86rem;padding:5px 4px;margin-bottom:6px}
@@ -313,6 +326,70 @@ function cardHtml(m, showCourt) {
   return h;
 }
 
+/* ---------- 練習割り当て（要項どおり 7:45〜。その日の8:30まで進行表の上に出す） ----------
+   個人戦：予選リーグのコート（A・Bブロック＝Aコート、C・Dブロック＝Bコート）で、枠の順に３・３・２ペア、15分×３回
+   団体戦：１回戦のコート（１〜８番＝A、９〜16番＝B）で、番号順に５分×８回。空いた枠は詰めない */
+var PRAC = { start: 7 * 60 + 45, end: 8 * 60 + 30, indivMin: 15, teamMin: 5 };
+function pracHm(m) { return Math.floor(m / 60) + ':' + ('0' + (m % 60)).slice(-2); }
+function pracDay() {
+  var m = /(\d+)月(\d+)日/.exec(String(DATA.date || ''));
+  if (!m) return null;
+  return new Date(new Date().getFullYear(), parseInt(m[1], 10) - 1, parseInt(m[2], 10));
+}
+function pracRows() {
+  var rows = [], i, k;
+  if (DATA.division.type === 'indiv') {
+    if (!DATA.blocks) return null;
+    var at = function (b, p) { var l = DATA.blocks[b] || [], j; for (j = 0; j < l.length; j++) if (l[j].pos === p) return { slot: b + p, id: l[j].id, label: l[j].sub || l[j].label }; return null; };
+    var seq = { A: [], B: [] };
+    for (i = 1; i <= 4; i++) { seq.A.push(['A', i]); seq.B.push(['C', i]); }
+    for (i = 1; i <= 4; i++) { seq.A.push(['B', i]); seq.B.push(['D', i]); }
+    var grp = [[0, 3], [3, 6], [6, 8]];
+    for (k = 0; k < 3; k++) {
+      var st = PRAC.start + k * PRAC.indivMin, r = { s: st, e: st + PRAC.indivMin, A: [], B: [] }, c, x;
+      for (c in seq) for (i = grp[k][0]; i < grp[k][1]; i++) { x = at(seq[c][i][0], seq[c][i][1]); if (x) r[c].push(x); }
+      rows.push(r);
+    }
+    return rows;
+  }
+  var bySlot = {}, m, s, ms = DATA.matches;
+  for (i = 0; i < ms.length; i++) {
+    m = ms[i];
+    for (k = 0; k < 2; k++) { s = k ? m.right : m.left; if (s && s.decided && s.slot) bySlot[s.slot] = { slot: s.slot, id: s.id, label: s.label }; }
+  }
+  for (k = 0; k < 8; k++) {
+    var t0 = PRAC.start + k * PRAC.teamMin;
+    rows.push({ s: t0, e: t0 + PRAC.teamMin, A: bySlot[String(k + 1)] ? [bySlot[String(k + 1)]] : [], B: bySlot[String(k + 9)] ? [bySlot[String(k + 9)]] : [] });
+  }
+  return rows;
+}
+function pracHtml() {
+  var day = pracDay();
+  if (!day || !DATA.matches || !DATA.matches.length) return '';
+  var now = new Date(), nowM = now.getHours() * 60 + now.getMinutes();
+  var today = now.getFullYear() === day.getFullYear() && now.getMonth() === day.getMonth() && now.getDate() === day.getDate();
+  if (now > day && !today) return '';            /* 大会の日を過ぎた */
+  if (today && nowM >= PRAC.end) return '';       /* 練習の時間（8:30）を過ぎた */
+  var rows = pracRows();
+  if (!rows) return '';
+  var team = DATA.division.type === 'team';
+  var h = '<div class="prac"><h3>練習割り当て<small>' + (team ? '7:45〜8:25　５分×８回　１回戦のコート' : '7:45〜8:30　15分×３回　予選リーグのコート') + '</small></h3>';
+  h += '<table><thead><tr><th></th><th>Ａコート</th><th>Ｂコート</th></tr></thead><tbody>';
+  var i, c, cell, j;
+  for (i = 0; i < rows.length; i++) {
+    var on = today && nowM >= rows[i].s && nowM < rows[i].e;
+    h += '<tr' + (on ? ' class="now"' : '') + '><th>' + (on ? '▶ ' : '') + pracHm(rows[i].s) + '〜' + pracHm(rows[i].e) + '</th>';
+    for (c = 0; c < 2; c++) {
+      cell = rows[i][c ? 'B' : 'A'];
+      h += '<td>';
+      for (j = 0; j < cell.length; j++) h += '<div>' + slotTag(cell[j].slot, cell[j].id) + '<span>' + esc(cell[j].label) + '</span></div>';
+      h += '</td>';
+    }
+    h += '</tr>';
+  }
+  return h + '</tbody></table><a class="lk" href="renshu.html">会場ごとの練習割り当て（印刷用）</a><span class="note2" style="display:block;margin:4px 0 0">8:30を過ぎると、この表は消えます。欠場で空いた枠の時間は、繰り上げずに空けておきます。</span></div>';
+}
+
 /* ---------- スマホ縦の２列表示（番号の札）。押すと名前などが開く ---------- */
 function shortTxt(s) {
   return String(s || '').replace(/([A-D])ブロック(\d)位/g, '$1$2位').replace(/コート第(\d+)試合/g, 'コート$1');
@@ -480,6 +557,7 @@ function render() {
   board.className = cmp ? 'cmp' : '';
   var anyFew = false;
   for (i = 0; i < ms.length; i++) if ((ms[i].left.decided && ms[i].left.few) || (ms[i].right.decided && ms[i].right.few)) anyFew = true;
+  html += pracHtml();
   if (cmp) html += '<p class="note2">番号はプログラムの選手名簿の番号です。カードを押すと名前が出ます。</p>';
   if (view === 'court') {
     html += '<div class="cols">';
