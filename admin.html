@@ -310,6 +310,17 @@ tr.locked td{background:#f4f4f4;color:#777}
           <button class="btn btn-main" onclick="noticeSend()">未送信のチームに送る</button>
         </div>
       </div>
+      <div class="notice-box admin-only">
+        <h3>練習割り当てのメール（申込責任者へ）</h3>
+        <div class="muted">チームごとに１通。本文に「貴チームの練習」（区分・番号・コート・時間）を入れ、会場ごとの練習割り当て表（PDF）を添付します。PDFは、ドライブの「練習割り当て_男子会場.pdf」「練習割り当て_女子会場.pdf」を使います。送ったチームは記録し、２回は送りません。</div>
+        <div class="notice-st" id="pracSt">「状況を確認」を押すと、送る相手の数と添付するPDFを表示します。</div>
+        <div class="row">
+          <button class="btn btn-out btn-sm" onclick="pracLoad()">状況を確認</button>
+          <input type="email" id="pracTo" placeholder="テストの送り先メールアドレス">
+          <button class="btn btn-out btn-sm" onclick="pracTest()">テスト送信（１通）</button>
+          <button class="btn btn-main" onclick="pracSend()">未送信のチームに送る</button>
+        </div>
+      </div>
     </section>
 
     <!-- ===== 選手変更 ===== -->
@@ -1295,6 +1306,45 @@ function noticeSend() {
     }).catch(function (err) { toast('送れませんでした：' + err.message, true); noticeLoad(); });
   };
   noticeLoad().then(function () { if (NOTICE) go(); });
+}
+
+/* ========== 練習割り当てのメール ========== */
+var PRAC = null;
+function pracLoad() {
+  document.getElementById('pracSt').textContent = '確認しています…';
+  return api({ action: 'adminPracticeStatus' }).then(function (r) {
+    PRAC = r;
+    var h = '送る相手：' + r.total + '通（送信済み ' + r.sent + '通、未送信 ' + r.unsent + '通）';
+    h += '<br>添付：男子会場 ' + (r.pdfM ? esc(r.pdfM) : '<span class="ng">見つかりません</span>') + '　女子会場 ' + (r.pdfW ? esc(r.pdfW) : '<span class="ng">見つかりません</span>');
+    if (r.noMail.length) h += '<br><span class="ng">申込者メールがないため送れない：' + esc(r.noMail.join('、')) + '</span>';
+    h += '<br><span class="muted">今日送れる残り：' + r.quota + '通</span>';
+    document.getElementById('pracSt').innerHTML = h;
+    var to = document.getElementById('pracTo');
+    if (!to.value) { try { to.value = localStorage.getItem('iw_notice_to') || r.me || ''; } catch (e) { to.value = r.me || ''; } }
+  }).catch(function (err) { document.getElementById('pracSt').textContent = '確認できませんでした：' + err.message; });
+}
+function pracTest() {
+  var to = document.getElementById('pracTo').value.replace(/^\s+|\s+$/g, '');
+  if (!to) { toast('テストの送り先メールアドレスを入れてください', true); return; }
+  try { localStorage.setItem('iw_notice_to', to); } catch (e) {}
+  toast('テスト送信中…');
+  api({ action: 'adminPracticeSend', test: true, to: to }).then(function (r) {
+    toast('✉ テストを送りました（' + r.to + '／内容は「' + r.team + '」の例）');
+  }).catch(function (err) { toast('送れませんでした：' + err.message, true); });
+}
+function pracSend() {
+  var go = function () {
+    var r = PRAC;
+    if (!r.pdfM || !r.pdfW) { toast('添付するPDFがドライブに見つかりません', true); return; }
+    if (!r.unsent) { toast('未送信のチームはありません'); return; }
+    if (!confirm('申込責任者 ' + r.unsent + '人に「練習コートの割り当て」のメール（PDF添付）を送ります。\n（送ったチームは記録し、２回は送りません）\nよろしいですか？')) return;
+    toast('送信中…');
+    api({ action: 'adminPracticeSend' }).then(function (x) {
+      toast('✉ ' + x.sent + '通送りました' + (x.noMail.length ? '（申込者メールなし：' + x.noMail.join('、') + '）' : ''), x.noMail.length > 0);
+      return pracLoad();
+    }).catch(function (err) { toast('送れませんでした：' + err.message, true); pracLoad(); });
+  };
+  pracLoad().then(function () { if (PRAC) go(); });
 }
 
 /* ========== 選手変更 ========== */
