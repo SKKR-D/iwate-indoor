@@ -925,7 +925,14 @@ function saveConfig() {
   document.getElementById('pubLink').href = 'progress.html?div=' + divCode;
   document.getElementById('sheetLink').href = 'scoresheet.html?div=' + divCode;
   try { pw = localStorage.getItem(PW_KEY) || sessionStorage.getItem(ADMIN_PW_KEY) || ''; } catch (e) { pw = ''; }
-  if (pw) load().catch(function () {});
+  /* 本部の二次元コード（control.html?y=合言葉）から来たとき：入れたら覚えておく */
+  var ym = params.get('y');
+  if (ym) {
+    pw = ym;
+    if (history.replaceState) history.replaceState(null, '', location.pathname + '?div=' + divCode);
+    load().then(function () { try { localStorage.setItem(PW_KEY, pw); } catch (e) { /* 保存できなくても続行 */ } })
+      .catch(function () { document.getElementById('loginErr').textContent = 'この二次元コードは使えません。期限が過ぎたか、新しい二次元コードに変わっています。'; });
+  } else if (pw) load().catch(function () {});
   else document.getElementById('loginView').style.display = 'block';
   setInterval(function () { load().catch(function () {}); }, 20000);
 })();
