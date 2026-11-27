@@ -470,7 +470,7 @@ function matchHtml(m) {
     for (i = 0; i < 4; i++) {
       rw = ts.rows[i];
       if (i === 3 && !(ts.allDone && ts.wL === ts.wR) && !rw.c.total) continue;
-      lab = rw.none ? 'なし' : rw.done ? (rw.p.kind === 'forfeit' ? '不戦勝 ' : '終了 ') + (rw.w === 'L' ? '青' : '緑') : rw.other ? rw.other + 'コート' : rw.c.total ? rw.c.gL + '-' + rw.c.gR : '';
+      lab = rw.none ? 'なし' : rw.done ? (rw.p.kind === 'forfeit' ? (rw.w === 'L' ? '③-Ｒ' : 'Ｒ-③') : '終了 ' + (rw.w === 'L' ? '青' : '緑')) : rw.other ? rw.other + 'コート' : rw.c.total ? rw.c.gL + '-' + rw.c.gR : '';
       h += '<button type="button" class="' + (i === mi ? 'on' : '') + (rw.done ? ' dn' : '') + '" onclick="pickMi(\'' + esc(m.id) + '\',' + i + ')">' + LC.mLabel('team', i) + '<small>' + esc(lab) + '</small></button>';
     }
     h += '</div>';
