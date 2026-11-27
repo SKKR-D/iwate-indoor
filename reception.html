@@ -494,10 +494,21 @@ function closeSheet() {
 (function () {
   var savedPw = store('recPw');
   var savedStaff = store('recStaff');
+  /* 受付の二次元コード（reception.html?y=合言葉）から来たとき：パスワードの代わりに合言葉を使う */
+  var ym = location.search.match(/[?&]y=([^&#]+)/);
+  if (ym) {
+    savedPw = decodeURIComponent(ym[1]);
+    if (history.replaceState) history.replaceState(null, '', location.pathname);
+    document.getElementById('pwInput').value = savedPw;
+    document.getElementById('pwInput').style.display = 'none';
+    document.getElementById('pwInput').previousElementSibling.textContent = '受付パスワード：二次元コードを読み取りました（入力は要りません）';
+  }
   if (savedStaff) document.getElementById('staffInput').value = savedStaff;
   if (savedPw && savedStaff) {
     document.getElementById('pwInput').value = savedPw;
     login();
+  } else if (ym) {
+    document.getElementById('staffInput').focus();
   }
 })();
 </script>
