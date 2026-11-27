@@ -390,6 +390,12 @@ function sideName(s) {
   return { t: (s.slot ? '<span class="slot">' + esc(s.slot) + '</span>' : '') + esc(s.label), sub: esc(s.sub || '') };
 }
 function pairOf(m, mi, which) {
+  if (KIND === 'team' && mi === 3 && m.team) {
+    /* 代表戦：各チームの勝ったペア */
+    var ts = teamState(m), k;
+    for (k = 0; k < 3; k++) if (ts.rows[k].w === which && ts.rows[k].p.kind !== 'forfeit') return pairOf(m, k, which);
+    return '';
+  }
   if (KIND !== 'team' || mi === 3 || !m.team || !m.team.pairs[mi]) return '';
   var p = m.team.pairs[mi][which === 'L' ? 'l' : 'r'];
   return p ? esc(p[0]) + '・' + esc(p[1]) : '';
@@ -486,7 +492,7 @@ function matchHtml(m) {
     if (team && mi < 3) h += '<div class="endbox"><b>' + LC.mLabel('team', mi) + ' 終了 ' + c.gL + '-' + c.gR + '</b>（' + (c.winner === 'L' ? '青' : '緑') + '：' + esc(wn.label) + '）<br>' + (ts.decided ? '対戦の勝敗が決まりました。採点票を本部へ届けてください。' : '次のマッチは、上のマッチの欄から選べます（自動で次に進みます）。') + '</div>';
     else h += '<div class="endbox"><b>試合終了 ' + c.gL + '-' + c.gR + '</b>（' + (c.winner === 'L' ? '青' : '緑') + '：' + esc(wn.label) + 'の勝ち）<br>採点票を本部へ届けてください。結果は本部が入力します。</div>';
   }
-  if (team && mi === 3 && !c.total) h += '<div class="endbox">勝ち数が同じです。得失ゲーム差・得失ポイント差で決まらず、代表戦を行うときだけ入力してください。</div>';
+  if (team && mi === 3 && !c.total) h += '<div class="endbox">１勝１敗です。得失ゲーム数・得失ポイント数も同じで、代表戦を行うときだけ入力してください。代表戦は、勝ったペア同士で、ゲームカウント２−２のファイナルゲームから始まります。</div>';
   h += '<div class="ops"><button type="button" onclick="undo(\'' + esc(m.id) + '\',' + mi + ')"' + (rec.s && !LOST ? '' : ' disabled') + '>↩ １つ戻す</button><button type="button" class="cam" onclick="pickPhoto(true)">📷 写真を撮る</button></div>';
   h += '<div class="sync" id="sync"></div>';
   h += pickHtml();
