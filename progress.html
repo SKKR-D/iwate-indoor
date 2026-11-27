@@ -86,13 +86,6 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--gray);color:var(--te
 .cc .more .refr,.cc .more .gat{padding:3px 6px;font-size:.68rem}
 .lvw{padding:4px 8px 6px;display:grid;gap:5px}
 .lvw.cmpw{padding:3px 3px 4px}
-.cmpw .lv-h,.cmpw .lv-r{grid-template-columns:1fr 2.7em 2.7em}
-.cmpw .lv-h{padding:1px 3px 0 8px}
-.cmpw .lv-h span{font-size:.5rem;letter-spacing:-.02em}
-.cmpw .lv-r>.lv-g{font-size:1.25rem;margin:2px 2px}
-.cmpw .lv-p{font-size:.92rem}
-.cmpw .lv-r{border-left-width:5px;padding:1px 3px;min-height:1.9em}
-.cmpw .lv-f{font-size:.6rem}
 .card{background:#fff;border-radius:var(--radius);border:1.5px solid var(--line);margin-bottom:8px;overflow:hidden}
 .card.live{border-color:var(--red);box-shadow:0 0 0 2px rgba(179,48,48,.25)}
 .card.call{border-color:var(--gold);box-shadow:0 0 0 2px rgba(200,160,32,.3)}
@@ -332,7 +325,7 @@ function cardHtml(m, showCourt) {
   /* コート集合（これからの試合だけ）：9:00／前の試合が終わり次第／本部のコールで／本部の放送で など */
   if ((m.state === '待機' || m.state === '呼出') && m.note !== '不戦勝' && (m.gather || m.gatherNote)) h += '<div class="gat">コート集合：<b>' + esc(m.gather || m.gatherNote) + '</b></div>';
   h += refHtml(m);
-  if (m.team && m.team.open) h += pairsHtml(m);
+  if (m.team && m.team.open && m.state !== '試合中') h += pairsHtml(m);
   h += aheadHtml(m, 'ahead');
   h += '</div>';
   return h;
@@ -348,8 +341,11 @@ function liveName(s, cmp, pair) {
   return t;
 }
 function liveHtml(m, cmp) {
-  if (m.state !== '試合中' || !LIVE[m.id]) return '';
+  if (m.state !== '試合中') return '';
   var type = DATA.division.type;
+  /* 団体戦：第１〜第３マッチ（と代表戦）をまとめて出す */
+  if (type === 'team') return m.team && m.team.open ? '<div class="lvw' + (cmp ? ' cmpw' : '') + '">' + LC.teamBlock({ m: m, live: LIVE[m.id] || {}, size: cmp ? 's' : 'm' }) + '</div>' : '';
+  if (!LIVE[m.id]) return '';
   var h = '', mi, rec, c, r, p, pl, pr;
   for (mi = 0; mi < (type === 'team' ? 4 : 1); mi++) {
     rec = LIVE[m.id][String(mi)];
@@ -361,8 +357,8 @@ function liveHtml(m, cmp) {
     pl = p && p.l ? esc(p.l[0]) + '・' + esc(p.l[1]) : '';
     pr = p && p.r ? esc(p.r[0]) + '・' + esc(p.r[1]) : '';
     var lab = type === 'team' ? LC.mLabel(type, mi) + '　' : '';
-    h += LC.board({ L: liveName(m.left, cmp, pl), R: liveName(m.right, cmp, pr), c: c, r: r,
-      foot: esc(lab) + (c.end ? '終了・本部確認中' : esc(LC.gameLabel(c, r))) });
+    h += LC.board({ L: liveName(m.left, cmp, pl), R: liveName(m.right, cmp, pr), c: c, r: r, size: cmp ? 's' : 'm',
+      foot: esc(lab) + (c.end ? '試合終了・本部確認中' : esc(LC.gameLabel(c, r))) });
   }
   return h ? '<div class="lvw' + (cmp ? ' cmpw' : '') + '">' + h + '</div>' : '';
 }
@@ -470,7 +466,7 @@ function compactCard(m) {
     h += '<div class="more"><div class="c-body">' + sideHtml(m, m.left, 'L') + sideHtml(m, m.right, 'R') + '</div>';
     if ((m.state === '待機' || m.state === '呼出') && m.note !== '不戦勝' && (m.gather || m.gatherNote)) h += '<div class="gat">コート集合：<b>' + esc(m.gather || m.gatherNote) + '</b></div>';
     h += refHtml(m);
-    if (m.team && m.team.open) h += pairsHtml(m);
+    if (m.team && m.team.open && m.state !== '試合中') h += pairsHtml(m);
     h += '</div>';
   }
   return h + '</div>';
