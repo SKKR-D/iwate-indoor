@@ -23,11 +23,16 @@ body{font-family:'Noto Sans JP',sans-serif;background:#eef0ec;color:#222;min-hei
 .msg{background:#fff;border-radius:10px;padding:14px;font-size:.9rem;line-height:1.7}
 .msg.err{color:var(--red);font-weight:700}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.vh{font-size:.9rem;font-weight:900;color:#fff;background:var(--deep);border-radius:8px;padding:4px 10px;text-align:center}
-.pane{background:#fff;border-radius:12px;border:2px solid var(--line);padding:8px 10px 10px;display:flex;flex-direction:column;gap:6px;min-height:200px}
-.pane.live{border-color:#d98c8c}
-.ph{display:flex;justify-content:space-between;align-items:baseline;gap:6px;flex-wrap:wrap}
-.ph b{font-size:1.15rem;color:var(--deep)}
+.vh{font-size:1.05rem;font-weight:900;border-radius:8px;padding:4px 10px;text-align:center;letter-spacing:.08em;border:2px solid}
+.vh small{font-size:.78rem;font-weight:700;letter-spacing:0;opacity:.85;margin-left:8px}
+/* 会場ごとの色：男子会場＝紺、女子会場＝えんじ（淡い色で。青・緑はペアの色なので使わない） */
+.vh.m{background:#e9edf8;color:#2b3f86;border-color:#b9c4e6}.vh.w{background:#f9eaef;color:#9a2f52;border-color:#e6bccb}
+.pane{background:#fff;border-radius:12px;border:2px solid var(--line);padding:0 10px 10px;display:flex;flex-direction:column;gap:6px;min-height:200px;overflow:hidden}
+.pane.m{border-color:#b9c4e6;background:#fbfcff}.pane.w{border-color:#e6bccb;background:#fffbfc}
+.ph{display:flex;justify-content:space-between;align-items:center;gap:6px;flex-wrap:wrap;margin:0 -10px;padding:5px 10px}
+.pane.m .ph{background:#e9edf8;color:#2b3f86}.pane.w .ph{background:#f9eaef;color:#9a2f52}
+.ph b{font-size:1.2rem}
+.ph b i{font-style:normal;display:inline-block;background:#fff;border:1.5px solid;border-radius:6px;padding:0 8px;margin-right:8px;font-size:1rem}
 .ph span{font-size:.78rem;color:#555}
 .mt{font-size:.86rem;font-weight:700;color:#333}
 .mt .st{display:inline-block;background:var(--red);color:#fff;border-radius:10px;font-size:.68rem;padding:1px 8px;margin-left:4px;vertical-align:1px}
@@ -104,9 +109,10 @@ function agoText(at) {
 function pane(div, g, c) {
   var p = PROG[div];
   var own = INFO && INFO.owners ? INFO.owners[g + c] : null;
-  var h = '<div class="ph"><b>' + c + 'コート</b><span>' + (own ? '担当：' + esc(own.by) : '担当なし') + '</span></div>';
-  if (!p) return '<div class="pane">' + h + '<div class="none">読み込み中…</div></div>';
-  if (!p.matches || !p.matches.length) return '<div class="pane">' + h + '<div class="none">進行表はまだ公開されていません。</div></div>';
+  var h = '<div class="ph"><b><i>' + (g === '男' ? '男子会場' : '女子会場') + '</i>' + c + 'コート</b><span>' + (own ? '担当：' + esc(own.by) : '担当なし') + '</span></div>';
+  var vc = g === '男' ? ' m' : ' w';
+  if (!p) return '<div class="pane' + vc + '">' + h + '<div class="none">読み込み中…</div></div>';
+  if (!p.matches || !p.matches.length) return '<div class="pane' + vc + '">' + h + '<div class="none">進行表はまだ公開されていません。</div></div>';
   var list = p.matches.filter(function (m) { return (m.court === c || m.two) && m.note !== '不戦勝'; });
   var cur = null, nx = null, i;
   for (i = 0; i < list.length; i++) if (list[i].state === '試合中') { cur = list[i]; break; }
@@ -140,7 +146,7 @@ function pane(div, g, c) {
     body += '<div class="none">試合中の試合はありません。</div>';
   }
   if (nx) body += '<div class="nx"><b>次：第' + nx.no + '試合</b>　' + esc(nx.round) + '<br>' + nm(nx.left) + ' 対 ' + nm(nx.right) + '</div>';
-  return '<div class="pane' + (cur ? ' live' : '') + '">' + h + body + '</div>';
+  return '<div class="pane' + vc + '">' + h + body + '</div>';
 }
 
 function render() {
@@ -149,11 +155,11 @@ function render() {
   var vm = INFO.venues ? INFO.venues['男'] : '', vw = INFO.venues ? INFO.venues['女'] : '';
   var h = '<div class="grid">';
   if (window.innerWidth > 760) {
-    h += '<div class="vh">男子会場　' + esc(vm) + '</div><div class="vh">女子会場　' + esc(vw) + '</div>';
+    h += '<div class="vh m">男子会場<small>' + esc(vm) + '</small></div><div class="vh w">女子会場<small>' + esc(vw) + '</small></div>';
     h += pane(d[0], '男', 'A') + pane(d[1], '女', 'A') + pane(d[0], '男', 'B') + pane(d[1], '女', 'B');
   } else {
-    h += '<div class="vh">男子会場　' + esc(vm) + '</div>' + pane(d[0], '男', 'A') + pane(d[0], '男', 'B');
-    h += '<div class="vh v2">女子会場　' + esc(vw) + '</div>' + pane(d[1], '女', 'A') + pane(d[1], '女', 'B');
+    h += '<div class="vh m">男子会場<small>' + esc(vm) + '</small></div>' + pane(d[0], '男', 'A') + pane(d[0], '男', 'B');
+    h += '<div class="vh w v2">女子会場<small>' + esc(vw) + '</small></div>' + pane(d[1], '女', 'A') + pane(d[1], '女', 'B');
   }
   document.getElementById('board').innerHTML = h + '</div>';
 }
