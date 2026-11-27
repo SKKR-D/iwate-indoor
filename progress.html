@@ -195,7 +195,17 @@ var GAS_URL = 'https://script.google.com/macros/s/AKfycbxYHQcJ6BqAOKWWa_n1368nOi
 
 var DIVS = [['MI', '男子個人戦'], ['WI', '女子個人戦'], ['MT', '男子団体戦'], ['WT', '女子団体戦']];
 var params = new URLSearchParams(location.search);
-var divCode = params.get('div') || 'MI';
+var divCode = pickDiv(params.get('div'));
+/* 種別：指定があればそれ（男子・女子は端末に覚えておく）。指定がないときは、前に見た男子・女子と、日付（29日から団体戦）で決める */
+function pickDiv(d) {
+  var i, ok = false, sx = '';
+  for (i = 0; i < DIVS.length; i++) if (DIVS[i][0] === d) ok = true;
+  if (ok) { try { localStorage.setItem('iwProgSex', d.charAt(0)); } catch (e) {} return d; }
+  try { sx = localStorage.getItem('iwProgSex') || ''; } catch (e) {}
+  if (sx !== 'M' && sx !== 'W') sx = 'M';
+  var t = new Date(), team = t.getFullYear() > 2026 || (t.getFullYear() === 2026 && (t.getMonth() > 10 || (t.getMonth() === 10 && t.getDate() >= 29)));
+  return sx + (team ? 'T' : 'I');
+}
 var view = '';
 var DATA = null;
 var MINE = '';          /* 色を付けるチーム（端末に記憶） */
