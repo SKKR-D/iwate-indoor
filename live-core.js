@@ -173,7 +173,7 @@ var LC = (function () {
       if (r.st === 'none') mid = '<span class="tb-x">なし</span>';
       else if (r.st === 'abort') mid = '<span class="tb-x">打切</span>';
       else if (r.st === 'pre') mid = '<span class="tb-x">試合前</span>';
-      else if (r.st === 'done' && r.forfeit) mid = '<span class="' + (r.w === 'L' ? 'cb' : 'cg') + ' tb-ff">' + (r.w === 'L' ? '青の不戦勝' : '緑の不戦勝') + '</span>';
+      else if (r.st === 'done' && r.forfeit) mid = '<span class="tb-g"><b class="cb">' + (r.w === 'L' ? circ(3, true) : 'Ｒ') + '</b><i>−</i><b class="cg">' + (r.w === 'R' ? circ(3, true) : 'Ｒ') + '</b></span>';
       else if (r.st === 'done') mid = '<span class="tb-g"><b class="cb">' + circ(r.gL, r.w === 'L') + '</b><i>−</i><b class="cg">' + circ(r.gR, r.w === 'R') + '</b></span>' +
         (size === 's' ? '' : '<small class="tb-sm">' + (r.official ? '試合終了' : '試合終了・本部確認中') + '</small>');
       else {
