@@ -180,6 +180,22 @@ tr.locked td{background:#f4f4f4;color:#777}
 .st-ok{color:#1a7f37;font-weight:700}.st-ng{color:var(--red);font-weight:700}
 .pv-row{background:#fbf3f3;border:1.5px dashed #7a1f1f;border-radius:8px;padding:8px 10px;align-items:center}
 .pv-lbl{font-weight:700;color:#7a1f1f;font-size:.82rem;margin-right:4px}
+/* ３次選考会 */
+.sk-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media (max-width:1000px){.sk-cols{grid-template-columns:1fr}}
+.sk-cols h4{font-size:.85rem;margin:0 0 6px;display:flex;justify-content:space-between;align-items:baseline}
+.sk-cols h4 .cnt{font-size:.8rem;font-weight:700;color:#1e7b34}
+.sk-cols h4 .cnt.ng{color:#c0392b}
+.sk-tbl td{padding:5px 5px;vertical-align:middle}
+.sk-tbl tr.on td{background:#f1f8f3}
+.sk-tbl select{font-family:inherit;font-size:.74rem;max-width:200px;padding:2px}
+.sk-tbl .ng{color:#c0392b;font-weight:700}
+.sk-tbl .sub{display:block;font-size:.7rem;color:var(--text-light)}
+#skPaste{width:100%;height:110px;font-family:inherit;font-size:.8rem;padding:8px;border:2px solid #ddd;border-radius:8px}
+#skPrev{white-space:pre-wrap;font-family:inherit;font-size:.8rem;line-height:1.7;background:#fafafa;border:1px solid #ddd;border-radius:8px;padding:10px 12px;margin:0 0 10px}
+.sk-dirty{color:#c0392b;font-weight:700;font-size:.8rem}
+#skGroups .ok{color:#1e7b34;font-weight:700}
+#skGroups .ng{color:#c0392b;font-weight:700}
 </style>
 </head>
 <body>
@@ -212,6 +228,7 @@ tr.locked td{background:#f4f4f4;color:#777}
     <button class="tab" data-tab="indiv" onclick="showTab('indiv')">個人戦 ペア登録</button>
     <button class="tab" data-tab="master" onclick="showTab('master')">加盟チーム名簿</button>
     <button class="tab" data-tab="photo" id="tabPhoto" onclick="showTab('photo')">記録写真</button>
+    <button class="tab" data-tab="senko" onclick="showTab('senko')">３次選考会</button>
     <script>/* 記録写真は本番だけ（練習用ではドライブを使えない） */ if (window.IWP) document.getElementById('tabPhoto').style.display = 'none';</script>
   </nav>
   <main class="main">
@@ -426,6 +443,40 @@ tr.locked td{background:#f4f4f4;color:#777}
       </div>
     </section>
 
+    <!-- ===== ３次選考会 ===== -->
+    <section class="panel" id="panel-senko">
+      <h2>３次選考会（選ばれた選手の所属団体へのお知らせ）</h2>
+      <div class="lead">個人戦の出場者（男女それぞれ32名）から選んだ選手の所属団体へ、３次選考会のお知らせをメールで送ります。送り先は中学連の団体登録（「加盟チーム名簿」タブ）の代表者です。１団体に１通で、その団体で選ばれた選手の名前が本文に入ります。<br>添付は、スプレッドシート「県インドア2026_DB」と同じフォルダの「３次選考会_添付」フォルダにあるPDFです（入っているものを全部付けます）。</div>
+      <div class="row">
+        <button class="btn btn-out btn-sm" onclick="senkoLoad()">↻ 読み込み直す</button>
+        <button class="btn btn-out btn-sm" id="skMasterBtn" onclick="senkoRefreshMaster()">加盟チーム名簿を更新</button>
+      </div>
+      <div class="notice-st" id="skSt">読み込んでいます…</div>
+
+      <h3>１　選考名簿の読み込み（名簿がなければ、２でチェックを入れるだけでも進められます）</h3>
+      <div class="muted">ExcelまたはCSVのファイルを選ぶか、Excelの表をコピーして下の枠に貼り付け、「名簿からチェックを入れる」を押します。列は「男女・氏名・所属」です（１行目が見出しでもかまいません）。名簿にある男女の区分は、チェックを付け直します。</div>
+      <div class="row" style="margin-top:8px"><input type="file" id="skFile" accept=".xlsx,.csv,.txt" onchange="senkoFile(this)"></div>
+      <textarea id="skPaste" placeholder="男子　佐藤　翔　さくら中学校（Excelからコピーして貼り付け）"></textarea>
+      <div class="row" style="margin-top:6px"><button class="btn btn-main btn-sm" onclick="senkoImport()">名簿からチェックを入れる</button></div>
+      <div class="notice-st" id="skImp"></div>
+
+      <h3>２　選考（チェックを入れた選手が出場者）</h3>
+      <div class="muted">登録団体は、選手の所属から自動で照らし合わせます。赤い「選んでください」は照らし合わせられなかった選手です。一覧から登録団体を選んでください。</div>
+      <div class="sk-cols" id="skCols"></div>
+      <div class="row" style="margin-top:10px"><button class="btn btn-main" onclick="senkoSave()">選考を保存</button><span id="skDirty"></span></div>
+
+      <h3>３　送り先とメール</h3>
+      <div id="skGroups"></div>
+      <h3>メールの文面（例：<span id="skPrevName"></span>）</h3>
+      <pre id="skPrev"></pre>
+      <div class="row">
+        <span class="muted">テストの送り先</span>
+        <input type="text" id="skTo" placeholder="自分のメールアドレス" style="padding:8px 10px;border:2px solid #ddd;border-radius:8px;font-size:.88rem;width:260px">
+        <button class="btn btn-out btn-sm" onclick="senkoTest()">テスト送信（１通）</button>
+      </div>
+      <div class="row"><button class="btn btn-main" id="skSendBtn" onclick="senkoSend()">未送信の団体に送信</button><span class="muted" id="skSendInfo"></span></div>
+    </section>
+
     <!-- ===== 加盟チーム名簿 ===== -->
     <section class="panel" id="panel-master">
       <h2>加盟チーム名簿（登録システムから取り込み）</h2>
@@ -536,6 +587,7 @@ function renderAll() {
 function showTab(name) {
   if (name === 'draw' && D) loadDraw();
   if (name === 'photo' && !PHOTO) photoLoad();
+  if (name === 'senko' && !SK) senkoLoad();
   var tabs = document.querySelectorAll('.tab');
   var i;
   for (i = 0; i < tabs.length; i++) tabs[i].className = 'tab' + (tabs[i].getAttribute('data-tab') === name ? ' active' : '');
@@ -1907,6 +1959,337 @@ function refreshMaster() {
     btn.textContent = '↻ 名簿を更新';
     toast('取り込みに失敗しました：' + err.message, true);
   });
+}
+
+/* ========== ３次選考会 ========== */
+var SK = null;        /* adminSenkoLoad の結果 */
+var SKSEL = {};       /* 選んだ選手 key → 登録団体 mkey（'' は未決定） */
+var SKP = {};         /* key → 選手 */
+var SKM = {};         /* mkey → 登録団体 */
+var SKDIRTY = false;
+var SK_DIVS = ['MI', 'WI'];
+var SK_NEED = 24;
+
+function senkoLoad() {
+  document.getElementById('skSt').textContent = '読み込んでいます…';
+  return api({ action: 'adminSenkoLoad' }).then(function (r) {
+    SK = r;
+    SKP = {}; SKM = {}; SKSEL = {};
+    var d, i, ps;
+    for (d = 0; d < SK_DIVS.length; d++) {
+      ps = r.divs[SK_DIVS[d]] || [];
+      for (i = 0; i < ps.length; i++) SKP[ps[i].key] = ps[i];
+    }
+    for (i = 0; i < r.master.length; i++) SKM[r.master[i].key] = r.master[i];
+    for (i = 0; i < r.saved.length; i++) if (SKP[r.saved[i].key]) SKSEL[r.saved[i].key] = SKM[r.saved[i].mkey] ? r.saved[i].mkey : (SKP[r.saved[i].key].auto || '');
+    SKDIRTY = false;
+    var to = document.getElementById('skTo');
+    if (!to.value) { try { to.value = localStorage.getItem('iw_notice_to') || r.me || ''; } catch (e) { to.value = r.me || ''; } }
+    senkoRender();
+  }).catch(function (err) { document.getElementById('skSt').textContent = '読み込めませんでした：' + err.message; });
+}
+
+function senkoRefreshMaster() {
+  var btn = document.getElementById('skMasterBtn');
+  if (SKDIRTY && !confirm('保存していない選考の変更があります。名簿を更新すると、変更は消えます。よろしいですか？')) return;
+  btn.disabled = true;
+  btn.textContent = '取り込み中...';
+  api({ action: 'adminRefreshMaster' }).then(function (r) {
+    toast(r.count + 'チームを取り込みました');
+    btn.disabled = false;
+    btn.textContent = '加盟チーム名簿を更新';
+    return senkoLoad();
+  }).catch(function (err) {
+    btn.disabled = false;
+    btn.textContent = '加盟チーム名簿を更新';
+    toast('取り込みに失敗しました：' + err.message, true);
+  });
+}
+
+function skGender(div) { return D.divisions[div] ? D.divisions[div].gender : (div === 'WI' ? '女' : '男'); }
+function skMLabel(m) { return m.name + (m.cat ? '（' + m.cat + '）' : ''); }
+function skN(n) { return n >= 0 && n <= 9 ? '０１２３４５６７８９'.charAt(n) : String(n); }
+function skMb(n) { return (Math.round(n / 104857.6) / 10) + 'MB'; }
+
+/* 氏名を比べるときの形：空白を除き、よく使う異体字をそろえる */
+function skNameKey(s) {
+  var map = { '髙': '高', '﨑': '崎', '𠮷': '吉', '邊': '辺', '邉': '辺', '齋': '斎', '齊': '斉', '濵': '浜', '栁': '柳', '德': '徳', '槇': '槙' };
+  return String(s || '').replace(/[\s　]/g, '').replace(/[︀-️]|\uDB40[\uDD00-\uDDEF]/g, '').replace(/[髙﨑邊邉齋齊濵栁德槇]|𠮷/g, function (c) { return map[c] || c; });
+}
+function skTeamKey(s) {
+  return String(s || '').replace(/[\s　]/g, '').replace(/[Ａ-Ｚａ-ｚ０-９]/g, function (c) { return String.fromCharCode(c.charCodeAt(0) - 0xFEE0); }).replace(/中学校$/, '中').toLowerCase();
+}
+
+/* 選んだ選手を登録団体ごとにまとめる（GASの senkoGroups_ と同じ順） */
+function skGroups() {
+  var gs = {}, order = [], bad = [], noMail = [];
+  var d, i, ps, p, mk, m;
+  for (d = 0; d < SK_DIVS.length; d++) {
+    ps = SK.divs[SK_DIVS[d]] || [];
+    for (i = 0; i < ps.length; i++) {
+      p = ps[i];
+      if (!SKSEL.hasOwnProperty(p.key)) continue;
+      mk = SKSEL[p.key];
+      m = mk ? SKM[mk] : null;
+      if (!m) { bad.push(p.name); continue; }
+      if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(m.email)) { if (noMail.indexOf(m.name) < 0) noMail.push(m.name); continue; }
+      if (!gs[mk]) { gs[mk] = { key: mk, name: m.name, cat: m.cat, rep: m.rep, email: m.email, M: [], W: [] }; order.push(mk); }
+      (SK_DIVS[d] === 'WI' ? gs[mk].W : gs[mk].M).push(p.name);
+    }
+  }
+  return { groups: gs, order: order, bad: bad, noMail: noMail };
+}
+function skWho(g) { return '男' + g.M.join('、') + '／女' + g.W.join('、'); }
+
+function skMailText(g, cfgSign) {
+  var L = [];
+  L.push(g.name + '　代表者' + (g.rep ? '　' + g.rep : '') + '様');
+  L.push('');
+  var i;
+  for (i = 0; i < SK.body.length; i++) L.push(SK.body[i]);
+  L.push('');
+  L.push('所属の出場者');
+  if (g.M.length) L.push('　男子　' + g.M.join('、'));
+  if (g.W.length) L.push('　女子　' + g.W.join('、'));
+  L.push('');
+  L.push('--');
+  L.push(cfgSign || '');
+  return L.join('\n');
+}
+
+function senkoRender() {
+  if (!SK) return;
+  var r = SK, h = '', i, d;
+  /* 状況 */
+  h += '加盟チーム名簿：' + (r.masterUpdatedAt ? esc(String(r.masterUpdatedAt).slice(5, 16).replace('-', '/')) + 'に取り込み' : '<span class="ng">まだ取り込んでいません</span>') + '（' + r.master.length + '団体）';
+  h += '<br>添付：';
+  if (r.attach.files.length) {
+    var fs = [], tot = 0;
+    for (i = 0; i < r.attach.files.length; i++) { fs.push(esc(r.attach.files[i].name) + '（' + skMb(r.attach.files[i].size) + '・' + esc(r.attach.files[i].at) + '）'); tot += r.attach.files[i].size; }
+    h += '<span class="ok">' + skN(r.attach.files.length) + 'つ</span>　' + fs.join('、') + (r.attach.files.length !== 2 ? '　<span class="ng">（２つの予定です。フォルダの中身を確かめてください）</span>' : '');
+  }
+  if (r.attach.error) h += '<span class="ng">' + esc(r.attach.error) + '</span>';
+  if (r.attach.other && r.attach.other.length) h += '<br><span class="muted">PDFではないため付けないファイル：' + esc(r.attach.other.join('、')) + '</span>';
+  if (r.attach.url) h += '　<a href="' + esc(r.attach.url) + '" target="_blank">フォルダを開く</a>';
+  h += '<br><span class="muted">今日送れる残り：' + r.quota + '通</span>';
+  document.getElementById('skSt').innerHTML = h;
+
+  /* 選考の表 */
+  var opts = r.master.slice().sort(function (a, b) { return a.name < b.name ? -1 : a.name > b.name ? 1 : 0; });
+  var cols = '';
+  for (d = 0; d < SK_DIVS.length; d++) {
+    var div = SK_DIVS[d], ps = r.divs[div] || [], n = 0, rows = '', p, on, mk, sel, j, g = skGender(div);
+    for (i = 0; i < ps.length; i++) if (SKSEL.hasOwnProperty(ps[i].key)) n++;
+    for (i = 0; i < ps.length; i++) {
+      p = ps[i];
+      on = SKSEL.hasOwnProperty(p.key);
+      mk = on ? SKSEL[p.key] : p.auto;
+      var cell;
+      if (on) {
+        sel = '<select onchange="senkoSetTeam(\'' + esc(p.key) + '\', this.value)">' + (mk ? '' : '<option value="">選んでください</option>');
+        for (j = 0; j < opts.length; j++) {
+          if (opts[j].key !== mk && String(opts[j].cat).indexOf(g === '男' ? '女子' : '男子') >= 0) continue;
+          sel += '<option value="' + esc(opts[j].key) + '"' + (opts[j].key === mk ? ' selected' : '') + '>' + esc(skMLabel(opts[j])) + '</option>';
+        }
+        sel += '</select>';
+        cell = (mk ? '' : '<span class="ng">選んでください</span><br>') + sel + (mk && SKM[mk] ? '<span class="sub">代表者 ' + esc(SKM[mk].rep || '（未登録）') + (SKM[mk].email ? '' : '　<span class="ng">メールなし</span>') + '</span>' : '');
+      } else {
+        cell = mk && SKM[mk] ? '<span class="sub">' + esc(skMLabel(SKM[mk])) + '</span>' : '<span class="sub">（照らし合わせられません）</span>';
+      }
+      rows += '<tr class="' + (on ? 'on' : '') + '"><td><input type="checkbox"' + (on ? ' checked' : '') + ' onchange="senkoCheck(\'' + esc(p.key) + '\', this.checked)"></td>' +
+        '<td>' + esc(p.slot || '') + '</td><td>' + esc(p.name) + '</td><td>' + esc(p.grade) + '</td><td>' + esc(p.team) + '</td><td>' + cell + '</td></tr>';
+    }
+    cols += '<div><h4>' + esc(divName(div)) + '<span class="cnt' + (n === SK_NEED ? '' : ' ng') + '">' + n + '／' + ps.length + '名' + (n === SK_NEED ? '' : '（' + skN(SK_NEED) + '名の予定）') + '</span></h4>' +
+      (ps.length ? '<div class="scroll"><table class="sk-tbl"><thead><tr><th></th><th>番号</th><th>氏名</th><th>学年</th><th>所属</th><th>登録団体</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<div class="muted">個人戦の出場者がまだありません。</div>') + '</div>';
+  }
+  document.getElementById('skCols').innerHTML = cols;
+  document.getElementById('skDirty').innerHTML = SKDIRTY ? '<span class="sk-dirty">保存していない変更があります。送る前に「選考を保存」を押してください。</span>' : '';
+
+  /* 送り先 */
+  var gs = skGroups(), gh = '', k, gg, st, unsent = 0;
+  if (gs.bad.length) gh += '<div class="notice-st"><span class="ng">登録団体が決まっていない選手：' + esc(gs.bad.join('、')) + '</span></div>';
+  if (gs.noMail.length) gh += '<div class="notice-st"><span class="ng">代表者のメールアドレスが登録されていない団体：' + esc(gs.noMail.join('、')) + '（団体登録システムで直してから、名簿を更新してください）</span></div>';
+  if (gs.order.length) {
+    gh += '<div class="scroll"><table><thead><tr><th>登録団体</th><th>代表者</th><th>メールアドレス</th><th>出場者</th><th>送信</th></tr></thead><tbody>';
+    for (i = 0; i < gs.order.length; i++) {
+      k = gs.order[i]; gg = gs.groups[k]; st = r.sent[k];
+      if (!st) { unsent++; st = '<span class="muted">未送信</span>'; }
+      else st = '<span class="ok">送信済み</span> ' + esc(String(st.at).slice(5, 16).replace('-', '/')) + (st.who !== skWho(gg) ? '<br><span class="ng">送った後に出場者が変わりました</span>' : '') +
+        '<br><button class="btn btn-out btn-sm" onclick="senkoResend(\'' + esc(k) + '\')">送り直す</button>';
+      gh += '<tr><td>' + esc(skMLabel(gg)) + '</td><td>' + esc(gg.rep) + '</td><td>' + esc(gg.email) + '</td><td>' + (gg.M.length ? '男子 ' + esc(gg.M.join('、')) : '') + (gg.M.length && gg.W.length ? '<br>' : '') + (gg.W.length ? '女子 ' + esc(gg.W.join('、')) : '') + '</td><td>' + st + '</td></tr>';
+    }
+    gh += '</tbody></table></div>';
+    gh += '<div class="muted" style="margin-top:6px">' + skN(gs.order.length) + '団体（未送信 ' + skN(unsent) + '）</div>';
+  } else if (!gs.bad.length && !gs.noMail.length) gh += '<div class="muted">２で選手にチェックを入れると、ここに送り先が出ます。</div>';
+  document.getElementById('skGroups').innerHTML = gh;
+
+  /* 文面の例 */
+  var ex = null;
+  for (i = 0; i < gs.order.length; i++) { gg = gs.groups[gs.order[i]]; if (!ex || (gg.M.length && gg.W.length && !(ex.M.length && ex.W.length))) ex = gg; }
+  if (!ex) ex = { name: '○○中学校', rep: '○○○○', M: ['○○○○'], W: [] };
+  document.getElementById('skPrevName').textContent = ex.name;
+  document.getElementById('skPrev').textContent = '件名：' + r.subject + '\n添付：' + (r.attach.files.length ? r.attach.files.map(function (f) { return f.name; }).join('、') : '（なし）') + '\n\n' + skMailText(ex, r.sign);
+
+  var ok = !SKDIRTY && !gs.bad.length && !gs.noMail.length && gs.order.length > 0 && !r.attach.error;
+  var btn = document.getElementById('skSendBtn');
+  btn.disabled = !ok || !unsent;
+  btn.textContent = '未送信の団体に送信（' + skN(unsent) + '通）';
+  document.getElementById('skSendInfo').textContent = SKDIRTY ? '先に「選考を保存」を押してください。' : (r.attach.error ? '添付のPDFを確かめてください。' : '');
+}
+
+function senkoCheck(key, on) {
+  if (on) SKSEL[key] = SKP[key] ? (SKP[key].auto || '') : '';
+  else delete SKSEL[key];
+  SKDIRTY = true;
+  senkoRender();
+}
+function senkoSetTeam(key, mk) {
+  if (!SKSEL.hasOwnProperty(key)) return;
+  SKSEL[key] = mk;
+  SKDIRTY = true;
+  senkoRender();
+}
+
+function senkoSave() {
+  var sel = [], k;
+  for (k in SKSEL) if (SKSEL.hasOwnProperty(k)) sel.push({ key: k, mkey: SKSEL[k] || '' });
+  toast('保存しています…');
+  api({ action: 'adminSenkoSave', sel: sel }).then(function (r) {
+    toast('選考を保存しました（' + skN(r.count) + '名）');
+    return senkoLoad();
+  }).catch(function (err) { toast('保存できませんでした：' + err.message, true); });
+}
+
+function senkoTest() {
+  if (SKDIRTY) { toast('先に「選考を保存」を押してください', true); return; }
+  var to = document.getElementById('skTo').value.replace(/^\s+|\s+$/g, '');
+  if (!to) { toast('テストの送り先メールアドレスを入れてください', true); return; }
+  try { localStorage.setItem('iw_notice_to', to); } catch (e) {}
+  toast('テスト送信中…');
+  api({ action: 'adminSenkoSend', test: true, to: to }).then(function (r) {
+    toast('✉ テストを送りました（' + r.to + '／内容は「' + r.team + '」の例）');
+  }).catch(function (err) { toast('送れませんでした：' + err.message, true); });
+}
+
+function senkoSend() {
+  if (SKDIRTY) { toast('先に「選考を保存」を押してください', true); return; }
+  var gs = skGroups(), n = 0, i;
+  for (i = 0; i < gs.order.length; i++) if (!SK.sent[gs.order[i]]) n++;
+  if (!n) { toast('未送信の団体はありません'); return; }
+  if (!confirm(skN(n) + '団体の代表者に「３次選考会の開催について（お知らせ）」のメール（PDF ' + skN(SK.attach.files.length) + 'つ添付）を送ります。\n（送った団体は記録し、２回は送りません）\nよろしいですか？')) return;
+  toast('送信中…');
+  api({ action: 'adminSenkoSend' }).then(function (x) {
+    toast('✉ ' + skN(x.sent) + '通送りました');
+    return senkoLoad();
+  }).catch(function (err) { toast('送れませんでした：' + err.message, true); senkoLoad(); });
+}
+
+function senkoResend(mk) {
+  if (SKDIRTY) { toast('先に「選考を保存」を押してください', true); return; }
+  var m = SKM[mk];
+  if (!confirm((m ? m.name : '') + 'の代表者に、もう一度メールを送ります。よろしいですか？')) return;
+  toast('送信中…');
+  api({ action: 'adminSenkoSend', only: mk }).then(function () {
+    toast('✉ 送り直しました');
+    return senkoLoad();
+  }).catch(function (err) { toast('送れませんでした：' + err.message, true); });
+}
+
+/* 名簿の読み込み：ファイル（.xlsx／.csv）を枠に入れる */
+function senkoFile(input) {
+  var f = input.files && input.files[0];
+  if (!f) return;
+  var rd = new FileReader();
+  rd.onload = function () {
+    var buf = rd.result;
+    if (/\.xlsx$/i.test(f.name)) {
+      xlLoadLib().then(function () {
+        var wb = new ExcelJS.Workbook();
+        return wb.xlsx.load(buf).then(function () {
+          var ws = wb.worksheets[0], lines = [];
+          ws.eachRow(function (row) {
+            var cells = [], c;
+            for (c = 1; c <= row.cellCount; c++) cells.push(String(row.getCell(c).text || '').replace(/[\t\r\n]/g, ' '));
+            lines.push(cells.join('\t'));
+          });
+          document.getElementById('skPaste').value = lines.join('\n');
+          senkoImport();
+        });
+      }).catch(function (err) { toast('Excelを読めませんでした：' + err.message, true); });
+    } else {
+      var text = '';
+      try { text = new TextDecoder('utf-8', { fatal: true }).decode(buf); } catch (e) { try { text = new TextDecoder('shift_jis').decode(buf); } catch (e2) { text = ''; } }
+      document.getElementById('skPaste').value = text.replace(/^﻿/, '');
+      senkoImport();
+    }
+    input.value = '';
+  };
+  rd.readAsArrayBuffer(f);
+}
+
+/* 名簿の読み込み：枠の内容から、該当する選手にチェックを入れる */
+function senkoImport() {
+  if (!SK) { toast('読み込みが終わってから押してください', true); return; }
+  var text = document.getElementById('skPaste').value;
+  var lines = text.split(/\r\n|\r|\n/), rows = [], i, cells;
+  for (i = 0; i < lines.length; i++) {
+    if (!lines[i].replace(/[\s,　]/g, '')) continue;
+    cells = lines[i].indexOf('\t') >= 0 ? lines[i].split('\t') : lines[i].split(',');
+    rows.push(cells.map(function (c) { return String(c).replace(/^\s*"|"\s*$/g, '').replace(/^[\s　]+|[\s　]+$/g, ''); }));
+  }
+  if (!rows.length) { toast('名簿が空です', true); return; }
+  /* 見出し行があれば列を合わせる */
+  var cg = 0, cn = 1, ct = 2, j, head = rows[0], isHead = false;
+  for (j = 0; j < head.length; j++) if (/^(選手)?(氏名|名前)$|^選手名$/.test(head[j].replace(/[\s　]/g, ''))) { cn = j; isHead = true; }
+  if (isHead) {
+    cg = -1; ct = -1;
+    for (j = 0; j < head.length; j++) {
+      if (/男女|性別/.test(head[j])) cg = j;
+      else if (/所属|学校|チーム|団体|クラブ/.test(head[j])) ct = j;
+    }
+    rows.shift();
+  }
+  else if (rows[0].length === 2) { cg = -1; cn = 0; ct = 1; }   /* 男女の列がない名簿 */
+  var hits = {}, miss = [], dup = [], gens = {}, cnt = { MI: 0, WI: 0 };
+  var r, g, nm, tm, d, ps, cand, k;
+  for (i = 0; i < rows.length; i++) {
+    r = rows[i];
+    nm = r[cn] || '';
+    if (!nm) continue;
+    g = cg >= 0 ? String(r[cg] || '') : '';
+    g = /女/.test(g) ? 'WI' : /男/.test(g) ? 'MI' : '';
+    tm = ct >= 0 ? (r[ct] || '') : '';
+    cand = [];
+    for (d = 0; d < SK_DIVS.length; d++) {
+      if (g && SK_DIVS[d] !== g) continue;
+      ps = SK.divs[SK_DIVS[d]] || [];
+      for (k = 0; k < ps.length; k++) if (skNameKey(ps[k].name) === skNameKey(nm)) cand.push(ps[k]);
+    }
+    if (cand.length > 1 && tm) cand = cand.filter(function (p) { return skTeamKey(p.team).indexOf(skTeamKey(tm)) >= 0 || skTeamKey(tm).indexOf(skTeamKey(p.team)) >= 0; });
+    if (cand.length === 1) {
+      if (hits[cand[0].key]) { dup.push(nm); continue; }
+      hits[cand[0].key] = true;
+      gens[cand[0].div] = true;
+      cnt[cand[0].div]++;
+    } else {
+      miss.push(nm + (tm ? '（' + tm + '）' : '') + (cand.length > 1 ? '：同じ名前が２人以上います' : '：個人戦の出場者にいません'));
+    }
+  }
+  /* 名簿にある区分は付け直す */
+  for (d = 0; d < SK_DIVS.length; d++) {
+    if (!gens[SK_DIVS[d]]) continue;
+    ps = SK.divs[SK_DIVS[d]] || [];
+    for (k = 0; k < ps.length; k++) {
+      if (hits[ps[k].key]) { if (!SKSEL.hasOwnProperty(ps[k].key)) SKSEL[ps[k].key] = ps[k].auto || ''; }
+      else delete SKSEL[ps[k].key];
+    }
+  }
+  SKDIRTY = true;
+  var h = '名簿から、男子 ' + skN(cnt.MI) + '名・女子 ' + skN(cnt.WI) + '名にチェックを入れました。内容を確かめて「選考を保存」を押してください。';
+  if (miss.length) h += '<br><span class="ng">照らし合わせられなかった人（' + skN(miss.length) + '名）：' + esc(miss.join('／')) + '</span>';
+  if (dup.length) h += '<br><span class="ng">名簿に２回出てくる人：' + esc(dup.join('、')) + '</span>';
+  document.getElementById('skImp').innerHTML = h;
+  senkoRender();
 }
 
 /* ========== 初期化 ========== */
