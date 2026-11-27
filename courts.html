@@ -122,26 +122,23 @@ function pane(div, g, c) {
   var body = '';
   if (cur) {
     body += '<div class="mt">第' + cur.no + '試合　' + esc(cur.round) + '<span class="st">試合中</span>' + (cur.two ? '<span class="sb">２面展開</span>' : '') + '</div>';
-    var type = p.division.type, mi, rec, r, cc, pp, last = 0, any = false, wl = 0, wr = 0;
-    for (mi = 0; mi < (type === 'team' ? 4 : 1); mi++) {
-      rec = lv[cur.id] ? lv[cur.id][String(mi)] : null;
-      pp = type === 'team' && cur.team && cur.team.pairs[mi] ? cur.team.pairs[mi] : null;
-      if (pp && pp.w) { if (mi < 3) { if (pp.w === 'L') wl++; else wr++; } continue; }
-      if (!rec || !rec.s) continue;
-      r = LC.rule(type, mi);
-      cc = LC.count(rec.s, r);
-      if (cc.end && mi < 3) { if (cc.winner === 'L') wl++; else wr++; }
-      if (rec.at > last) last = rec.at;
-      any = true;
-      if (type === 'team' && cc.end) continue;
-      var pl = pp && pp.l ? esc(pp.l[0]) + '・' + esc(pp.l[1]) : '';
-      var pr = pp && pp.r ? esc(pp.r[0]) + '・' + esc(pp.r[1]) : '';
-      body += LC.board({ L: nm(cur.left, pl), R: nm(cur.right, pr), c: cc, r: r, size: 'l',
-        head: type === 'team' ? esc(LC.mLabel(type, mi)) + (rec.c && cur.two ? '（' + esc(rec.c) + 'コート）' : '') : '',
-        foot: cc.end ? '試合終了・本部確認中' : esc(LC.gameLabel(cc, r)) });
+    var type = p.division.type, mi, rec, r, cc, last = 0, any = false;
+    var lvm = lv[cur.id] || {};
+    for (mi in lvm) if (lvm.hasOwnProperty(mi) && lvm[mi] && lvm[mi].s) { any = true; if (lvm[mi].at > last) last = lvm[mi].at; }
+    if (type === 'team') {
+      /* 団体戦：１対戦をまとめて（マッチの勝ち数・第１〜第３マッチ・審判） */
+      var rf = cur.referee, refTxt = '';
+      if (rf && rf.official) refTxt = '本部';
+      else if (rf && rf.decided) refTxt = rf.slot ? '<span class="slot">' + esc(rf.slot) + '</span>' + esc(rf.label) : esc(rf.label);
+      else if (rf) refTxt = esc(rf.label);
+      body += LC.teamBlock({ m: cur, live: lvm, size: 'l', diff: true, L: slotTag(cur.left) + esc(cur.left.label), R: slotTag(cur.right) + esc(cur.right.label), ref: refTxt });
+    } else {
+      rec = lvm['0'];
+      r = LC.rule(type, 0);
+      cc = LC.count(rec && rec.s ? rec.s : '', r);
+      body += LC.board({ L: nm(cur.left), R: nm(cur.right), c: cc, r: r, size: 'l',
+        foot: !rec || !rec.s ? 'まだ入力がありません' : cc.end ? '試合終了・本部確認中' : esc(LC.gameLabel(cc, r)) });
     }
-    if (!any) body += LC.board({ L: nm(cur.left), R: nm(cur.right), c: LC.count('', LC.rule(p.division.type, 0)), r: LC.rule(p.division.type, 0), size: 'l', foot: 'まだ入力がありません' });
-    if (type === 'team') body += '<div class="tw">マッチの勝ち数　<span style="color:#0a62e0">青 ' + wl + '</span> − <span style="color:#12940f">' + wr + ' 緑</span></div>';
     body += agoText(last);
   } else {
     body += '<div class="none">試合中の試合はありません。</div>';
